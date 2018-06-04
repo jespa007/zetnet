@@ -1,0 +1,179 @@
+#pragma once
+
+#include "system/jeme_system.h"
+#include "math/jeme_math.h"
+
+
+
+using  namespace  std;
+
+//---------------------------------------------------------------------
+//  DEFINES
+//---------------------------------------------------------------------
+
+#define  MAX_BYTES_TO_SEND	512
+
+
+#define  TIME_TO_RECONNECT	3000	//  ms
+
+#define  MAX_TRIES_BAD_MESSAGE	3
+//#define  TIME_POLLIGN		1000
+#define  TIME_WAIT_ACK		3000	//  ms
+
+#define  MAX_SOCKETS					100
+#define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
+#define MAX_SIZE_UDP_PACKET 65536
+
+
+
+#define  MAX_LENGTH_MESSAGE 16384
+#define SOCKET_CLIENT_NOT_AVAILABLE -1
+
+typedef  struct  {
+	void  *socket;
+	int    idxClient;
+	bool    header_sent; // for streaming purposes!
+}  tClientSocket;
+
+
+
+void  demo_cnet();
+
+class  CNetTcp: public CThread
+{
+	unsigned int attributes;
+
+	bool  UDP_GetConnection();
+	void UDP_GetIpAddressFromSocket(UDPsocket  sock,  char  *buffer);
+
+	bool  TCP_GetConnection();
+	void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
+
+	virtual void  mainLoopThread();  //  Receive  messages,  gest  &  send...
+protected:
+
+	bool IsStreamingServer;
+
+	void  UDP_GestClient();
+	void  TCP_GestClient();
+
+	void  *socket;
+	UDPpacket *udp_packet;//
+
+	int  UDP_getMsg(UDPsocket  sock,  Uint8  *buf);
+	int  UDP_putMsg(UDPsocket  sock,  Uint8  *buf,  Uint32  len=0);
+
+	int   TCP_getMsg(TCPsocket  sock,  Uint8  *buf);
+	int   TCP_putMsg(TCPsocket  sock,  Uint8  *buf,  Uint32  len);
+
+
+	//---------------------------------------------------------------------
+	IPaddress  ip;
+	bool I_Am_Server, configured;
+	SDLNet_SocketSet socketSet;
+	char  *message,*host;
+	Uint32  ipaddr;
+	Uint8  buffer[MAX_LENGTH_MESSAGE];
+
+	int	      src_port,dst_port;
+	int        timeout;
+	int type_protocol;
+
+	bool  	connected
+	,RequestToConnect
+	,RequestToDisConnect
+	,Want_reconnection;
+
+
+	Uint32  TimeToReconnect,TimerWaitAck,  TimerActivityNet,TimerPolling;
+	string  ValueVariableHost;
+
+	unsigned  initialized;
+
+
+	bool  createSocketSet();
+	bool  		sendMessageToServer(Uint8  *data,  unsigned  len);//,  unsigned  NumeroMensaje=0);
+
+
+	void  internal_disconnect();
+	bool  internal_connect();
+	virtual void  getMessage();
+	void  gestClient();
+
+	virtual bool gestServerBase();
+	virtual void  gestServer();
+
+	Uint8	searchClient(const char *name_client);
+	void sendAll(Uint8  ID_Message,  Uint8  *message=NULL,  int  len=0);
+	bool  setupHost();
+
+
+
+
+	tClientSocket 		*getFreeSlot(); // adds client
+	bool 				freeSlot(tClientSocket * sockClient); // removes client...
+
+	virtual bool 		gestMessage(void *in_socket, Uint8 *buffer, unsigned int len)=0;
+
+	int getMsg(void *sock,Uint8  *buf);
+	int putMsg(void *sock,Uint8  *buf,  Uint32  len);
+
+	void socketClose(void *sock);
+	int socketAdd(void *sock);
+	int socketDel(void *sock);
+	void * socketAccept(void *sock);
+	int socketReady(void *sock);
+
+
+
+
+public:
+
+	enum{
+		CNET_TCP_PROTOCOL=		(0x1 << 0),
+		CNET_UDP_PROTOCOL=		(0x1 << 1),
+		CNET_NO_SEND_AUTO_ACKS=	(0x1 << 2)
+	};
+
+	bool          IsServer();
+
+	void  unLoad();
+
+	CNetTcp();
+
+	void  setupAsServer(  int _src_port,int _dst_port, const char *name_client="Server",int protocol=CNET_TCP_PROTOCOL);  //  Reads  configuration  of  machine  &  init  sdl_net...
+	void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client",unsigned int attributes=CNET_TCP_PROTOCOL);
+
+	bool  DisconnectedCable();
+	void  WaitToDisconnect();
+	bool  ChangeIpReceived();
+
+	bool  isConnected();
+	virtual void  connect();
+	virtual void  disconnect();
+	void  Reconnection();
+
+	void resume();
+	void pause();
+
+
+
+
+	tClientSocket  	clientSocket[MAX_CLIENTS];
+	int 			freeSocket[MAX_CLIENTS];
+	int        		n_freeSockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!
+
+
+	void  PrintStatus();
+	virtual ~CNetTcp();
+};
+
+
+
+
+
+int CNET_Demo();
+
+
+
+
