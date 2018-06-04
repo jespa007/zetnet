@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
  
-project(zetjsoncpp)
+project(httpservercpp)
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -19,7 +19,7 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 
     FOREACH(HEADER ${${HEADER_LIST}})
         get_filename_component(DIR ${HEADER} DIRECTORY)
-        INSTALL(FILES ${HEADER} DESTINATION include/zetjsoncpp/${DIR})
+        INSTALL(FILES ${HEADER} DESTINATION include/httpservercpp/${DIR})
     ENDFOREACH(HEADER)
 
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
@@ -35,7 +35,7 @@ include_directories (
 
 message("-- Dest.dir: " ${CMAKE_INSTALL_PREFIX})
 
-set(ZETJSONCPP_LIB_SRCS "")
+set(HTTPSERVERCPP_LIB_SRCS "")
 
 
 if(MSVC)
@@ -74,7 +74,7 @@ else()
 			../memmanager
 		)
 		
-	   	set(ZETJSONCPP_LIB_SRCS ${ZETJSONCPP_LIB_SRCS} ../memmanager/MEM_ram.cpp)
+	   	set(HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS} ../memmanager/MEM_ram.cpp)
 		
 	ELSE()
 		message("-- Memmanager: OFF")
@@ -142,38 +142,35 @@ endif()
 #
 
 # Library
-set( ZETJSONCPP_LIB_SRCS ${ZETJSONCPP_LIB_SRCS}
+set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 
-	CFile.cpp
-	CStringUtils.cpp
-	CParserVar.cpp
-	CParserBase.cpp
-	CParserJson.cpp
+	HttpHandleClient.cpp
+	HttpRequest.cpp
+	HttpResponse.cpp
+	HttpServer.cpp
 )
 
 #JSON TEST executable
-set(JSON_TEST_SRCS ${PROJECT_SOURCE_DIR}/test/json_test.cpp)
+set(HTTPSERVERCPP_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpservercpp_demo.cpp)
 
 
 
 # json2cpplib
-add_library( zetjsoncpp${POST_NAME} ${LINK} ${ZETJSONCPP_LIB_SRCS} )
+add_library( httpservercpp${POST_NAME} ${LINK} ${HTTPSERVERCPP_LIB_SRCS} )
 
 
 if(MSVC)
 	#only for msvc...
-	set_target_properties(zetjsoncpp${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETJSONCPP_EXPORTS)
+	set_target_properties(httpservercpp${POST_NAME} PROPERTIES COMPILE_DEFINITIONS HTTPSERVERCPP_EXPORTS)
 endif()
 	
 
 SET(
 	HS
-	zetjsoncpp.h
-	CFile.h
-	CParserBase.h
-	CParserJson.h
-	CParserVar.h
-	CStringUtils.h
+	HttpHandleClient.h
+	HttpRequest.h
+	HttpResponse.h
+	HttpServer.h
 )
 
 
@@ -181,14 +178,14 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(json_test${POST_NAME}
-	${JSON_TEST_SRCS}
+add_executable(httpservercpp_demo${POST_NAME}
+	${HTTPSERVERCPP_DEMO_SRCS}
 )
 
 
-target_link_libraries(json_test${POST_NAME} zetjsoncpp${POST_NAME})	
+target_link_libraries(httpservercpp_demo${POST_NAME} httpservercpp${POST_NAME})	
 
-INSTALL(TARGETS zetjsoncpp${POST_NAME}
+INSTALL(TARGETS httpservercpp${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
 		RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
     	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib

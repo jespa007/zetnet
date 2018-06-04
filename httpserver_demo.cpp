@@ -1,11 +1,9 @@
-#include "jeme_base.h"
+#include "HttpServer.h"
 
 class MyCustomHttpServer: public HttpServer{
 
 
 public:
-
-	//MyCustomHttpServer();//:HttpServer(port,path,name){};
 
 	virtual void onGetUserRequest(TCPsocket in_socket, const vector<HttpRequest::tParamValue> & Param){
 
@@ -50,12 +48,6 @@ public:
 
 int main(int argc, char *argv[])
 {
-//	CEngine *m_engine = CEngine::getInstance();
-
-	//bool m_exit = false;
-#if defined(__DEBUG__) && defined(__MEMMANAGER__)
-	JEME_MEM_ENABLE_REGISTER_MEMORYLEAKS;
-#endif
 
 	CThread::createSingletons();
 
@@ -78,41 +70,21 @@ int main(int argc, char *argv[])
 
 	HttpServer *Server = new MyCustomHttpServer();
 
-	Server->setup(8081, "data\\www","TestServer");
+	Server->setup(8081, "","TestServer");
 
 
 
 	Server->connect();
-	//Server->setupAsServer(8081,8081,"Server",CNet::CNET_TCP_PROTOCOL);
-
+	
 	do{
-
-		//CEngine::getInstance()->run();
-		JEME_INPUT->updateInput();
-
-		SDL_Delay(100);
-
-
-	}while(!JEME_INPUT->key[JEMEK_ESCAPE]);
-
-
+	
+	}while(getchar()!='s');
+	
 	delete Server;
-	//	delete Input;
 
-	CInput::destroySingletons();
-	CVideo::destroySingletons();
 	CThread::destroySingletons();
-	CLog::destroySingletons();
 
 	SDLNet_Quit();
-//	CEngine::destroy();
-
-#if defined(__DEBUG__) && defined(__MEMMANAGER__)
-  MEM_ViewStatus();
-  OGL_ViewStatus();
-  JEME_MEM_DISABLE_REGISTER_MEMORYLEAKS;
-#endif
-
 
 	return 0;
 }
