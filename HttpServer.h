@@ -1,6 +1,45 @@
 ﻿#pragma once
 
-class HttpServer:public CNet
+
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_net.h"
+
+
+#include <time.h>
+#include <string>
+#include <sstream>
+#include <vector>
+
+#if defined(__GNUC__)
+#include <sys/stat.h>
+#include <dirent.h>
+#endif
+
+
+#ifndef MAX_PATH
+#define MAX_PATH		4096
+#endif
+
+using std::string;
+using std::vector;
+
+#include "dir.h"
+#include "CUri.h"
+#include "CBuffer.h"
+#include "CStringUtils.h"
+#include "CIO_Utils.h"
+#include "CThread.h"
+#include "CNetTcp.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
+#include "HttpHandleClient.h"
+
+class HttpServer:public CNetTcp
 {
 public:
 	string MSG_DIR;

@@ -53,17 +53,8 @@ int main(int argc, char *argv[])
 
 	if(SDLNet_Init()==-1) {
 	    printf("SDLNet_Init: %s\n", SDLNet_GetError());
-	    exit(2);
+	    exit(-1);
 	}
-
-	// init gfx system
-	CVideo::getInstance()->createMainWindow(-800,10,
-			640,
-			480,
-			32,
-			false
-			);
-
 
 
 	//bool server_enable = false;

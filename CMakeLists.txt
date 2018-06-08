@@ -37,6 +37,11 @@ message("-- Dest.dir: " ${CMAKE_INSTALL_PREFIX})
 
 set(HTTPSERVERCPP_LIB_SRCS "")
 
+find_library(SDL2_LIB  		NAMES SDL2  )
+find_library(SDL2_NET_LIB  	NAMES SDL2_net  )
+
+MESSAGE ("-- Found SDL2 at " ${SDL2_LIB})
+MESSAGE ("-- Found SDL2_NET at " ${SDL2_NET_LIB})
 
 if(MSVC)
 	MESSAGE ("-- Plataform: MSVC" )
@@ -53,13 +58,19 @@ else()
 	SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__STDC_CONSTANT_MACROS -std=c++1y -I -Wall")
    
 	if (MINGW)
+	
+		
+		SET( COMMON_PARAMS " ${COMMON_PARAMS} -I$ENV{MINGWDIR}/local32/include " )
+	
 		MESSAGE ("-- Plataform: MINGW" )
 		message("-- Mingw path: $ENV{MINGWDIR} ")
 		
 		set(CMAKE_LEGACY_MINGW_WIN32 0)
 		set(CMAKE_PREFIX_PATH "$ENV{MINGWDIR}/local32/lib")
-
-		SET( COMMON_PARAMS " ${COMMON_PARAMS} ")
+		
+		
+  
+  	message("-- params: ${COMMON_PARAMS} ")
   
     elseif(GNU)
     	MESSAGE ("-- Plataform: GNU" )
@@ -144,20 +155,26 @@ endif()
 # Library
 set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 
+	findfirst.c
+	CUri.cpp
+	CStringUtils.cpp
+	CIO_Utils.cpp
+	CThread.cpp
+	CNetTcp.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp
 	HttpResponse.cpp
 	HttpServer.cpp
 )
 
-#JSON TEST executable
-set(HTTPSERVERCPP_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpservercpp_demo.cpp)
+#HTTPSERVER TEST executable
+set(HTTPSERVERCPP_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
 
 
 
-# json2cpplib
+# httpserver library
 add_library( httpservercpp${POST_NAME} ${LINK} ${HTTPSERVERCPP_LIB_SRCS} )
-
+target_link_libraries(httpservercpp${POST_NAME}  ${SDL2_LIB} ${SDL2_NET_LIB}   "-Wl,--no-as-needed" )
 
 if(MSVC)
 	#only for msvc...
@@ -171,6 +188,11 @@ SET(
 	HttpRequest.h
 	HttpResponse.h
 	HttpServer.h
+	CUri.h
+	CThread.h
+	CIO_Utils.h
+	CStringUtils.h
+	CBuffer.h
 )
 
 
@@ -178,12 +200,12 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(httpservercpp_demo${POST_NAME}
+add_executable(httpserver_demo${POST_NAME}
 	${HTTPSERVERCPP_DEMO_SRCS}
 )
 
 
-target_link_libraries(httpservercpp_demo${POST_NAME} httpservercpp${POST_NAME})	
+target_link_libraries(httpserver_demo${POST_NAME}    ${SDL2_MAIN_LIB} ${SDL2_LIB} httpservercpp${POST_NAME}  mingw32 )	
 
 INSTALL(TARGETS httpservercpp${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib

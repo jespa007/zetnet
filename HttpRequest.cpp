@@ -1,12 +1,7 @@
-#include "jeme_base.h"
+#include "HttpServer.h"
 
 
-ByteBuffer * HttpRequest::GetStreamFromUrl(const string & uri)
-{
 
-	return CWebStream::getFromWeb(uri);
-
-}
 
 HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 

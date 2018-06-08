@@ -1,4 +1,4 @@
-#include "jeme_base.h"
+#include "HttpServer.h"
 
 HttpResponse::tHtmlError HttpResponse::html_error [MAX_ERROR_TYPES]={
 	 {"400 - Bad Request","Please check the above url is valid"}
@@ -83,6 +83,20 @@ HttpResponse * HttpResponse::MakePageNotFound(HttpServer * webserver)
 	return new HttpResponse("404 Bad Request", "html/text", false, HttpResponse::GenerateError(HTML_ERROR_404, webserver));
 }
 
+string  getFileName(const string & _filename) {
+  size_t found;
+  string ss=_filename;
+
+  //JEME_MEM_DISABLE_REGISTER_MEMORYLEAKS;
+
+  found=_filename.find_last_of("/\\");
+  if((int)found != -1)
+	  ss= _filename.substr(found+1);
+
+  //JEME_MEM_ENABLE_REGISTER_MEMORYLEAKS;
+  return ss;
+}
+
 HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) {
 	if (request == NULL)
 		return MakeNullRequest(webserver);
@@ -116,7 +130,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 #endif
 
 
-		if (CFileSystem::fileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+		if (CIO_Utils::fileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
 		{
 #ifdef __DEBUG__
 			printf("file exists!!!\n");
@@ -128,11 +142,11 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 			//DirectoryInfo di = new DirectoryInfo(fi+"/");
 
-			if (!CFileSystem::isDirectory(path)){
+			if (!CIO_Utils::isDirectory(path)){
 				return MakePageNotFound(webserver);
 			}
 
-			vector<string> list_file = CFileSystem::getFiles(path);//,"*.html",false);
+			vector<string> list_file = CIO_Utils::getFiles(path);//,"*.html",false);
 
 			//FileInfo [] files = di.GetFiles();
 			for(unsigned f=0; f < list_file.size() && !ok; f++){ //foreach(FileInfo ff in files){
@@ -166,7 +180,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		if (ok)
 		{
-#if WIN32
+#ifdef _WIN32
 #define SEPARATOR_DIR "\\"
 #else
 #define SEPARATOR_DIR "/"
@@ -174,7 +188,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		string filename_to_load = path+SEPARATOR_DIR+file;
 
-			return new HttpResponse("200 OK", request->Mime, request->IsBinary, CFileSystem::readFile(filename_to_load, false) );
+			return new HttpResponse("200 OK", request->Mime, request->IsBinary, CIO_Utils::readFile(filename_to_load, false) );
 
 			//return MakeFromFile(path+"\\"+file, request->Mime);
 		}

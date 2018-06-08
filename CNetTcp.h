@@ -1,11 +1,6 @@
 #pragma once
 
-#include "system/jeme_system.h"
-#include "math/jeme_math.h"
 
-
-
-using  namespace  std;
 
 //---------------------------------------------------------------------
 //  DEFINES
@@ -22,7 +17,7 @@ using  namespace  std;
 
 #define  MAX_SOCKETS					100
 #define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
-#define MAX_SIZE_UDP_PACKET 65536
+
 
 
 
@@ -41,10 +36,7 @@ void  demo_cnet();
 
 class  CNetTcp: public CThread
 {
-	unsigned int attributes;
 
-	bool  UDP_GetConnection();
-	void UDP_GetIpAddressFromSocket(UDPsocket  sock,  char  *buffer);
 
 	bool  TCP_GetConnection();
 	void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
@@ -54,14 +46,9 @@ protected:
 
 	bool IsStreamingServer;
 
-	void  UDP_GestClient();
 	void  TCP_GestClient();
 
 	void  *socket;
-	UDPpacket *udp_packet;//
-
-	int  UDP_getMsg(UDPsocket  sock,  Uint8  *buf);
-	int  UDP_putMsg(UDPsocket  sock,  Uint8  *buf,  Uint32  len=0);
 
 	int   TCP_getMsg(TCPsocket  sock,  Uint8  *buf);
 	int   TCP_putMsg(TCPsocket  sock,  Uint8  *buf,  Uint32  len);
@@ -77,7 +64,6 @@ protected:
 
 	int	      src_port,dst_port;
 	int        timeout;
-	int type_protocol;
 
 	bool  	connected
 	,RequestToConnect
@@ -129,11 +115,6 @@ protected:
 
 public:
 
-	enum{
-		CNET_TCP_PROTOCOL=		(0x1 << 0),
-		CNET_UDP_PROTOCOL=		(0x1 << 1),
-		CNET_NO_SEND_AUTO_ACKS=	(0x1 << 2)
-	};
 
 	bool          IsServer();
 
@@ -141,8 +122,8 @@ public:
 
 	CNetTcp();
 
-	void  setupAsServer(  int _src_port,int _dst_port, const char *name_client="Server",int protocol=CNET_TCP_PROTOCOL);  //  Reads  configuration  of  machine  &  init  sdl_net...
-	void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client",unsigned int attributes=CNET_TCP_PROTOCOL);
+	void  setupAsServer(  int _src_port,int _dst_port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
+	void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
 
 	bool  DisconnectedCable();
 	void  WaitToDisconnect();

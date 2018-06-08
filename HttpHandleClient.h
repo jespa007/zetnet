@@ -1,6 +1,9 @@
 #pragma once
 
 
+
+
+
 class HttpServer;
 class HttpHandleClient //:public CThread
 {

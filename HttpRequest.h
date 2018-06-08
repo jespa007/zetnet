@@ -27,7 +27,7 @@ public:
 	string ContentType;
 	vector<tParamValue> Param;
 
-	static ByteBuffer * GetStreamFromUrl(const string & uri);
+
 	static HttpRequest * GetRequest(const string & request);
 
 protected:

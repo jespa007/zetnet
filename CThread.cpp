@@ -1,4 +1,4 @@
-#include "jeme_utils.h"
+#include "HttpServer.h"
 
 vector<CThread *> *CThread::m_listRunningThreads=NULL;
 
@@ -10,7 +10,7 @@ void CThread::eraseThreadFromList(CThread *th){
 		m_listRunningThreads->erase(m_listRunningThreads->begin()+index);
 	}
 	else{
-		print_error_cr("thread not exist on list");
+		fprintf(stderr,"thread not exist on list\n");
 	}
 
 }
@@ -22,7 +22,7 @@ void CThread::addThreadToList(CThread *th){
 		m_listRunningThreads->push_back(th);
 	}
 	else{
-		print_error_cr("thread already exist on list");
+		fprintf(stderr,"thread already exist on list\n");
 	}
 }
 
@@ -118,7 +118,7 @@ void CThread::start()
 
    	addThreadToList(this);
 
-    print_info_cr("---- starting thread %s ----", name_thread.c_str());
+    printf("---- starting thread %s ----\n", name_thread.c_str());
 
     thread = SDL_CreateThread(_thread_runner, name_thread.c_str(), this);
 
@@ -153,7 +153,7 @@ void CThread::stop()
 {
     if(!end_loop_mdb && thread != NULL)
     {
-		print_info_cr("---- shutingdown thread %s ---", name_thread.c_str());
+		printf("---- shutingdown thread %s ---\n", name_thread.c_str());
 
 		end_loop_mdb = true;
 
