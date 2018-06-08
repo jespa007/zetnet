@@ -7,14 +7,6 @@ public:
 
 	virtual void onGetUserRequest(TCPsocket in_socket, const vector<HttpRequest::tParamValue> & Param){
 
-        //t//ServerResponse * response = new tServerResponse();
-        //response.cmd = "unknow";
-        //response.message = "";
-        //string [] column_filter;
-        //string where_filter = "";
-        //response->status = false;
-        //response->result = "---";
-        //string param_value="";
 
 		string returning_value = "{\"status\":false, \"msg\":\"unknow value\"}";
 
@@ -61,7 +53,7 @@ int main(int argc, char *argv[])
 
 	HttpServer *Server = new MyCustomHttpServer();
 
-	Server->setup(8081, "","TestServer");
+	Server->setup(8081, ".","httpservercpp_demo");
 
 
 

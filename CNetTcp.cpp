@@ -543,7 +543,7 @@ int  CNetTcp::TCP_getMsg(TCPsocket  sock,  Uint8  *buf)
 
 		}
 		else {
-			fprintf(stderr,"Max message reached %i<!\n",result,MAX_LENGTH_MESSAGE);
+			fprintf(stderr,"Max message reached %i<%i!\n",result,MAX_LENGTH_MESSAGE);
 			return 0;
 		}
 	}

@@ -8,13 +8,6 @@ project(httpservercpp)
 #
 
 
-IF (NOT  (("${LINK}" STREQUAL "SHARED") OR ("${LINK}" STREQUAL "STATIC")))
-   SET ( LINK "SHARED" )
-ENDIF()
-
-message("-- Link: " ${LINK})
-
-
 MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 
     FOREACH(HEADER ${${HEADER_LIST}})
@@ -24,10 +17,33 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
+macro(configure_files srcDir destDir)
+    message(STATUS "Configuring directory ${destDir}")
+    make_directory(${destDir})
+
+    file(GLOB templateFiles RELATIVE ${srcDir} ${srcDir}/*)
+    foreach(templateFile ${templateFiles})
+        set(srcTemplatePath ${srcDir}/${templateFile})
+        if(NOT IS_DIRECTORY ${srcTemplatePath})
+            message(STATUS "Configuring file ${srcTemplatePath} to ${destDir}/${templateFile}")
+            configure_file(
+                    ${srcTemplatePath}
+                    ${destDir}/${templateFile}
+                    COPYONLY)
+        endif(NOT IS_DIRECTORY ${srcTemplatePath})
+    endforeach(templateFile)
+endmacro(configure_files)
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
 # COMMON PARAMS
 #
+
+IF (NOT  (("${LINK}" STREQUAL "SHARED") OR ("${LINK}" STREQUAL "STATIC")))
+   SET ( LINK "SHARED" )
+ENDIF()
+
+message("-- Link: " ${LINK})
 
 include_directories (
 	${PROJECT_SOURCE_DIR}
@@ -38,10 +54,12 @@ message("-- Dest.dir: " ${CMAKE_INSTALL_PREFIX})
 set(HTTPSERVERCPP_LIB_SRCS "")
 
 find_library(SDL2_LIB  		NAMES SDL2  )
+find_library(SDL2_MAIN_LIB  NAMES SDL2main  )
 find_library(SDL2_NET_LIB  	NAMES SDL2_net  )
 
-MESSAGE ("-- Found SDL2 at " ${SDL2_LIB})
-MESSAGE ("-- Found SDL2_NET at " ${SDL2_NET_LIB})
+MESSAGE ("-- Found SDL2 at " 	 ${SDL2_LIB})
+MESSAGE ("-- Found SDL2main at " ${SDL2_MAIN_LIB})
+MESSAGE ("-- Found SDL2_net at " ${SDL2_NET_LIB})
 
 if(MSVC)
 	MESSAGE ("-- Plataform: MSVC" )
@@ -155,6 +173,7 @@ endif()
 # Library
 set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 
+	spec.c
 	findfirst.c
 	CUri.cpp
 	CStringUtils.cpp
@@ -205,7 +224,7 @@ add_executable(httpserver_demo${POST_NAME}
 )
 
 
-target_link_libraries(httpserver_demo${POST_NAME}    ${SDL2_MAIN_LIB} ${SDL2_LIB} httpservercpp${POST_NAME}  mingw32 )	
+target_link_libraries(httpserver_demo${POST_NAME}    ${SDL2_MAIN_LIB} ${SDL2_LIB} httpservercpp${POST_NAME}  )	
 
 INSTALL(TARGETS httpservercpp${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
@@ -213,3 +232,10 @@ INSTALL(TARGETS httpservercpp${POST_NAME}
     	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
     	PUBLIC_HEADER DESTINATION	${CMAKE_INSTALL_PREFIX}/includes
 )
+
+#install other resources
+configure_files(${PROJECT_SOURCE_DIR}/test/ 				  	${PROJECT_SOURCE_DIR}/bin/${TARGET}/)
+configure_files(${PROJECT_SOURCE_DIR}/test/assets/bootstrap/css 	${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/bootstrap/css)
+configure_files(${PROJECT_SOURCE_DIR}/test/assets/bootstrap/font 	${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/bootstrap/font)
+configure_files(${PROJECT_SOURCE_DIR}/test/assets/bootstrap/js 	${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/bootstrap/js)
+configure_files(${PROJECT_SOURCE_DIR}/test/assets/jquery/js 		${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/jquery/js)

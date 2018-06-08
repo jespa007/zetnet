@@ -119,6 +119,11 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 			  webserver->WEB_DIR
 			+ path_url;
 
+		/*string filename_with_path=_filename_with_path;
+		if(_filename_with_path[0]=='/'){
+			filename_with_path = _filename_with_path.substr (1,_filename_with_path.size());
+		}*/
+
 		//fi = new FileInfo(file);
 		ok = false;
 
