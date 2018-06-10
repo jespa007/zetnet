@@ -176,9 +176,7 @@ set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 	spec.c
 	findfirst.c
 	CUri.cpp
-	CStringUtils.cpp
 	CIO_Utils.cpp
-	CThread.cpp
 	CNetTcp.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp

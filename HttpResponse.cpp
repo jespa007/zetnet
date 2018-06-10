@@ -11,7 +11,7 @@ ByteBuffer * HttpResponse::GenerateError(int error_id, HttpServer * webserver)
 {
 
 	tHtmlError error;
-	string int_error = CStringUtils::intToString(error_id);
+	string int_error = CIO_Utils::intToString(error_id);
 
 	if(error_id < MAX_ERROR_TYPES){
 		error = html_error[error_id];
@@ -222,7 +222,7 @@ void HttpResponse::Post(TCPsocket dst_socket, HttpServer * webserver) //, const 
 		send_message+="Content-Type: " + mime + "\r\n";
 		send_message+="Accept-Ranges: bytes\r\n";
 		send_message+="Connection: Keep-Alive\r\n";
-		send_message+="Content-Length: " + CStringUtils::intToString(this->data->length) + "\r\n";
+		send_message+="Content-Length: " + CIO_Utils::intToString(this->data->length) + "\r\n";
 
 		if(is_binary){
 		/*if (   mime == "application/pdf"
@@ -262,7 +262,7 @@ void HttpResponse::Post(TCPsocket dst_socket, HttpServer * webserver) //, const 
 	{
 		string error = (char *)data->data_buffer;
 		error +="\r\n";
-		send_message+="Content-Length: " + CStringUtils::intToString(error.size()) + "\r\n\r\n";
+		send_message+="Content-Length: " + CIO_Utils::intToString(error.size()) + "\r\n\r\n";
 		SDLNet_TCP_Send(dst_socket,send_message.c_str(),send_message.size());
 		SDLNet_TCP_Send(dst_socket,error.c_str(),error.size());
 

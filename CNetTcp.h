@@ -32,19 +32,22 @@ typedef  struct  {
 
 
 
-void  demo_cnet();
-
-class  CNetTcp: public CThread
+class  CNetTcp
 {
 
+	std::thread *thread;
+	bool end_loop_mdb;
 
 	bool  TCP_GetConnection();
 	void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
 
-	virtual void  mainLoopThread();  //  Receive  messages,  gest  &  send...
+	void  update();  //  Receive  messages,  gest  &  send...
+
+	static void mainLoop(CNetTcp *);
+
 protected:
 
-	bool IsStreamingServer;
+
 
 	void  TCP_GestClient();
 
@@ -56,7 +59,7 @@ protected:
 
 	//---------------------------------------------------------------------
 	IPaddress  ip;
-	bool I_Am_Server, configured;
+	bool configured;
 	SDLNet_SocketSet socketSet;
 	char  *message,*host;
 	Uint32  ipaddr;
@@ -71,7 +74,7 @@ protected:
 	,Want_reconnection;
 
 
-	Uint32  TimeToReconnect,TimerWaitAck,  TimerActivityNet,TimerPolling;
+	Uint32  TimeToReconnect, TimerActivityNet,TimerPolling;
 	string  ValueVariableHost;
 
 	unsigned  initialized;
@@ -116,14 +119,14 @@ protected:
 public:
 
 
-	bool          IsServer();
+	//bool          IsServer();
 
 	void  unLoad();
 
 	CNetTcp();
 
-	void  setupAsServer(  int _src_port,int _dst_port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
-	void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
+	void  setup(  int _src_port,int _dst_port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
+	//void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
 
 	bool  DisconnectedCable();
 	void  WaitToDisconnect();

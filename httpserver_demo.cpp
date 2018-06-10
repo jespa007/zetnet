@@ -41,7 +41,7 @@ public:
 int main(int argc, char *argv[])
 {
 
-	CThread::createSingletons();
+	//CThread::createSingletons();
 
 	if(SDLNet_Init()==-1) {
 	    printf("SDLNet_Init: %s\n", SDLNet_GetError());
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	
 	delete Server;
 
-	CThread::destroySingletons();
+	//CThread::destroySingletons();
 
 	SDLNet_Quit();
 

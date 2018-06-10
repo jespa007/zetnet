@@ -12,12 +12,12 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 		return NULL;
 	}
 
-	CStringUtils::replace(request,"\r", "");
+	CIO_Utils::replace(request,"\r", "");
 
 	bool is_binary= false;
 	request=CUri::unescape(request);
-	vector<string> tokens = CStringUtils::split(request,'\n');
-	vector<string> url_token = CStringUtils::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
+	vector<string> tokens = CIO_Utils::split(request,'\n');
+	vector<string> url_token = CIO_Utils::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
 	string type = url_token[0]; // GET/POST/etc...
 	string url = "";
 
@@ -77,7 +77,7 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 	vector<string> sub_token;
 
 
-	vector<string> lst= CStringUtils::split(url, '?');//.Split('?');
+	vector<string> lst= CIO_Utils::split(url, '?');//.Split('?');
 	if (lst.size() > 1)
 	{
 		url = lst[0];
@@ -99,7 +99,7 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 		if (is_header)
 		{
 
-			sub_token = CStringUtils::split(tokens[i],':'); // split only the first : occurrence ...
+			sub_token = CIO_Utils::split(tokens[i],':'); // split only the first : occurrence ...
 
 			if (sub_token.size() > 1) // it has header value ...
 			{
@@ -113,20 +113,20 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 				}else if(variable ==  "Accept"){
 
 				}else if(variable ==  "Content-Type"){
-					content_type = CStringUtils::split(value,';')[0];
-					CStringUtils::replace(content_type," ","");
+					content_type = CIO_Utils::split(value,';')[0];
+					CIO_Utils::replace(content_type," ","");
 				}
 			}
 		}
 		else // check parameters...
 		{
-			vector<string> pre_check_param = CStringUtils::split(tokens[i],'&');
+			vector<string> pre_check_param = CIO_Utils::split(tokens[i],'&');
 
 			if (pre_check_param.size() >= 1)
 			{
 				for (unsigned j = 0; j < pre_check_param.size(); j++)
 				{
-					sub_token = CStringUtils::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
+					sub_token = CIO_Utils::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
 
 					if (sub_token.size() == 2)
 					{

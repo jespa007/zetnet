@@ -53,13 +53,14 @@ CNetTcp::CNetTcp()
 {
 	src_port=0;
 	dst_port=0;
+	ipaddr=0;
 	host=NULL;//"127.0.0.1";
 	RequestToDisConnect=false;
 	timeout=1000;
-	I_Am_Server  =  false;
+
 	initialized  =  false;
 	Want_reconnection = false;
-	IsStreamingServer=false;
+
 
 	memset(clientSocket,0,sizeof(clientSocket));
 
@@ -84,6 +85,13 @@ CNetTcp::CNetTcp()
 	TimeToReconnect = 0;
 	TimerPolling = 0;
 	TimerActivityNet=0;
+
+	thread = NULL;
+	end_loop_mdb=false;
+}
+
+void CNetTcp::mainLoop(CNetTcp *tcp){
+	tcp->update();
 }
 
 bool CNetTcp::setupHost()
@@ -91,41 +99,31 @@ bool CNetTcp::setupHost()
 	// kill thread if is active...
 	unLoad();
 
-	if(I_Am_Server)
-	{
 
-		if(SDLNet_ResolveHost(&ip,NULL,dst_port)==-1)
-		{
-			fprintf(stderr,"SDLNet_ResolveHost:  %s\n",SDLNet_GetError());
-			return false;
-		}
-	}
-	else  //  Is  a  client  machine....
+
+	if(SDLNet_ResolveHost(&ip,NULL,dst_port)==-1)
 	{
-		//  open  the  server  socket
-		//  Resolve  the  argument  into  an  IPaddress  type
-		if(SDLNet_ResolveHost(&ip,ValueVariableHost.c_str(),dst_port)==-1) {
-			fprintf(stderr,"SDLNet_ResolveHost:  %s\n",SDLNet_GetError());
-			return false;
-		}
+		fprintf(stderr,"SDLNet_ResolveHost:  %s\n",SDLNet_GetError());
+		return false;
 	}
+
 
 	//  perform  a  byte  endianess  correction  for  the  next  print_info_cr
 	ipaddr=SDL_SwapBE32(ip.host);
 	host=(char  *)SDLNet_ResolveIP(&ip);
 	timeout  =  5000;
 
-	printf("Setup host %s (%d.%d.%d.%d:%i) as %s\n",
+	printf("Setup server  %s (%d.%d.%d.%d:%i)\n",
 			host,
 			ipaddr>>24,
 			(ipaddr>>16)&0xff,
 			(ipaddr>>8)&0xff,
 			ipaddr&0xff,
-			dst_port,
-			I_Am_Server?"Server":"Client");
+			dst_port);
 
 
-	CThread::start();
+	//CThread::start();
+	thread = new std::thread(mainLoop,this);//mainLoop(this));
 
 	return true;
 }
@@ -134,23 +132,19 @@ bool  CNetTcp::internal_connect()
 {
 
 	if(TCP_GetConnection()){
-		if(this->I_Am_Server){ // add server soket ...
-			socketAdd(socket);
-		}
+
+		socketAdd(socket);
+
 		return true;
 	}
 
 	return false;
 }
+
 //---------------------------------------------------------------------------------------------------------------------------
-bool CNetTcp::IsServer()
+void  CNetTcp::setup(  int _src_port, int _dst_port, const char *name_server)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
-	return I_Am_Server;
-}
-//---------------------------------------------------------------------------------------------------------------------------
-void  CNetTcp::setupAsServer(  int _src_port, int _dst_port, const char *name_server)  //  Reads  configuration  of  machine  &  init  sdl_net...
-{
-	I_Am_Server = true;
+
 
 	src_port = _src_port;
 	dst_port = _dst_port;
@@ -164,32 +158,6 @@ void  CNetTcp::setupAsServer(  int _src_port, int _dst_port, const char *name_se
 
 	// setupHost();
 	setupHost();
-
-	configured = true;
-}
-
-//---------------------------------------------------------------------------------------------------------------------------
-void  CNetTcp::setupAsClient( const char *_ip, int _src_port, int _dst_port, const char *name_client)  //  Reads  configuration  of  machine  &  init  sdl_net...
-{
-
-
-	// Client function...
-	I_Am_Server = false;
-
-	src_port = _src_port;
-	dst_port = _dst_port;
-
-	ValueVariableHost = _ip;
-
-	// init common variables ...
-	if(!createSocketSet()){
-		return;
-	}
-
-	// setup host information (if server)
-	setupHost();
-
-	//print_info_cr("Loading  net  ok (%s)....",(type_protocol == CNET_TCP_PROTOCOL)?"TCP":(type_protocol == CNET_UDP_PROTOCOL)?"UDP":"??");
 
 	configured = true;
 }
@@ -355,30 +323,19 @@ void CNetTcp::gestServer()
 			// If there is any activity on the client socket...
 			if (clientSocketActivity != 0)
 			{
-				if(IsStreamingServer){ // only sends messages to client
+				if(getMsg(clientSocket[clientNumber].socket,  (Uint8  *)buffer))  //  message read ...
+				{
 					if(!gestMessage(clientSocket[clientNumber].socket,buffer, sizeof(buffer))){
 #if __DEBUG__
-						printf("gestMessage:Erasing client %i (Stream)\n",clientNumber);
+						printf("gestMessage:Erasing client %i (gestMessage)\n",clientNumber);
 #endif
 						freeSlot(&clientSocket[clientNumber]);
 					}
-				}
-				else{
-
-					if(getMsg(clientSocket[clientNumber].socket,  (Uint8  *)buffer))  //  message read ...
-					{
-						if(!gestMessage(clientSocket[clientNumber].socket,buffer, sizeof(buffer))){
-	#if __DEBUG__
-							printf("gestMessage:Erasing client %i (gestMessage)\n",clientNumber);
-	#endif
-							freeSlot(&clientSocket[clientNumber]);
-						}
-					}else{ // remove that socket because there's no activity...
-	#if __DEBUG__
-						printf("gestMessage:Erasing client %i (getMessage)\n",clientNumber);
-	#endif
-						freeSlot(&clientSocket[clientNumber]);
-					}
+				}else{ // remove that socket because there's no activity...
+#if __DEBUG__
+					printf("gestMessage:Erasing client %i (getMessage)\n",clientNumber);
+#endif
+					freeSlot(&clientSocket[clientNumber]);
 				}
 
 			} // End of if client socket is active check
@@ -392,8 +349,7 @@ void  CNetTcp::internal_disconnect()
 	{
 		connected  =  false;
 
-		if(I_Am_Server)
-		{
+
 			// remove all clients boot (only for TCP protocol)
 			for(int i = 0; i < MAX_CLIENTS; i++){
 				if(clientSocket[i].socket!=NULL){
@@ -417,19 +373,24 @@ void  CNetTcp::internal_disconnect()
 
 			socket = NULL;
 			printf("Disconnect server!\n");
-		}
-		else
-			printf("Disconnect client!\n");
+
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------
 //char  *str  =  NULL;
 void CNetTcp::unLoad()
 {
-	//disconnect();
-	//WaitToDisconnect();
-	CThread::stop();
-	internal_disconnect();
+	if(thread != NULL){
+		//disconnect();
+		//WaitToDisconnect();
+		end_loop_mdb=true;
+		thread->join();
+		//CThread::stop();
+		internal_disconnect();
+
+		delete thread;
+		thread=NULL;
+	}
 	//SDL_Delay(500);
 }
 
@@ -442,14 +403,10 @@ void  CNetTcp::getMessage()
 {
 	if(!connected)  return;
 
-	if(I_Am_Server)
-	{
-		gestServer();
-	}
-	else  //  Client...
-	{
-			TCP_GestClient();
-	}
+
+	gestServer();
+
+
 }
 //--------------------------------------------------------------------
 void  CNetTcp::connect()
@@ -466,38 +423,46 @@ void  CNetTcp::Reconnection() {
 	Want_reconnection = true;
 }
 //--------------------------------------------------------------------
-void  CNetTcp::mainLoopThread()  //  Receive  messages,  gest  &  send...
+void  CNetTcp::update()  //  Receive  messages,  gest  &  send...
 {
-	TimerPolling = SDL_GetTicks()+1000;
+	while(!end_loop_mdb)
+	{
 
-	if(RequestToConnect)// && !Want_reconnection)
-	{
-		if(!connected)
+		TimerPolling = SDL_GetTicks()+1000;
+
+		if(RequestToConnect)// && !Want_reconnection)
 		{
-			if(TimeToReconnect < SDL_GetTicks())
+			if(!connected)
 			{
-				if(!internal_connect())
+				if(TimeToReconnect < SDL_GetTicks())
 				{
-					TimeToReconnect = SDL_GetTicks() + TIME_TO_RECONNECT;
-					fprintf(stderr,"  Not  connected!  -->  try  connection  to  3s\n");
+					if(!internal_connect())
+					{
+						TimeToReconnect = SDL_GetTicks() + TIME_TO_RECONNECT;
+						fprintf(stderr,"  Not  connected!  -->  try  connection  to  3s\n");
+					}
+					else{
+						RequestToConnect=false;
+					}
 				}
-				else{
-					RequestToConnect=false;
-				}
+				SDL_Delay(100);
 			}
-			SDL_Delay(100);
+			//  else  is  connected...
 		}
-		//  else  is  connected...
-	}
-	else
-	{
-		if(RequestToDisConnect) //Want_reconnection)
+		else
 		{
-			RequestToDisConnect = false;
-			internal_disconnect();
+			if(RequestToDisConnect) //Want_reconnection)
+			{
+				RequestToDisConnect = false;
+				internal_disconnect();
+			}
 		}
+		getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
+
+	    //}
 	}
-	getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
+
+	//return 0;
 }
 
 

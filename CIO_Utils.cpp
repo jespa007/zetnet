@@ -2,6 +2,70 @@
 #include "HttpServer.h"
 
 
+string  CIO_Utils::replace(const string & str_old, const char old_ch, char new_ch){
+	string str = str_old;
+	for (unsigned i = 0; i < str.length(); ++i) {
+		if (str[i] == old_ch)
+		  str[i] = new_ch;
+	}
+
+	return str;
+}
+
+void CIO_Utils::replace(string & str_input, const string & toReplace, const string & replaceWith){
+
+	std::size_t found;;
+	while((found = str_input.find(toReplace)) != std::string::npos){
+		str_input = (str_input.replace(found, toReplace.length(), replaceWith));
+	}
+
+
+}
+
+string  CIO_Utils::remove(string & str_old, char ch_to_remove){
+	string str = str_old;
+	string str_new="";
+
+	for (unsigned i = 0; i < str_old.length(); ++i) {
+		if (str_old[i] != ch_to_remove)
+				str_new+=str_old[i];
+	}
+
+	return str_new;
+}
+
+vector<string> & CIO_Utils::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+vector<string> CIO_Utils::split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
+string CIO_Utils::intToString(int number){
+
+   std::stringstream ss;//create a stringstream
+   ss << number;//add number to the stream
+   return ss.str();//return a string with the contents of the stream
+}
+
+bool CIO_Utils::endsWith(const string & fullString, const string & ending){
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    }
+
+    return false;
+}
+
+
 string  CIO_Utils::getDirectory(const string & _filename) {
 	size_t found;
 	string ss=".";
@@ -47,17 +111,6 @@ string  CIO_Utils::getFileNameWithoutExtension(const string & _path) {
 //-----------------------------------------------------------------------------------------------v
 // Normal file ops.
 
-time_t CIO_Utils::getModificationTime(const  string  & file){
-
-	//struct tm* clock;				// create a time structure
-	struct stat attrib;			// create a file attribute structure
-
-
-	if(stat(file.c_str(), &attrib)!=-1)		// get the attributes of afile.txt
-		return mktime(localtime(&(attrib.st_mtime)));	// Get the last modified time and put it into the time structure
-
-	return 0; // failed!
-}
 
 
 
@@ -128,69 +181,6 @@ ByteBuffer * CIO_Utils::readFile(const string & filename, bool end_string_char){
 	return NULL;
 }
 
-bool CIO_Utils::writeFile(const string & filename, const string & data){
-
-
-	FILE  *fp;
-	bool ok=true;
-
-	if((fp  =  fopen(filename.c_str(),"w"))  !=  NULL)
-	{
-
-			unsigned n = fwrite((char *)data.c_str(),1, data.size(),fp);
-
-			if(n != data.size()) {
-				fprintf(stderr,"number elements doesn't match with length file (%s)\n",filename.c_str());
-				ok=false;
-			}
-
-			fclose(fp);
-
-
-
-	}
-	else  {
-		fprintf(stderr,"I can't open file \"%s\"\n",filename.c_str());
-		ok=false;
-	}
-
-	return ok;
-}
-
-bool CIO_Utils::writeFile(const string & filename, ByteBuffer * data){
-
-
-	FILE  *fp;
-
-	if(data==NULL)
-		return false;
-
-	if((fp  =  fopen(filename.c_str(),"wb"))  !=  NULL)
-	{
-
-			unsigned n = fwrite((char *)data->data_buffer,1, data->length,fp);
-
-			if(n != data->length) {
-				fprintf(stderr,"number elements doesn't match with length file (%s)\n",filename.c_str());
-			}
-
-			fclose(fp);
-
-			return true;
-
-	}
-	else  fprintf(stderr,"I can't open file \"%s\"\n",filename.c_str());
-
-	return false;
-}
-
-/*void CIO_Utils::getFilenameFromAbsolutePath(string & filename, const string & absolute_path_with_filename)
-{
-	char aux[500];
-	STR_GetDirAndFileName(NULL,  aux,absolute_path_with_filename.c_str());
-
-	filename = aux;
-}*/
 
 int  CIO_Utils::getLength(const  string  & file)
 {
@@ -247,8 +237,8 @@ bool CIO_Utils::setWorkPath(const string & m_path) {
 		return false;
 	}
 	return true;
-	//print_info_cr("%s", CStringUtils::formatString("cd %s",m_path.c_str()));
-	//system(CStringUtils::formatString("cd %s",m_path.c_str()));
+	//print_info_cr("%s", CIO_Utils::formatString("cd %s",m_path.c_str()));
+	//system(CIO_Utils::formatString("cd %s",m_path.c_str()));
 }
 
 string CIO_Utils::getCwd(){
@@ -268,15 +258,7 @@ string CIO_Utils::getCwd(){
 	return s_cwd;
 }
 
-std::string CIO_Utils::getTempFile(){
-	char tmp[512]={"/tmp"};
-#ifdef _WIN32
-	GetTempPath(sizeof(tmp),tmp);
-#else
-#endif
 
-	return tmp;
-}
 
 
 bool CIO_Utils::isDirectory(const string & filename){
@@ -297,76 +279,18 @@ bool CIO_Utils::isDirectory(const string & filename){
 }
 
 
-bool CIO_Utils::createDirectory(const string & filename){
-
-
-	if(filename == ""){
-		fprintf(stderr,"empty entry\n");
-		return false;
-	}
-
-	//if(!isDirectory(filename)){
-
-		int status;
-#ifdef _WIN32
-		status = mkdir(filename.c_str());
-#else
-		status = mkdir(filename.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-#endif
-
-		if(status == 0) return true;
-
-		switch(status){
-		case EACCES:
-			fprintf(stderr,"Search permission is denied on a component of the path prefix, or write permission is denied on the parent directory of the directory to be created.\n");
-			break;
-		case EEXIST:
-			fprintf(stderr,"The named file exists.\n");
-			break;
-		case ELOOP:
-			fprintf(stderr,"A loop exists in symbolic links encountered during resolution of the path argument.\n");
-			break;
-		case EMLINK:
-			fprintf(stderr,"The link count of the parent directory would exceed {LINK_MAX}.\n");
-			break;
-		case ENAMETOOLONG:
-			fprintf(stderr,"The length of the path argument exceeds {PATH_MAX} or a pathname component is longer than {NAME_MAX}.\n");
-			break;
-		case ENOENT:
-			fprintf(stderr,"A component of the path prefix specified by path does not name an existing directory or path is an empty string.\n");
-			break;
-		case ENOSPC:
-			fprintf(stderr,"The file system does not contain enough space to hold the contents of the new directory or to extend the parent directory of the new directory.\n");
-			break;
-		case ENOTDIR:
-			fprintf(stderr,"A component of the path prefix is not a directory.\n");
-			break;
-		case EROFS:
-			fprintf(stderr,"The parent directory resides on a read-only file system.\n");
-			break;
-
-		}
-
-
-	//}
-	//else print_error_cr("directory already exist");
-
-	return false;
-
-
-}
 
 vector<string>  CIO_Utils::getFiles(const string & folder, const string & filter, bool recursive){
 
 
 
 	vector<string> list_file;
-	vector<string> list_attribs = CStringUtils::split(filter, '|');
+	vector<string> list_attribs = CIO_Utils::split(filter, '|');
 
 	for(unsigned i = 0; i < list_attribs.size(); i++){
-		list_attribs[i] = CStringUtils::remove(list_attribs[i],' ');
+		list_attribs[i] = CIO_Utils::remove(list_attribs[i],' ');
 		if(list_attribs[i] != "*")
-			list_attribs[i] = CStringUtils::remove(list_attribs[i],'*');
+			list_attribs[i] = CIO_Utils::remove(list_attribs[i],'*');
 	}
 
 
@@ -394,7 +318,7 @@ vector<string>  CIO_Utils::getFiles(const string & folder, const string & filter
 
 					  for(unsigned i = 0; i < list_attribs.size() && !ok; i++){
 
-						  if((list_attribs[i] == "*") || CStringUtils::endsWith(ent->d_name,list_attribs[i])) {
+						  if((list_attribs[i] == "*") || CIO_Utils::endsWith(ent->d_name,list_attribs[i])) {
 							  list_file.push_back(data);
 							  ok=true;
 						  }

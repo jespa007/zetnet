@@ -8,7 +8,7 @@
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_net.h"
-
+#include <thread>
 
 #include <time.h>
 #include <string>
@@ -29,12 +29,13 @@
 using std::string;
 using std::vector;
 
+
 #include "dir.h"
 #include "CUri.h"
 #include "CBuffer.h"
-#include "CStringUtils.h"
+//#include "CStringUtils.h"
 #include "CIO_Utils.h"
-#include "CThread.h"
+//#include "CThread.h"
 #include "CNetTcp.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
