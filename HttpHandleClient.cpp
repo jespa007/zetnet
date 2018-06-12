@@ -1,6 +1,6 @@
 #include "HttpServer.h"
 
-HttpHandleClient::HttpHandleClient(intptr_t _socket_client, HttpServer * _server, uint8_t *_rcv_data, uint32_t _rcv_len)
+HttpHandleClient::HttpHandleClient(SOCKET _socket_client, HttpServer * _server, uint8_t *_rcv_data, uint32_t _rcv_len)
 {
 	this->socket_client = _socket_client;
 	this->server = _server;

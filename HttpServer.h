@@ -2,9 +2,6 @@
 
 
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 //#include "SDL2/SDL.h"
 //#include "SDL2/SDL_net.h"
@@ -16,14 +13,41 @@
 #include <vector>
 #include <memory.h>
 
-#if defined(__GNUC__)
+
+
+
+
+#ifdef __GNUC__
 #include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
+#endif
+
+// include socket platform
+#ifdef _WIN32
+
+		#include <winsock2.h>
+		#include <ws2tcpip.h>
+		#include <windows.h>
+		#pragma comment (lib, "Ws2_32.lib")
+
+		#define ioctl ioctlsocket
+		#define bzero ZeroMemory
+#else
+
+	typedef SOCKET  int;
+	#define INVALID_SOCKET -1
+
+	#define addrinfo sockaddr_in
+
+
+
+	#ifdef __GNUC__
+		#include <sys/socket.h>
+		#include <netinet/in.h>
+		#include <sys/ioctl.h>
+	#endif
 #endif
 
 
@@ -68,11 +92,11 @@ public:
 	,const string &  instance_name);
 
 
-	virtual void onGetUserRequest(intptr_t  _socket_client,const vector<HttpRequest::tParamValue> & param);
+	virtual void onGetUserRequest(SOCKET  _socket_client,const vector<HttpRequest::tParamValue> & param);
 
 protected:
 	void SetLogoBase64(string _image_base_64);
-	virtual bool gestMessage(void *in_socket, uint8_t *buffer, uint32_t len);
+	virtual bool gestMessage(SOCKET in_socket, uint8_t *buffer, uint32_t len);
 
 	//virtual void  gestServer();
 

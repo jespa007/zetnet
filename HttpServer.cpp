@@ -40,7 +40,7 @@ void  HttpServer::SetLogoBase64(string _image_base_64)
 	LOGO_BASE64 = _image_base_64;
 }
 
-bool HttpServer::gestMessage(void *socket, uint8_t *data, uint32_t size){
+bool HttpServer::gestMessage(SOCKET socket, uint8_t *data, uint32_t size){
 
 
 	HttpHandleClient hc = HttpHandleClient(socket, this,data, size);
@@ -81,7 +81,7 @@ bool HttpServer::gestMessage(void *socket, uint8_t *data, uint32_t size){
 }
 
 
-void HttpServer::onGetUserRequest(intptr_t  _socket_client,const vector<HttpRequest::tParamValue> & param){
+void HttpServer::onGetUserRequest(SOCKET  _socket_client,const vector<HttpRequest::tParamValue> & param){
 
 	HttpResponse *resp = HttpResponse::MakeFromString("onGetUserRequest is not implemented!", "application/json");
 

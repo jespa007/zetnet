@@ -25,7 +25,7 @@
 #define SOCKET_CLIENT_NOT_AVAILABLE -1
 
 typedef  struct  {
-	intptr_t socket;
+	SOCKET socket;
 	int    idxClient;
 	bool    header_sent; // for streaming purposes!
 }  tClientSocket;
@@ -34,13 +34,17 @@ typedef  struct  {
 
 class  CNetTcp
 {
+#ifdef _WIN32
+	WSADATA wsaData;
+#endif
 
 	std::thread *thread;
 	bool end_loop_mdb;
 
 	// only linux ...
-	struct sockaddr_in serv_addr, cli_addr;
-    intptr_t sockfd;
+
+	struct addrinfo  serv_addr, cli_addr;
+    SOCKET sockfd;
 	int portno;
 
 	//bool  TCP_GetConnection();
@@ -58,8 +62,8 @@ protected:
 
 	//void  *socket;
 
-	static int   TCP_getMsg(intptr_t  sock,  uint8_t  *buf);
-	static int   TCP_putMsg(intptr_t  sock,  uint8_t  *buf,  uint32_t  len);
+	static int   TCP_getMsg(SOCKET  sock,  uint8_t  *buf);
+	static int   TCP_putMsg(SOCKET  sock,  uint8_t  *buf,  uint32_t  len);
 
 
 	//---------------------------------------------------------------------
@@ -107,22 +111,22 @@ protected:
 	tClientSocket 		*getFreeSlot(); // adds client
 	bool 				freeSlot(tClientSocket * sockClient); // removes client...
 
-	virtual bool 		gestMessage(intptr_t in_socket, uint8_t *buffer, uint32_t len)=0;
+	virtual bool 		gestMessage(SOCKET in_socket, uint8_t *buffer, uint32_t len)=0;
 
 
-	void socketClose(intptr_t sock);
+	void closeSocket(SOCKET sock);
 	//int socketAdd(void *sock);
 	//int socketDel(void *sock);
-	intptr_t socketAccept();
-	int socketReady(intptr_t sock);
+	SOCKET socketAccept();
+	int socketReady(SOCKET sock);
 
 
 
 
 public:
 
-	static int getMsg(intptr_t sock,uint8_t  *buf);
-	static int putMsg(intptr_t sock,uint8_t  *buf,  uint32_t  len);
+	static int getMsg(SOCKET sock,uint8_t  *buf);
+	static int putMsg(SOCKET sock,uint8_t  *buf,  uint32_t  len);
 
 
 	//bool          IsServer();

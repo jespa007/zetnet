@@ -111,7 +111,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		string path_url = CUri::unescape(request->URL);
 #ifdef WIN32
-		path_url = CStringUtils::replace(path_url, '/','\\');//CUri::unescape(request->URL)
+		path_url = CIO_Utils::replace(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
 		string filename_with_path = /*CIO_Utils::getCwd()
@@ -206,7 +206,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 	return MakePageNotFound(webserver);
 }
 
-void HttpResponse::Post(intptr_t dst_socket, HttpServer * webserver) //, const string & response_action)
+void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const string & response_action)
 {
 	string send_message="";
 

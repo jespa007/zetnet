@@ -46,7 +46,7 @@ class tDir{
 private:
 //    void *struct_block_dir;
     struct _finddata_t c_file;
-   intptr_t hFile;
+   SOCKET hFile;
 
     char name[200];
     bool end;

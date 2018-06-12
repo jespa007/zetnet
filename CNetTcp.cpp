@@ -8,24 +8,28 @@ const char * SERVER_FULL     = "FULL";
 
 
 
-int  CNetTcp::getMsg(intptr_t sock, uint8_t  *buf){
+int  CNetTcp::getMsg(SOCKET sock, uint8_t  *buf){
 
 	return TCP_getMsg(sock, buf);
 
 }
 
-int  CNetTcp::putMsg(intptr_t sock,uint8_t  *buf,  uint32_t  len){
+int  CNetTcp::putMsg(SOCKET sock,uint8_t  *buf,  uint32_t  len){
 
 		return TCP_putMsg(sock, buf,len);
 
 }
 
-void CNetTcp::socketClose(intptr_t sock){
-
-		close((intptr_t)sock);
+/*
+void CNetTcp::closeSocket(SOCKET sock){
+#ifdef _WIN32
+		closeSocket(sock);
+#else
+		close(sock);
+#endif
 		//SDLNet_TCP_Close((TCPsocket)sock);
 
-}
+}*/
 /*
 int CNetTcp::socketAdd(void *sock){
 
@@ -42,16 +46,27 @@ int CNetTcp::socketDel(void *sock){
 
 }*/
 
-intptr_t CNetTcp::socketAccept(){
+SOCKET CNetTcp::socketAccept(){
 
+	SOCKET newsockfd = INVALID_SOCKET;
+#ifdef _WIN32
+	newsockfd = accept(sockfd, NULL, NULL);
+	    if (newsockfd == INVALID_SOCKET) {
+	        fprintf(stderr,"accept failed with error: %d\n", WSAGetLastError());
+	        //socketClose(newsockfd);
+	        //WSACleanup();
+	       // return INVALID_SOCKET;
+	    }
+#else
 	socklen_t clilen;
-	intptr_t newsockfd = accept(sockfd,
+	newsockfd = accept(sockfd,
 	                 (struct sockaddr *) &cli_addr,
 	                 &clilen);
 	     if (newsockfd < 0) {
-	          fprintf(stderr,"ERROR on accept");
-	          return 0;
+	          fprintf(stderr,"ERROR on accept\n");
+	          //return 0;
 	     }
+#endif
 
 return newsockfd;
 
@@ -59,9 +74,9 @@ return newsockfd;
 
 }
 
-int CNetTcp::socketReady(intptr_t sock){
+int CNetTcp::socketReady(SOCKET sock){
 
-	int count;
+	unsigned long int count;
 	ioctl(sock, FIONREAD, &count);
 
 	return count;
@@ -162,31 +177,74 @@ bool  CNetTcp::setup(  int _portno, const char *name_server)  //  Reads  configu
 	// kill thread if is active...
 	unLoad();
 
-
-
-	/*if(SDLNet_ResolveHost(&ip,NULL,dst_port)==-1)
-	{
-		fprintf(stderr,"SDLNet_ResolveHost:  %s\n",SDLNet_GetError());
-		return false;
-	}
-
-
-	//  perform  a  byte  endianess  correction  for  the  next  print_info_cr
-	ipaddr=SDL_SwapBE32(ip.host);
-	host=(char  *)SDLNet_ResolveIP(&ip);*/
+	bzero((char *) &serv_addr, sizeof(serv_addr));
 	portno = _portno;
 
-	 sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	 if (sockfd < 0){
-		fprintf(stderr,"ERROR opening socket");
-		return false;
-	 }
+#ifdef _WIN32
+		// Initialize Winsock
+		struct addrinfo *result = NULL;
+	    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+	    if (iResult != 0) {
+	        fprintf(stderr,"WSAStartup failed with error: %d\n", iResult);
+	        return false;
+	    }
 
-	 bzero((char *) &serv_addr, sizeof(serv_addr));
-	 //portno = atoi(argv[1]);
-	 serv_addr.sin_family = AF_INET;
-	 serv_addr.sin_addr.s_addr = INADDR_ANY;
-	 serv_addr.sin_port = htons(_portno);
+	    serv_addr.ai_family = AF_INET;
+	    serv_addr.ai_socktype = SOCK_STREAM;
+	    serv_addr.ai_protocol = IPPROTO_TCP;
+	    serv_addr.ai_flags = AI_PASSIVE;
+
+	    // Resolve the server address and port
+	   iResult = getaddrinfo(NULL, (const char *)CIO_Utils::intToString(portno).c_str(), &serv_addr, &result);
+	   if ( iResult != 0 ) {
+		   fprintf(stderr,"getaddrinfo failed with error: %d\n", iResult);
+		   WSACleanup();
+		   return false;
+	   }
+
+	   // Create a SOCKET for connecting to server
+	   sockfd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	      if (sockfd == INVALID_SOCKET) {
+	          fprintf(stderr,"socket failed with error: %ld\n", WSAGetLastError());
+	          freeaddrinfo(result);
+	          WSACleanup();
+	          return false;
+	      }
+
+	      freeaddrinfo(result);
+
+	          iResult = listen(sockfd, SOMAXCONN);
+	          if (iResult == SOCKET_ERROR) {
+	              fprintf(stderr,"listen failed with error: %d\n", WSAGetLastError());
+	              closeSocket(sockfd);
+	              WSACleanup();
+	              return false;
+	          }
+
+
+#else // GNU
+
+		 serv_addr.sin_family = AF_INET;
+		 serv_addr.sin_addr.s_addr = INADDR_ANY;
+		 serv_addr.sin_port = htons(_portno);
+
+		 sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		 if (sockfd < 0){
+			fprintf(stderr,"ERROR opening socket");
+			return false;
+		 }
+
+			if (bind(sockfd, (struct sockaddr *) &serv_addr,
+			              sizeof(serv_addr)) < 0){
+			              fprintf(stderr,"ERROR on binding");
+			              return false;
+			}
+#endif
+
+
+
+
+
 
 
 	timeout  =  5000;
@@ -199,11 +257,7 @@ bool  CNetTcp::setup(  int _portno, const char *name_server)  //  Reads  configu
 			ipaddr&0xff,
 			portno);
 
-	if (bind(sockfd, (struct sockaddr *) &serv_addr,
-	              sizeof(serv_addr)) < 0){
-	              fprintf(stderr,"ERROR on binding");
-	              return false;
-	}
+
 
 
 	//CThread::start();
@@ -246,6 +300,27 @@ void CNetTcp::resume(){
 }
 void CNetTcp::pause(){
 	disconnect();
+}
+
+void CNetTcp::closeSocket(SOCKET sock){
+
+	if(sock != INVALID_SOCKET){
+
+#ifdef _WIN32
+    // shutdown the connection since we're done
+
+    int iResult = shutdown(sock, SD_SEND);
+    if (iResult == SOCKET_ERROR) {
+        fprintf(stderr,"shutdown failed with error: %d\n", WSAGetLastError());
+    }
+
+    closesocket(sock);
+#else
+    close(sock);
+#endif
+
+	}
+
 }
 //--------------------------------------------------------------------
 //  create  a  socket  socketSet  that  has  the  server  socket  and  all  the  client  sockets
@@ -297,7 +372,7 @@ bool CNetTcp::freeSlot(tClientSocket *clientSock){
 			freeSocket[n_freeSockets]=clientSock->idxClient;
 
 			//socketDel(clientSock->socket);
-			socketClose(clientSock->socket);
+			closeSocket(clientSock->socket);
 			clientSock->socket = 0;
 			clientSock->header_sent = false;
 
@@ -327,7 +402,17 @@ bool CNetTcp::gestServerBase()
 	}*/
 
 	//numready=SDLNet_CheckSockets(socketSet,timeout);
-	listen(sockfd,5);
+#ifdef _WIN32
+	int iResult = listen(sockfd, MAX_SOCKETS);
+	    if (iResult == SOCKET_ERROR) {
+	        fprintf(stderr,"listen failed with error: %d\n", WSAGetLastError());
+	        //closeSocket(socketfd);
+	        //WSACleanup();
+	        return false;
+	    }
+#else
+	listen(sockfd,MAX_SOCKETS);
+#endif
 
 	/*if(numready==-1) {
 		fprintf(stderr,"SDLNet_CheckSockets:  %s\n",SDLNet_GetError());
@@ -405,7 +490,7 @@ void  CNetTcp::internal_disconnect()
 			// remove all clients boot (only for TCP protocol)
 			for(int i = 0; i < MAX_CLIENTS; i++){
 				if(clientSocket[i].socket!=0){
-					socketClose(clientSocket[i].socket);
+					closeSocket(clientSocket[i].socket);
 					clientSocket[i].socket=0;
 					clientSocket[i].header_sent=false;
 				}
@@ -420,7 +505,7 @@ void  CNetTcp::internal_disconnect()
 			if(sockfd != 0){
 				// close and free socket server...
 				//socketDel(socket);
-				socketClose(sockfd);
+				closeSocket(sockfd);
 			}
 
 			sockfd = 0;
@@ -543,13 +628,14 @@ void  CNetTcp::update()  //  Receive  messages,  gest  &  send...
 //  receive  a  buffer  from  a  TCP  socket  with  error  checking
 //  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  CNetTcp::TCP_getMsg(intptr_t  sock,  uint8_t  *buf)
+int  CNetTcp::TCP_getMsg(SOCKET  sock,  uint8_t  *buf)
 {
 //#define MAXLEN 1024
 	int result;
 	//char msg[MAXLEN];
 
-	result = read(sock,buf,MAX_LENGTH_MESSAGE);
+	result = recv(sock,(char *)buf,MAX_LENGTH_MESSAGE,0);
+
 	if(result <= 0) {
 		// TCP Connection is broken. (because of error or closure)
 		return 0;
@@ -571,7 +657,7 @@ int  CNetTcp::TCP_getMsg(intptr_t  sock,  uint8_t  *buf)
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  CNetTcp::TCP_putMsg(intptr_t  sock,  uint8_t  *buf,  uint32_t  len) {
+int  CNetTcp::TCP_putMsg(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
 	uint32_t  result=0;
 
 
@@ -582,7 +668,7 @@ int  CNetTcp::TCP_putMsg(intptr_t  sock,  uint8_t  *buf,  uint32_t  len) {
 	}
 
 	//  send  the  buffer,  with  the  NULL  as  well
-	result=write(sock,buf,len);
+	result=send(sock,(const char *)buf,len,0);
 
 	if(result<len) {
 		fprintf(stderr,"TCP_putMsg (%i<%i)\n",result,len);
