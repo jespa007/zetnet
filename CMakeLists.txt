@@ -191,7 +191,7 @@ set(HTTPSERVERCPP_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
 
 # httpserver library
 add_library( httpservercpp${POST_NAME} ${LINK} ${HTTPSERVERCPP_LIB_SRCS} )
-target_link_libraries(httpservercpp${POST_NAME}  ${SDL2_LIB} ${SDL2_NET_LIB}   "-Wl,--no-as-needed" )
+target_link_libraries(httpservercpp${POST_NAME}  ${SDL2_LIB} ${SDL2_NET_LIB} Ws2_32  "-Wl,--no-as-needed" )
 
 if(MSVC)
 	#only for msvc...

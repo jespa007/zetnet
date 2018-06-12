@@ -211,15 +211,25 @@ bool  CNetTcp::setup(  int _portno, const char *name_server)  //  Reads  configu
 	          return false;
 	      }
 
+	      // Setup the TCP listening socket
+	       iResult = bind( sockfd, result->ai_addr, (int)result->ai_addrlen);
+	       if (iResult == SOCKET_ERROR) {
+	           fprintf(stderr,"bind failed with error: %d\n", WSAGetLastError());
+	           freeaddrinfo(result);
+	           closesocket(sockfd);
+	           WSACleanup();
+	           return false;
+	       }
+
 	      freeaddrinfo(result);
 
-	          iResult = listen(sockfd, SOMAXCONN);
+	        /*  iResult = listen(sockfd, SOMAXCONN);
 	          if (iResult == SOCKET_ERROR) {
 	              fprintf(stderr,"listen failed with error: %d\n", WSAGetLastError());
 	              closeSocket(sockfd);
 	              WSACleanup();
 	              return false;
-	          }
+	          }*/
 
 
 #else // GNU
@@ -309,10 +319,12 @@ void CNetTcp::closeSocket(SOCKET sock){
 #ifdef _WIN32
     // shutdown the connection since we're done
 
-    int iResult = shutdown(sock, SD_SEND);
-    if (iResult == SOCKET_ERROR) {
-        fprintf(stderr,"shutdown failed with error: %d\n", WSAGetLastError());
-    }
+		if(sockfd != sock){ // is not my self (it could be, i.e server)...
+			int iResult = shutdown(sock, SD_SEND);
+			if (iResult == SOCKET_ERROR) {
+				fprintf(stderr,"shutdown failed with error: %d\n", WSAGetLastError());
+			}
+		}
 
     closesocket(sock);
 #else
@@ -527,12 +539,16 @@ void CNetTcp::unLoad()
 
 		delete thread;
 		thread=NULL;
+
+        closeSocket(sockfd);
+        WSACleanup();
 	}
 	//SDL_Delay(500);
 }
 
 CNetTcp::~CNetTcp() {
 	unLoad();
+
 
 }
 //---------------------------------------------------------------------------------------------------------v

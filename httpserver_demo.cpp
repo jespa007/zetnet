@@ -5,7 +5,7 @@ class MyCustomHttpServer: public HttpServer{
 
 public:
 
-	virtual void onGetUserRequest(TCPsocket in_socket, const vector<HttpRequest::tParamValue> & Param){
+	virtual void onGetUserRequest(SOCKET in_socket, const vector<HttpRequest::tParamValue> & Param){
 
 
 		string returning_value = "{\"status\":false, \"msg\":\"unknow value\"}";
@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
 
 	//CThread::createSingletons();
 
-	if(SDLNet_Init()==-1) {
+	/*if(SDLNet_Init()==-1) {
 	    printf("SDLNet_Init: %s\n", SDLNet_GetError());
 	    exit(-1);
-	}
+	}*/
 
 
 	//bool server_enable = false;
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
 	//CThread::destroySingletons();
 
-	SDLNet_Quit();
+	//SDLNet_Quit();
 
 	return 0;
 }
