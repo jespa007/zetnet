@@ -8,43 +8,65 @@ const char * SERVER_FULL     = "FULL";
 
 
 
-int  CNetTcp::getMsg(void *sock, Uint8  *buf){
+int  CNetTcp::getMsg(intptr_t sock, uint8_t  *buf){
 
-	return TCP_getMsg((TCPsocket)sock, buf);
-
-}
-
-int  CNetTcp::putMsg(void *sock,Uint8  *buf,  Uint32  len){
-
-		return TCP_putMsg((TCPsocket)sock, buf,len);
+	return TCP_getMsg(sock, buf);
 
 }
 
-void CNetTcp::socketClose(void *sock){
+int  CNetTcp::putMsg(intptr_t sock,uint8_t  *buf,  uint32_t  len){
 
-		SDLNet_TCP_Close((TCPsocket)sock);
+		return TCP_putMsg(sock, buf,len);
 
 }
 
+void CNetTcp::socketClose(intptr_t sock){
+
+		close((intptr_t)sock);
+		//SDLNet_TCP_Close((TCPsocket)sock);
+
+}
+/*
 int CNetTcp::socketAdd(void *sock){
+
+
 
 		return SDLNet_TCP_AddSocket(socketSet, (TCPsocket)sock);
 
 }
-
+*/
+/*
 int CNetTcp::socketDel(void *sock){
 
 		return SDLNet_TCP_DelSocket(socketSet, (TCPsocket)sock);
 
+}*/
+
+intptr_t CNetTcp::socketAccept(){
+
+	socklen_t clilen;
+	intptr_t newsockfd = accept(sockfd,
+	                 (struct sockaddr *) &cli_addr,
+	                 &clilen);
+	     if (newsockfd < 0) {
+	          fprintf(stderr,"ERROR on accept");
+	          return 0;
+	     }
+
+return newsockfd;
+
+		//return SDLNet_TCP_Accept((TCPsocket)sock);
+
 }
 
-void * CNetTcp::socketAccept(void * sock){
-		return SDLNet_TCP_Accept((TCPsocket)sock);
+int CNetTcp::socketReady(intptr_t sock){
 
-}
+	int count;
+	ioctl(sock, FIONREAD, &count);
 
-int CNetTcp::socketReady(void *sock){
-	return SDLNet_SocketReady((SDLNet_GenericSocket)sock);
+	return count;
+
+	//return SDLNet_SocketReady((SDLNet_GenericSocket)sock);
 }
 
 //--------------------------------------------------------------------
@@ -74,79 +96,55 @@ CNetTcp::CNetTcp()
 
 	message=NULL;
 	//n_clients  =  0;
-	socketSet  =  NULL;
-	socket  = NULL;
+	//socketSet  =  NULL;
+	//socket  = NULL;
 
 	connected  =  false;
 	RequestToConnect  =  false;
 	configured = false;
 
 
-	TimeToReconnect = 0;
-	TimerPolling = 0;
-	TimerActivityNet=0;
+	//TimeToReconnect = 0;
+	//TimerPolling = 0;
+	//TimerActivityNet=0;
 
 	thread = NULL;
 	end_loop_mdb=false;
+
+	sockfd=-1;
+
+	portno=-1;
 }
 
 void CNetTcp::mainLoop(CNetTcp *tcp){
 	tcp->update();
 }
-
+/*
 bool CNetTcp::setupHost()
 {
-	// kill thread if is active...
-	unLoad();
 
-
-
-	if(SDLNet_ResolveHost(&ip,NULL,dst_port)==-1)
-	{
-		fprintf(stderr,"SDLNet_ResolveHost:  %s\n",SDLNet_GetError());
-		return false;
-	}
-
-
-	//  perform  a  byte  endianess  correction  for  the  next  print_info_cr
-	ipaddr=SDL_SwapBE32(ip.host);
-	host=(char  *)SDLNet_ResolveIP(&ip);
-	timeout  =  5000;
-
-	printf("Setup server  %s (%d.%d.%d.%d:%i)\n",
-			host,
-			ipaddr>>24,
-			(ipaddr>>16)&0xff,
-			(ipaddr>>8)&0xff,
-			ipaddr&0xff,
-			dst_port);
-
-
-	//CThread::start();
-	thread = new std::thread(mainLoop,this);//mainLoop(this));
-
-	return true;
-}
+}*/
 //---------------------------------------------------------------------------------------------------------------------------
-bool  CNetTcp::internal_connect()
+/*bool  CNetTcp::internal_connect()
 {
+
 
 	if(TCP_GetConnection()){
 
-		socketAdd(socket);
+		//socketAdd(socket);
 
 		return true;
 	}
 
 	return false;
-}
+}*/
 
 //---------------------------------------------------------------------------------------------------------------------------
-void  CNetTcp::setup(  int _src_port, int _dst_port, const char *name_server)  //  Reads  configuration  of  machine  &  init  sdl_net...
+bool  CNetTcp::setup(  int _portno, const char *name_server)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
 
 
-	src_port = _src_port;
+	/*src_port = _src_port;
 	dst_port = _dst_port;
 	ValueVariableHost = "0.0.0.0";
 
@@ -159,21 +157,73 @@ void  CNetTcp::setup(  int _src_port, int _dst_port, const char *name_server)  /
 	// setupHost();
 	setupHost();
 
-	configured = true;
+	configured = true;*/
+
+	// kill thread if is active...
+	unLoad();
+
+
+
+	/*if(SDLNet_ResolveHost(&ip,NULL,dst_port)==-1)
+	{
+		fprintf(stderr,"SDLNet_ResolveHost:  %s\n",SDLNet_GetError());
+		return false;
+	}
+
+
+	//  perform  a  byte  endianess  correction  for  the  next  print_info_cr
+	ipaddr=SDL_SwapBE32(ip.host);
+	host=(char  *)SDLNet_ResolveIP(&ip);*/
+	portno = _portno;
+
+	 sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	 if (sockfd < 0){
+		fprintf(stderr,"ERROR opening socket");
+		return false;
+	 }
+
+	 bzero((char *) &serv_addr, sizeof(serv_addr));
+	 //portno = atoi(argv[1]);
+	 serv_addr.sin_family = AF_INET;
+	 serv_addr.sin_addr.s_addr = INADDR_ANY;
+	 serv_addr.sin_port = htons(_portno);
+
+
+	timeout  =  5000;
+
+	printf("Setup server  %s (%d.%d.%d.%d:%i)\n",
+			host,
+			ipaddr>>24,
+			(ipaddr>>16)&0xff,
+			(ipaddr>>8)&0xff,
+			ipaddr&0xff,
+			portno);
+
+	if (bind(sockfd, (struct sockaddr *) &serv_addr,
+	              sizeof(serv_addr)) < 0){
+	              fprintf(stderr,"ERROR on binding");
+	              return false;
+	}
+
+
+	//CThread::start();
+	thread = new std::thread(mainLoop,this);//mainLoop(this));
+
+	return true;
 }
 //---------------------------------------------------------------
-void CNetTcp::WaitToDisconnect() {
+/*void CNetTcp::WaitToDisconnect() {
 	while(connected)
 	{
 		printf("Wait to disconnect!\n");
 	}
-}
+}*/
 //---------------------------------------------------------------
 bool  CNetTcp::isConnected() {
 	return  connected;
 }
 //--------------------------------------------------------------------
-bool  		CNetTcp::sendMessageToServer(Uint8  *data,  unsigned  len) {
+/*bool  		CNetTcp::sendMessageToServer(uint8_t  *data,  uint32_t  len) {
 	int len_sended;
 
 	if(socket == NULL) {
@@ -189,7 +239,7 @@ bool  		CNetTcp::sendMessageToServer(Uint8  *data,  unsigned  len) {
 	}
 
 	return true;
-}
+}*/
 
 void CNetTcp::resume(){
 	connect();
@@ -199,7 +249,7 @@ void CNetTcp::pause(){
 }
 //--------------------------------------------------------------------
 //  create  a  socket  socketSet  that  has  the  server  socket  and  all  the  client  sockets
-bool CNetTcp::createSocketSet()
+/*bool CNetTcp::createSocketSet()
 {
 	if(socketSet!=NULL)  //  free-it  ?
 	{
@@ -215,7 +265,7 @@ bool CNetTcp::createSocketSet()
 		return  false;  //most  of  the  time  this  is  a  major  error,  but  do  what  you  want.
 	}
 	return true;
-}
+}*/
 //--------------------------------------------------------------------
 tClientSocket * CNetTcp::getFreeSlot(){
 
@@ -242,13 +292,13 @@ bool CNetTcp::freeSlot(tClientSocket *clientSock){
 
 	if(n_freeSockets < MAX_CLIENTS){
 
-		if(clientSock->socket != NULL){
+		if(clientSock->socket != 0){
 
 			freeSocket[n_freeSockets]=clientSock->idxClient;
 
-			socketDel(clientSock->socket);
+			//socketDel(clientSock->socket);
 			socketClose(clientSock->socket);
-			clientSock->socket = NULL;
+			clientSock->socket = 0;
 			clientSock->header_sent = false;
 
 
@@ -270,20 +320,22 @@ bool CNetTcp::freeSlot(tClientSocket *clientSock){
 bool CNetTcp::gestServerBase()
 {
 	//char buffer[100];
-	int  numready;
+	int  numready=0;
 
-	if(socketSet == NULL){
+	/*if(socketSet == NULL){
 		return false;
-	}
+	}*/
 
-	numready=SDLNet_CheckSockets(socketSet,timeout);
+	//numready=SDLNet_CheckSockets(socketSet,timeout);
+	listen(sockfd,5);
 
-	if(numready==-1) {
+	/*if(numready==-1) {
 		fprintf(stderr,"SDLNet_CheckSockets:  %s\n",SDLNet_GetError());
 		return false;
-	}
+	}*/
 	//if(numready > 0) {
-	if(socketReady(socket)) {
+	//if(socketReady(socket))
+	{
 		tClientSocket *c = getFreeSlot();
 
 #if __DEBUG__
@@ -293,17 +345,17 @@ bool CNetTcp::gestServerBase()
 		if(c==NULL){ // no space left ... reject client ...
 			fprintf(stderr,"*** Maximum client count reached - rejecting client connection ***\n");
 			// Accept the client connection to clear it from the incoming connections list
-			void * tempSock = socketAccept(socket);
+			//void * tempSock = socketAccept(socket);
 
-			putMsg(tempSock, (Uint8 *)SERVER_FULL, strlen(SERVER_FULL) + 1);
+			//putMsg(tempSock, (Uint8 *)SERVER_FULL, strlen(SERVER_FULL) + 1);
 
 			// Shutdown, disconnect, and close the socket to the client
-			socketClose(tempSock);
+			//socketClose(tempSock);
 			return false;
 		}
 		// accept socket client (you're ready to get / send messages from/to this socket)...
-		c->socket =socketAccept(socket);
-		socketAdd(c->socket);
+		c->socket =socketAccept();
+		//socketAdd(c->socket);
 	}
 	return true;
 }
@@ -317,13 +369,13 @@ void CNetTcp::gestServer()
 
 	for (int clientNumber = 0; clientNumber < MAX_CLIENTS; clientNumber++)  {
 		// If the socket is ready (i.e. it has data we can read)... (SDLNet_SocketReady returns non-zero if there is activity on the socket, and zero if there is no activity)
-		if(clientSocket[clientNumber].socket != NULL){
+		if(clientSocket[clientNumber].socket != 0){
 			int clientSocketActivity = socketReady(clientSocket[clientNumber].socket);
 			//cout << "Just checked client number " << clientNumber << " and received activity status is: " << clientSocketActivity << endl;
 			// If there is any activity on the client socket...
 			if (clientSocketActivity != 0)
 			{
-				if(getMsg(clientSocket[clientNumber].socket,  (Uint8  *)buffer))  //  message read ...
+				if(getMsg(clientSocket[clientNumber].socket,  (uint8_t  *)buffer))  //  message read ...
 				{
 					if(!gestMessage(clientSocket[clientNumber].socket,buffer, sizeof(buffer))){
 #if __DEBUG__
@@ -352,9 +404,9 @@ void  CNetTcp::internal_disconnect()
 
 			// remove all clients boot (only for TCP protocol)
 			for(int i = 0; i < MAX_CLIENTS; i++){
-				if(clientSocket[i].socket!=NULL){
+				if(clientSocket[i].socket!=0){
 					socketClose(clientSocket[i].socket);
-					clientSocket[i].socket=NULL;
+					clientSocket[i].socket=0;
 					clientSocket[i].header_sent=false;
 				}
 			}
@@ -365,13 +417,13 @@ void  CNetTcp::internal_disconnect()
 
 			n_freeSockets=MAX_CLIENTS;
 
-			if(socket != NULL){
+			if(sockfd != 0){
 				// close and free socket server...
-				socketDel(socket);
-				socketClose(socket);
+				//socketDel(socket);
+				socketClose(sockfd);
 			}
 
-			socket = NULL;
+			sockfd = 0;
 			printf("Disconnect server!\n");
 
 	}
@@ -428,9 +480,9 @@ void  CNetTcp::update()  //  Receive  messages,  gest  &  send...
 	while(!end_loop_mdb)
 	{
 
-		TimerPolling = SDL_GetTicks()+1000;
+		//TimerPolling = SDL_GetTicks()+1000;
 
-		if(RequestToConnect)// && !Want_reconnection)
+		/*if(RequestToConnect)// && !Want_reconnection)
 		{
 			if(!connected)
 			{
@@ -456,7 +508,7 @@ void  CNetTcp::update()  //  Receive  messages,  gest  &  send...
 				RequestToDisConnect = false;
 				internal_disconnect();
 			}
-		}
+		}*/
 		getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
 
 	    //}
@@ -467,7 +519,7 @@ void  CNetTcp::update()  //  Receive  messages,  gest  &  send...
 
 
 //------------------------------------------------------------------------------------------------------------
-void  CNetTcp::TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer)
+/*void  CNetTcp::TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer)
 {
 	Uint32  IPAddress;
 
@@ -485,19 +537,19 @@ void  CNetTcp::TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer)
 				(IPAddress)&0xff);
 	}
 }
-
+*/
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 //  receive  a  buffer  from  a  TCP  socket  with  error  checking
 //  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  CNetTcp::TCP_getMsg(TCPsocket  sock,  Uint8  *buf)
+int  CNetTcp::TCP_getMsg(intptr_t  sock,  uint8_t  *buf)
 {
 //#define MAXLEN 1024
 	int result;
 	//char msg[MAXLEN];
 
-	result = SDLNet_TCP_Recv(sock,buf,MAX_LENGTH_MESSAGE);
+	result = read(sock,buf,MAX_LENGTH_MESSAGE);
 	if(result <= 0) {
 		// TCP Connection is broken. (because of error or closure)
 		return 0;
@@ -519,8 +571,8 @@ int  CNetTcp::TCP_getMsg(TCPsocket  sock,  Uint8  *buf)
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  CNetTcp::TCP_putMsg(TCPsocket  sock,  Uint8  *buf,  Uint32  len) {
-	Uint32  result=0;
+int  CNetTcp::TCP_putMsg(intptr_t  sock,  uint8_t  *buf,  uint32_t  len) {
+	uint32_t  result=0;
 
 
 
@@ -530,16 +582,16 @@ int  CNetTcp::TCP_putMsg(TCPsocket  sock,  Uint8  *buf,  Uint32  len) {
 	}
 
 	//  send  the  buffer,  with  the  NULL  as  well
-	result=SDLNet_TCP_Send(sock,buf,len);
+	result=write(sock,buf,len);
 
 	if(result<len) {
-		fprintf(stderr,"SDLNet_TCP_Send (%i<%i):  %s\n",result,len,  SDLNet_GetError());
+		fprintf(stderr,"TCP_putMsg (%i<%i)\n",result,len);
 		return(0);
 	}
 	return(result);
 }
 //---------------------------------------------------------------------------------------------------------------------------------------
-bool  CNetTcp::TCP_GetConnection() // Try connect to server...
+/*bool  CNetTcp::TCP_GetConnection() // Try connect to server...
 {
 	if(connected)   {
 		return  true;
@@ -564,10 +616,10 @@ bool  CNetTcp::TCP_GetConnection() // Try connect to server...
 	printf("Established connection the TCP socket at port %i\n", dst_port);
 
 	return  connected;
-}
+}*/
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void  CNetTcp::TCP_GestClient()
+/*void  CNetTcp::TCP_GestClient()
 {
 	int  numready=0;
 
@@ -595,7 +647,7 @@ void  CNetTcp::TCP_GestClient()
 		}
 
 	}
-}
+}*/
 
 //--------------------------------------------------------------------
 void  CNetTcp::PrintStatus()

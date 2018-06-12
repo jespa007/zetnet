@@ -6,19 +6,24 @@
 #include <windows.h>
 #endif
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_net.h"
+//#include "SDL2/SDL.h"
+//#include "SDL2/SDL_net.h"
 #include <thread>
 
 #include <time.h>
 #include <string>
 #include <sstream>
 #include <vector>
+#include <memory.h>
 
 #if defined(__GNUC__)
 #include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
 #endif
 
 
@@ -63,17 +68,17 @@ public:
 	,const string &  instance_name);
 
 
-	virtual void onGetUserRequest(TCPsocket  _socket_client,const vector<HttpRequest::tParamValue> & param);
+	virtual void onGetUserRequest(intptr_t  _socket_client,const vector<HttpRequest::tParamValue> & param);
 
 protected:
 	void SetLogoBase64(string _image_base_64);
-	virtual bool gestMessage(void *in_socket, Uint8 *buffer, unsigned int len);
+	virtual bool gestMessage(void *in_socket, uint8_t *buffer, uint32_t len);
 
 	//virtual void  gestServer();
 
 private:
 
-	TCPsocket web_client;
+	void * web_client;
 
 };
 

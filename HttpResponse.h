@@ -45,7 +45,7 @@ public:
 			, ByteBuffer * data
 			);
 
-	void Post(TCPsocket dst_socket, HttpServer * webserver);
+	void Post(intptr_t dst_socket, HttpServer * webserver);
 
 	~HttpResponse();
 

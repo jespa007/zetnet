@@ -38,7 +38,7 @@ ByteBuffer * HttpResponse::GenerateError(int error_id, HttpServer * webserver)
 			"</html>";
 
 
-	return new ByteBuffer((Uint8 *)str.c_str(), str.size());
+	return new ByteBuffer((uint8_t *)str.c_str(), str.size());
 
 }
 
@@ -63,7 +63,7 @@ HttpResponse * HttpResponse::MakeFromFile(const string & file, const string & mi
 
 HttpResponse * HttpResponse::MakeFromString(const string & str, const string & mime)
 {
-	ByteBuffer * buffer = new ByteBuffer((Uint8 *)str.c_str(),str.size());
+	ByteBuffer * buffer = new ByteBuffer((uint8_t *)str.c_str(),str.size());
 
 	return new HttpResponse("200 OK", mime, false, buffer);
 }
@@ -206,7 +206,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 	return MakePageNotFound(webserver);
 }
 
-void HttpResponse::Post(TCPsocket dst_socket, HttpServer * webserver) //, const string & response_action)
+void HttpResponse::Post(intptr_t dst_socket, HttpServer * webserver) //, const string & response_action)
 {
 	string send_message="";
 
@@ -247,7 +247,7 @@ void HttpResponse::Post(TCPsocket dst_socket, HttpServer * webserver) //, const 
 		memcpy(buffer+send_message.size()				    ,this->data->data_buffer,this->data->length);
 		memcpy(buffer+send_message.size()+this->data->length,"\r\n",2);
 
-		SDLNet_TCP_Send(dst_socket,buffer,send_message.size()+this->data->length+2);
+		CNetTcp::putMsg(dst_socket,(uint8_t *)buffer,send_message.size()+this->data->length+2);
 
 		free(buffer);
 		//SDLNet_TCP_Send(dst_socket,this->data->data_buffer,this->data->length);
@@ -263,8 +263,8 @@ void HttpResponse::Post(TCPsocket dst_socket, HttpServer * webserver) //, const 
 		string error = (char *)data->data_buffer;
 		error +="\r\n";
 		send_message+="Content-Length: " + CIO_Utils::intToString(error.size()) + "\r\n\r\n";
-		SDLNet_TCP_Send(dst_socket,send_message.c_str(),send_message.size());
-		SDLNet_TCP_Send(dst_socket,error.c_str(),error.size());
+		CNetTcp::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
+		CNetTcp::putMsg(dst_socket,(uint8_t *)error.c_str(),error.size());
 
 	}
 
