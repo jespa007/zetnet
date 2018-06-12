@@ -25,7 +25,7 @@
 #define SOCKET_CLIENT_NOT_AVAILABLE -1
 
 typedef  struct  {
-	void  *socket;
+	intptr_t socket;
 	int    idxClient;
 	bool    header_sent; // for streaming purposes!
 }  tClientSocket;
@@ -38,8 +38,13 @@ class  CNetTcp
 	std::thread *thread;
 	bool end_loop_mdb;
 
-	bool  TCP_GetConnection();
-	void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
+	// only linux ...
+	struct sockaddr_in serv_addr, cli_addr;
+    intptr_t sockfd;
+	int portno;
+
+	//bool  TCP_GetConnection();
+	//void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
 
 	void  update();  //  Receive  messages,  gest  &  send...
 
@@ -49,21 +54,21 @@ protected:
 
 
 
-	void  TCP_GestClient();
+	//void  TCP_GestClient();
 
-	void  *socket;
+	//void  *socket;
 
-	int   TCP_getMsg(TCPsocket  sock,  Uint8  *buf);
-	int   TCP_putMsg(TCPsocket  sock,  Uint8  *buf,  Uint32  len);
+	static int   TCP_getMsg(intptr_t  sock,  uint8_t  *buf);
+	static int   TCP_putMsg(intptr_t  sock,  uint8_t  *buf,  uint32_t  len);
 
 
 	//---------------------------------------------------------------------
-	IPaddress  ip;
+	//IPaddress  ip;
 	bool configured;
-	SDLNet_SocketSet socketSet;
+	//SDLNet_SocketSet socketSet;
 	char  *message,*host;
-	Uint32  ipaddr;
-	Uint8  buffer[MAX_LENGTH_MESSAGE];
+	uint32_t  ipaddr;
+	uint8_t  buffer[MAX_LENGTH_MESSAGE];
 
 	int	      src_port,dst_port;
 	int        timeout;
@@ -74,14 +79,14 @@ protected:
 	,Want_reconnection;
 
 
-	Uint32  TimeToReconnect, TimerActivityNet,TimerPolling;
+	//Uint32  TimeToReconnect, TimerActivityNet,TimerPolling;
 	string  ValueVariableHost;
 
 	unsigned  initialized;
 
 
-	bool  createSocketSet();
-	bool  		sendMessageToServer(Uint8  *data,  unsigned  len);//,  unsigned  NumeroMensaje=0);
+	//bool  createSocketSet();
+	//bool  		sendMessageToServer(Uint8  *data,  unsigned  len);//,  unsigned  NumeroMensaje=0);
 
 
 	void  internal_disconnect();
@@ -92,9 +97,9 @@ protected:
 	virtual bool gestServerBase();
 	virtual void  gestServer();
 
-	Uint8	searchClient(const char *name_client);
-	void sendAll(Uint8  ID_Message,  Uint8  *message=NULL,  int  len=0);
-	bool  setupHost();
+	//Uint8	searchClient(const char *name_client);
+	//void sendAll(Uint8  ID_Message,  Uint8  *message=NULL,  int  len=0);
+	//bool  setupHost();
 
 
 
@@ -102,21 +107,22 @@ protected:
 	tClientSocket 		*getFreeSlot(); // adds client
 	bool 				freeSlot(tClientSocket * sockClient); // removes client...
 
-	virtual bool 		gestMessage(void *in_socket, Uint8 *buffer, unsigned int len)=0;
+	virtual bool 		gestMessage(intptr_t in_socket, uint8_t *buffer, uint32_t len)=0;
 
-	int getMsg(void *sock,Uint8  *buf);
-	int putMsg(void *sock,Uint8  *buf,  Uint32  len);
 
-	void socketClose(void *sock);
-	int socketAdd(void *sock);
-	int socketDel(void *sock);
-	void * socketAccept(void *sock);
-	int socketReady(void *sock);
+	void socketClose(intptr_t sock);
+	//int socketAdd(void *sock);
+	//int socketDel(void *sock);
+	intptr_t socketAccept();
+	int socketReady(intptr_t sock);
 
 
 
 
 public:
+
+	static int getMsg(intptr_t sock,uint8_t  *buf);
+	static int putMsg(intptr_t sock,uint8_t  *buf,  uint32_t  len);
 
 
 	//bool          IsServer();
@@ -125,12 +131,12 @@ public:
 
 	CNetTcp();
 
-	void  setup(  int _src_port,int _dst_port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
+	bool  setup(int  port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
 	//void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
 
-	bool  DisconnectedCable();
-	void  WaitToDisconnect();
-	bool  ChangeIpReceived();
+	//bool  DisconnectedCable();
+	//void  WaitToDisconnect();
+	//bool  ChangeIpReceived();
 
 	bool  isConnected();
 	virtual void  connect();
