@@ -50,35 +50,6 @@ bool HttpServer::gestMessage(SOCKET socket, uint8_t *data, uint32_t size){
 
 	return true;
 
-/*
-		//string content_type="image/jpeg";
-		//int size = readed_bytes
-		char http_header[128]={0};
-
-		sprintf(http_header,
-		//"HTTP/1.1 200 OK\n"
-		//"Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
-		//"Server: Apache/2.2.3\n"
-		//"Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
-		//"ETag: \"56d-9989200-1132c580\"\n"
-		"--mjpeg_image--\r\n"
-		"Content-Type: image/jpeg\r\n"
-		"Content-Length: %lu\r\n\r\n"
-		//"Accept-Ranges: bytes\n"
-		        , processed_jpeg_len[n_read]);
-
-		//Uint8 *message = (Uint8*)malloc(strlen(http_header)+processed_jpeg_len[n_read]);
-		strcpy((char *)message[n_read], http_header);
-		memcpy(message[n_read]+strlen(http_header), processed_jpeg[n_read], processed_jpeg_len[n_read]);
-		//memcpy(message+strlen(http_header)+processed_jpeg_len[n_read], CRLF, sizeof(CRLF));
-
-		if(!TCP_putMsg(web_client, message[n_read], strlen(http_header)+processed_jpeg_len[n_read])){ // close socket
-			SDLNet_TCP_Close (web_client);
-			web_client=NULL;
-			not_send_multipart = false;
-		}
-*/
-
 }
 
 
@@ -93,32 +64,3 @@ void HttpServer::onGetUserRequest(SOCKET  _socket_client,const vector<HttpReques
 
 //---------------------------------------------------------------------------------------------------------------
 
-/*
-void HttpServer::gestServer(){
-	//char buffer[100];
-	int  numready;
-
-
-	set=create_sockset();
-
-	numready=SDLNet_CheckSockets(set,timeout);
-
-
-	if(numready==-1) {
-		print_error_cr("SDLNet_CheckSockets:  %s",SDLNet_GetError());
-
-	}
-	else{
-
-	if(numready) {
-		if(socketReady(socket)) {
-
-			// accept socket client (you're ready to get / send messages from/to this socket)...
-			TCPsocket client=SDLNet_TCP_Accept((TCPsocket)socket);
-			SDLNet_SocketReady(socket);
-		}
-	}
-	}
-
-}
-*/

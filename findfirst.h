@@ -55,7 +55,7 @@ struct _finddata_t {
  * was NULL or if the operating system returned an unexpected error
  * and ENOENT if the file specification could not be matched.
  */
-SOCKET _findfirst(const char* filespec, struct _finddata_t* fileinfo);
+intptr_t _findfirst(const char* filespec, struct _finddata_t* fileinfo);
 
 /*
  * Find the next entry, if any, that matches the filespec argument
@@ -65,7 +65,7 @@ SOCKET _findfirst(const char* filespec, struct _finddata_t* fileinfo);
  * or if the operating system returned an unexpected error and ENOENT
  * if no more matching files could be found.
  */
-int _findnext(SOCKET handle, struct _finddata_t* fileinfo);
+int _findnext(intptr_t handle, struct _finddata_t* fileinfo);
 
 /*
  * Closes the specified search handle and releases associated
@@ -73,7 +73,7 @@ int _findnext(SOCKET handle, struct _finddata_t* fileinfo);
  * returns -1 and sets errno to ENOENT, indicating that no more
  * matching files could be found.
  */
-int _findclose(SOCKET handle);
+int _findclose(intptr_t handle);
 
 
 #endif

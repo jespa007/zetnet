@@ -36,7 +36,7 @@
 		#define bzero ZeroMemory
 #else
 
-	typedef SOCKET  int;
+	typedef  int SOCKET;
 	#define INVALID_SOCKET -1
 
 	#define addrinfo sockaddr_in

@@ -53,14 +53,6 @@ message("-- Dest.dir: " ${CMAKE_INSTALL_PREFIX})
 
 set(HTTPSERVERCPP_LIB_SRCS "")
 
-find_library(SDL2_LIB  		NAMES SDL2  )
-find_library(SDL2_MAIN_LIB  NAMES SDL2main  )
-find_library(SDL2_NET_LIB  	NAMES SDL2_net  )
-
-MESSAGE ("-- Found SDL2 at " 	 ${SDL2_LIB})
-MESSAGE ("-- Found SDL2main at " ${SDL2_MAIN_LIB})
-MESSAGE ("-- Found SDL2_net at " ${SDL2_NET_LIB})
-
 if(MSVC)
 	MESSAGE ("-- Plataform: MSVC" )
 	
@@ -88,19 +80,19 @@ else()
 		
 		
   
-  	message("-- params: ${COMMON_PARAMS} ")
-  
-    elseif(GNU)
-    	MESSAGE ("-- Plataform: GNU" )
-    else()
-    	MESSAGE ("-- Plataform: Unknown" )
-	endif()
+	  	message("-- params: ${COMMON_PARAMS} ")
+	  
+	    elseif(GNU)
+	    	MESSAGE ("-- Plataform: GNU" )
+	    else()
+	    	MESSAGE ("-- Plataform: Unknown" )
+		endif()
 	
-	IF (MEMMANAGER)
-		message("-- Memmanager: ON (Warning execution time could be slow)")
-		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMANAGER__")
-		include_directories (
-			../memmanager
+		IF (MEMMANAGER)
+			message("-- Memmanager: ON (Warning execution time could be slow)")
+			SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMANAGER__")
+			include_directories (
+				../memmanager
 		)
 		
 	   	set(HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS} ../memmanager/MEM_ram.cpp)
@@ -191,7 +183,7 @@ set(HTTPSERVERCPP_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
 
 # httpserver library
 add_library( httpservercpp${POST_NAME} ${LINK} ${HTTPSERVERCPP_LIB_SRCS} )
-target_link_libraries(httpservercpp${POST_NAME}  ${SDL2_LIB} ${SDL2_NET_LIB} Ws2_32  "-Wl,--no-as-needed" )
+target_link_libraries(httpservercpp${POST_NAME} "-Wl,--no-as-needed" )
 
 if(MSVC)
 	#only for msvc...
@@ -222,7 +214,17 @@ add_executable(httpserver_demo${POST_NAME}
 )
 
 
-target_link_libraries(httpserver_demo${POST_NAME}    ${SDL2_MAIN_LIB} ${SDL2_LIB} httpservercpp${POST_NAME}  )	
+target_link_libraries(httpserver_demo${POST_NAME}  httpservercpp${POST_NAME} -pthread )	
+
+if(MINGW OR MSVC)
+    target_link_libraries(httpserver_demo${POST_NAME} Ws2_32)
+endif()
+
+if(LINUX)
+	target_link_libraries(httpserver_demo${POST_NAME} -pthread )
+endif()
+
+
 
 INSTALL(TARGETS httpservercpp${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib

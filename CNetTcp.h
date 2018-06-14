@@ -62,15 +62,14 @@ protected:
 
 	//void  *socket;
 
-	static int   TCP_getMsg(SOCKET  sock,  uint8_t  *buf);
-	static int   TCP_putMsg(SOCKET  sock,  uint8_t  *buf,  uint32_t  len);
 
 
 	//---------------------------------------------------------------------
 	//IPaddress  ip;
 	bool configured;
 	//SDLNet_SocketSet socketSet;
-	char  *message,*host;
+	char  *message;
+	const char *host;
 	uint32_t  ipaddr;
 	uint8_t  buffer[MAX_LENGTH_MESSAGE];
 
