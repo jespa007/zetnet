@@ -28,6 +28,7 @@ typedef  struct  {
 	SOCKET socket;
 	int    idxClient;
 	bool    header_sent; // for streaming purposes!
+
 }  tClientSocket;
 
 

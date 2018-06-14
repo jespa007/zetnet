@@ -68,6 +68,9 @@ SOCKET CNetTcp::socketAccept(){
 	       // return INVALID_SOCKET;
 	    }
 #else
+
+
+
 	socklen_t clilen=sizeof(cli_addr);
 	newsockfd = accept(sockfd,
 	                 (struct sockaddr *) &cli_addr,
@@ -335,6 +338,8 @@ bool CNetTcp::gestServerBase()
 
 void CNetTcp::gestServer()
 {
+
+
 	//gestServerBase();
 	tClientSocket *c = getFreeSlot();
 
@@ -344,6 +349,7 @@ void CNetTcp::gestServer()
 		fprintf(stderr,"*** Maximum client count reached - rejecting client connection ***\n");
 	}else{
 	// accept socket client (you're ready to get / send messages from/to this socket)...
+
 		c->socket =socketAccept();
 
 #if __DEBUG__
