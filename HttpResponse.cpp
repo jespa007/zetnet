@@ -247,7 +247,7 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 		memcpy(buffer+send_message.size()				    ,this->data->data_buffer,this->data->length);
 		memcpy(buffer+send_message.size()+this->data->length,"\r\n",2);
 
-		CNetTcp::putMsg(dst_socket,(uint8_t *)buffer,send_message.size()+this->data->length+2);
+		CServer::putMsg(dst_socket,(uint8_t *)buffer,send_message.size()+this->data->length+2);
 
 		free(buffer);
 		//SDLNet_TCP_Send(dst_socket,this->data->data_buffer,this->data->length);
@@ -263,8 +263,8 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 		string error = (char *)data->data_buffer;
 		error +="\r\n";
 		send_message+="Content-Length: " + CIO_Utils::intToString(error.size()) + "\r\n\r\n";
-		CNetTcp::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
-		CNetTcp::putMsg(dst_socket,(uint8_t *)error.c_str(),error.size());
+		CServer::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
+		CServer::putMsg(dst_socket,(uint8_t *)error.c_str(),error.size());
 
 	}
 

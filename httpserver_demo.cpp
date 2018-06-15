@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
 	
 	}while(getchar()!='s');
 	
+	printf("shutdown...\n");
+
 	delete Server;
 
 	//CThread::destroySingletons();

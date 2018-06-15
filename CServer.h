@@ -16,9 +16,9 @@
 #define  TIME_WAIT_ACK		3000	//  ms
 
 #define  MAX_SOCKETS					100
-#define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
+//#define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
 
-
+#define DEFAULT_TIMEOUT_SECONDS 0
 
 
 #define  MAX_LENGTH_MESSAGE 16384
@@ -33,10 +33,17 @@ typedef  struct  {
 
 
 
-class  CNetTcp
+class  CServer
 {
+	 //set of socket descriptors
+	  fd_set readfds;
+
 #ifdef _WIN32
 	WSADATA wsaData;
+#endif
+
+#ifdef __GNUC__
+	struct timeval timeout;
 #endif
 
 	std::thread *thread;
@@ -53,7 +60,7 @@ class  CNetTcp
 
 	void  update();  //  Receive  messages,  gest  &  send...
 
-	static void mainLoop(CNetTcp *);
+	static void mainLoop(CServer *);
 
 protected:
 
@@ -75,7 +82,7 @@ protected:
 	uint8_t  buffer[MAX_LENGTH_MESSAGE];
 
 	int	      src_port,dst_port;
-	int        timeout;
+
 
 	bool  	connected
 	,RequestToConnect
@@ -118,7 +125,7 @@ protected:
 	//int socketAdd(void *sock);
 	//int socketDel(void *sock);
 	SOCKET socketAccept();
-	int socketReady(SOCKET sock);
+	bool socketReady(SOCKET sock);
 
 
 
@@ -133,9 +140,10 @@ public:
 
 	void  unLoad();
 
-	CNetTcp();
+	CServer();
 
 	bool  setup(int  port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
+	void setTimeout(unsigned int seconds);
 	//void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
 
 	//bool  DisconnectedCable();
@@ -153,13 +161,13 @@ public:
 
 
 
-	tClientSocket  	clientSocket[MAX_CLIENTS];
-	int 			freeSocket[MAX_CLIENTS];
+	tClientSocket  	clientSocket[MAX_SOCKETS];
+	int 			freeSocket[MAX_SOCKETS];
 	int        		n_freeSockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!
 
 
 	void  PrintStatus();
-	virtual ~CNetTcp();
+	virtual ~CServer();
 };
 
 

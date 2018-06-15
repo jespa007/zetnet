@@ -169,7 +169,7 @@ set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 	findfirst.c
 	CUri.cpp
 	CIO_Utils.cpp
-	CNetTcp.cpp
+	CServer.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp
 	HttpResponse.cpp
@@ -193,6 +193,7 @@ endif()
 
 SET(
 	HS
+	CServer.h
 	HttpHandleClient.h
 	HttpRequest.h
 	HttpResponse.h

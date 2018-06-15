@@ -22,6 +22,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <errno.h>
 #endif
 
 // include socket platform
@@ -55,6 +56,15 @@
 #define MAX_PATH		4096
 #endif
 
+#ifndef TRUE
+#define TRUE		1
+#endif
+
+#ifndef FALSE
+#define FALSE		0
+#endif
+
+
 using std::string;
 using std::vector;
 
@@ -65,12 +75,12 @@ using std::vector;
 //#include "CStringUtils.h"
 #include "CIO_Utils.h"
 //#include "CThread.h"
-#include "CNetTcp.h"
+#include "CServer.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "HttpHandleClient.h"
 
-class HttpServer:public CNetTcp
+class HttpServer:public CServer
 {
 public:
 	string MSG_DIR;
