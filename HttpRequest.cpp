@@ -1,7 +1,7 @@
-#include "HttpServer.h"
+#include "zetnet.h"
 
 
-
+namespace zetnet{
 
 HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 
@@ -12,12 +12,12 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 		return NULL;
 	}
 
-	CIO_Utils::replace(request,"\r", "");
+	CZetNetUtils::replace(request,"\r", "");
 
 	bool is_binary= false;
 	request=CUri::unescape(request);
-	vector<string> tokens = CIO_Utils::split(request,'\n');
-	vector<string> url_token = CIO_Utils::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
+	vector<string> tokens = CZetNetUtils::split(request,'\n');
+	vector<string> url_token = CZetNetUtils::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
 	string type = url_token[0]; // GET/POST/etc...
 	string url = "";
 
@@ -36,48 +36,54 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 
 	string file_extension = "";
 
-	try{
-		file_extension =url.substr(url.find_last_of("."));//CIO_Utils::getExtension(url);// System.IO.Path.GetExtension(url);
+	int find_extension=url.find_last_of(".");
 
-#ifdef __DEBUG__
-		printf("file extension: %s\n",file_extension.c_str());
-#endif
+	if(find_extension != -1){
 
-		if (file_extension==".png"){
-			mime = "image/png";
-			is_binary=true;
-		}
+		try{
 
-		if (file_extension==".css"){
-			mime = "text/css";
+			file_extension =url.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
 
-		}else if (file_extension==  ".json"){
-			mime = "application/json";
+	#ifdef __DEBUG__
+			printf("file extension: %s\n",file_extension.c_str());
+	#endif
+
+			if (file_extension==".png"){
+				mime = "image/png";
+				is_binary=true;
+			}
+
+			if (file_extension==".css"){
+				mime = "text/css";
+
+			}else if (file_extension==  ".json"){
+				mime = "application/json";
+			}
+			else if (file_extension== ".pdf"){
+				mime = "application/pdf";
+				is_binary=true;
+			}
+			else if(
+					 file_extension==".eot"
+				  || file_extension==".svg"
+				  || file_extension==".ttf"
+				  || file_extension==".woff"
+				  || file_extension==".woff2"
+				){
+				mime="application/octet-stream";
+				is_binary=true;
+			}
+		}catch(std::exception & ex){
+	#ifdef __DEBUG__
+			printf("GetRequest:%s \n",ex.what());
+	#endif
 		}
-		else if (file_extension== ".pdf"){
-			mime = "application/pdf";
-			is_binary=true;
-		}
-		else if(
-				 file_extension==".eot"
-			  || file_extension==".svg"
-			  || file_extension==".ttf"
-			  || file_extension==".woff"
-			  || file_extension==".woff2"
-			){
-			mime="application/octet-stream";
-			is_binary=true;
-		}
-	}catch(std::exception & ex){
-#ifdef __DEBUG__
-		printf("GetRequest:%s \n",ex.what());
-#endif
 	}
 
 	vector<string> sub_token;
 
 
-	vector<string> lst= CIO_Utils::split(url, '?');//.Split('?');
+	vector<string> lst= CZetNetUtils::split(url, '?');//.Split('?');
 	if (lst.size() > 1)
 	{
 		url = lst[0];
@@ -99,7 +105,7 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 		if (is_header)
 		{
 
-			sub_token = CIO_Utils::split(tokens[i],':'); // split only the first : occurrence ...
+			sub_token = CZetNetUtils::split(tokens[i],':'); // split only the first : occurrence ...
 
 			if (sub_token.size() > 1) // it has header value ...
 			{
@@ -113,20 +119,20 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 				}else if(variable ==  "Accept"){
 
 				}else if(variable ==  "Content-Type"){
-					content_type = CIO_Utils::split(value,';')[0];
-					CIO_Utils::replace(content_type," ","");
+					content_type = CZetNetUtils::split(value,';')[0];
+					CZetNetUtils::replace(content_type," ","");
 				}
 			}
 		}
 		else // check parameters...
 		{
-			vector<string> pre_check_param = CIO_Utils::split(tokens[i],'&');
+			vector<string> pre_check_param = CZetNetUtils::split(tokens[i],'&');
 
 			if (pre_check_param.size() >= 1)
 			{
 				for (unsigned j = 0; j < pre_check_param.size(); j++)
 				{
-					sub_token = CIO_Utils::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
+					sub_token = CZetNetUtils::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
 
 					if (sub_token.size() == 2)
 					{
@@ -146,3 +152,5 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 	return new HttpRequest(type, url, host, referer,mime, is_binary,content_type, param);
 
 }
+
+};

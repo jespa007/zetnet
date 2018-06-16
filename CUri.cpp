@@ -1,4 +1,6 @@
-#include "HttpServer.h"
+#include "zetnet.h"
+
+namespace zetnet{
 
 
 /**
@@ -160,5 +162,5 @@ std::string CUri::unescape(const string& s)
     return result;
 }
 
-
+};
 

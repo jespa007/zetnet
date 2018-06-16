@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+namespace zetnet{
 
 class HttpServer;
 class HttpResponse
@@ -11,7 +12,14 @@ class HttpResponse
 		MAX_ERROR_TYPES
 	};
 
-	ByteBuffer * data;
+	typedef struct{
+		uint8_t * buffer;
+		uint32_t size;
+	}tBufferData;
+
+
+	tBufferData data;
+
 	string status;
 	string mime;
 	bool is_binary;
@@ -33,7 +41,7 @@ class HttpResponse
 public:
 
 	static HttpResponse * From(HttpRequest * request, HttpServer  * webserver);
-	static ByteBuffer * GenerateError(int error_id, HttpServer * webserver);
+	static tBufferData GenerateError(int error_id, HttpServer * webserver);
 	static HttpResponse * MakeFromString(const string & si, const string & mime);
 
 
@@ -42,7 +50,7 @@ public:
 			 const string  & status
 			,const string & mime
 			, bool is_binary
-			, ByteBuffer * data
+			,tBufferData  data
 			);
 
 	void Post(SOCKET dst_socket, HttpServer * webserver);
@@ -51,3 +59,4 @@ public:
 
 };
 
+};

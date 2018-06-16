@@ -1,4 +1,4 @@
-#include "HttpServer.h"
+#include "zetnet.h"
 
 
 const char * SERVER_FULL     = "FULL";
@@ -210,7 +210,7 @@ bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configu
 	    serv_addr.ai_flags = AI_PASSIVE;
 
 	    // Resolve the server address and port
-	   iResult = getaddrinfo(NULL, (const char *)CIO_Utils::intToString(portno).c_str(), &serv_addr, &result);
+	   iResult = getaddrinfo(NULL, (const char *)CZetNetUtils::intToString(portno).c_str(), &serv_addr, &result);
 	   if ( iResult != 0 ) {
 		   fprintf(stderr,"getaddrinfo failed with error: %d\n", iResult);
 		   WSACleanup();
@@ -430,7 +430,7 @@ void CServer::gestServer()
 		if(clientSocket[clientNumber].socket != INVALID_SOCKET){
 			int clientSocketActivity = socketReady(clientSocket[clientNumber].socket);
 #if __DEBUG__
-			printf("Just checked client number %i  and received activity status is: %i\n", clientNumber,clientSocketActivity);
+		//	printf("Just checked client number %i  and received activity status is: %i\n", clientNumber,clientSocketActivity);
 #endif
 			// If there is any activity on the client socket...
 			if (clientSocketActivity != 0)
@@ -544,7 +544,7 @@ void  CServer::update()  //  Receive  messages,  gest  &  send...
 			getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
 		}
 
-		usleep(20000); // 10ms
+		usleep(20000); // 20ms
 	}
 
 	//return 0;

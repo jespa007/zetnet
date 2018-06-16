@@ -1,5 +1,6 @@
-#include "HttpServer.h"
+#include "zetnet.h"
 
+namespace zetnet{
 
 /*
 HttpServer::HttpServer(){
@@ -46,7 +47,6 @@ bool HttpServer::gestMessage(SOCKET socket, uint8_t *data, uint32_t size){
 
 	HttpHandleClient hc = HttpHandleClient(socket, this,data, size);
 	hc.doHandle();
-	//delete hc;
 
 	return true;
 
@@ -64,3 +64,4 @@ void HttpServer::onGetUserRequest(SOCKET  _socket_client,const vector<HttpReques
 
 //---------------------------------------------------------------------------------------------------------------
 
+};

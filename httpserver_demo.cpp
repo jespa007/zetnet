@@ -1,4 +1,6 @@
-#include "HttpServer.h"
+#include "zetnet.h"
+
+using namespace zetnet;
 
 class MyCustomHttpServer: public HttpServer{
 

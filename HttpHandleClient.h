@@ -1,7 +1,7 @@
 #pragma once
 
 
-
+namespace zetnet{
 
 
 class HttpServer;
@@ -18,4 +18,6 @@ public:
 	void doHandle();
 
 	~HttpHandleClient();
+};
+
 };

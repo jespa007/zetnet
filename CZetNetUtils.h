@@ -1,8 +1,8 @@
 #pragma once
 
+namespace zetnet{
 
-
-class CIO_Utils
+class CZetNetUtils
 {
 
 
@@ -12,6 +12,8 @@ class CIO_Utils
 
 
 public:
+
+
 
 	static vector<string> &split(const string &s, char delim, vector<string> &elems);
 	static vector<string> split(const string &s, char delim);
@@ -24,7 +26,7 @@ public:
 
 	static bool fileExists(const string & m_file);
 	//static bool readFile(const string & filename, char *buffer, int length);
-	static ByteBuffer * readFile(const string & filename, bool end_string_char = true);
+	static uint8_t * readFile(const string & filename, uint32_t & bytes_readed, bool end_string_char = true);
 	static int  getLength(const  string  & file);
 	static int  getLength(FILE * file);
 	static bool setWorkPath(const string & m_path);
@@ -41,4 +43,5 @@ public:
 
 
 
+};
 };

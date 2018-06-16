@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+namespace zetnet{
+
 class HttpRequest
 {
 
@@ -57,3 +59,4 @@ private:
 
 };
 
+};

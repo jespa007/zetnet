@@ -1,4 +1,6 @@
-#include "HttpServer.h"
+#include "zetnet.h"
+
+namespace zetnet{
 
 HttpHandleClient::HttpHandleClient(SOCKET _socket_client, HttpServer * _server, uint8_t *_rcv_data, uint32_t _rcv_len)
 {
@@ -42,3 +44,5 @@ void HttpHandleClient::doHandle()
 HttpHandleClient::~HttpHandleClient(){
 	//delete this->rcv_buffer;
 }
+
+};

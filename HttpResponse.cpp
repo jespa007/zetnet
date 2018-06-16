@@ -1,4 +1,6 @@
-#include "HttpServer.h"
+#include "zetnet.h"
+
+namespace zetnet{
 
 HttpResponse::tHtmlError HttpResponse::html_error [MAX_ERROR_TYPES]={
 	 {"400 - Bad Request","Please check the above url is valid"}
@@ -7,11 +9,12 @@ HttpResponse::tHtmlError HttpResponse::html_error [MAX_ERROR_TYPES]={
 };
 
 
-ByteBuffer * HttpResponse::GenerateError(int error_id, HttpServer * webserver)
+HttpResponse::tBufferData  HttpResponse::GenerateError(int error_id, HttpServer * webserver)
 {
 
 	tHtmlError error;
-	string int_error = CIO_Utils::intToString(error_id);
+	string int_error = CZetNetUtils::intToString(error_id);
+	tBufferData data;
 
 	if(error_id < MAX_ERROR_TYPES){
 		error = html_error[error_id];
@@ -38,34 +41,46 @@ ByteBuffer * HttpResponse::GenerateError(int error_id, HttpServer * webserver)
 			"</html>";
 
 
-	return new ByteBuffer((uint8_t *)str.c_str(), str.size());
+	data.size = str.size();
+	data.buffer = (uint8_t *)malloc(data.size);
+	memset(data.buffer,0,data.size);
+	strcpy((char *)data.buffer,(char *)str.c_str());
+
+
+	return data;//new ((uint8_t *)str.c_str(), str.size());
 
 }
 
-HttpResponse::HttpResponse( const string & status,const string & mime,bool is_binary, ByteBuffer *data) {
+HttpResponse::HttpResponse( const string & status,const string & mime,bool is_binary, tBufferData data) {
 		//this->dst_socket = _dst_socket;
 		this->data = data;
 		this->status = status;
 		this->mime = mime;
 		this->is_binary = is_binary;
+
 }
 
 HttpResponse::~HttpResponse(){
 	// data is ByteBuffer allocated from Response::From
-	delete this->data;
+	free(this->data.buffer);
 }
 /*
 HttpResponse * HttpResponse::MakeFromFile(const string & file, const string & mime)
 {
-	ByteBuffer *buffer = CIO_Utils::readFile(file);
+	ByteBuffer *buffer = CZetNetUtils::readFile(file);
 	return new HttpResponse("200 OK", mime, buffer);
 }*/
 
 HttpResponse * HttpResponse::MakeFromString(const string & str, const string & mime)
 {
-	ByteBuffer * buffer = new ByteBuffer((uint8_t *)str.c_str(),str.size());
+	tBufferData data;
+	data.size=str.size();
+	data.buffer=(uint8_t *)malloc(data.size);
+	memset(data.buffer,0,data.size);
+	strcpy((char *)data.buffer,(char *)str.c_str());
 
-	return new HttpResponse("200 OK", mime, false, buffer);
+
+	return new HttpResponse("200 OK", mime, false, data);
 }
 
 HttpResponse * HttpResponse::MakeMethodNotAllowed(HttpServer * webserver)
@@ -111,10 +126,10 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		string path_url = CUri::unescape(request->URL);
 #ifdef WIN32
-		path_url = CIO_Utils::replace(path_url, '/','\\');//CUri::unescape(request->URL)
+		path_url = CZetNetUtils::replace(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
-		string filename_with_path = /*CIO_Utils::getCwd()
+		string filename_with_path = /*CZetNetUtils::getCwd()
 		    +"\\"*/
 			  webserver->WEB_DIR
 			+ path_url;
@@ -127,15 +142,15 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 		//fi = new FileInfo(file);
 		ok = false;
 
-		file = CIO_Utils::getFileName(filename_with_path);
-		path = CIO_Utils::getDirectory(filename_with_path);
+		file = CZetNetUtils::getFileName(filename_with_path);
+		path = CZetNetUtils::getDirectory(filename_with_path);
 
 #ifdef __DEBUG__
 		printf("try_file:%s request:%s\n",filename_with_path.c_str(),request->URL.c_str());
 #endif
 
 
-		if (CIO_Utils::fileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+		if (CZetNetUtils::fileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
 		{
 #ifdef __DEBUG__
 			printf("file exists!!!\n");
@@ -147,16 +162,16 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 			//DirectoryInfo di = new DirectoryInfo(fi+"/");
 
-			if (!CIO_Utils::isDirectory(path)){
+			if (!CZetNetUtils::isDirectory(path)){
 				return MakePageNotFound(webserver);
 			}
 
-			vector<string> list_file = CIO_Utils::getFiles(path);//,"*.html",false);
+			vector<string> list_file = CZetNetUtils::getFiles(path);//,"*.html",false);
 
 			//FileInfo [] files = di.GetFiles();
 			for(unsigned f=0; f < list_file.size() && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
-				string n = CIO_Utils::getFileName(list_file[f]);
+				string n = CZetNetUtils::getFileName(list_file[f]);
 
 #ifdef __DEBUG__
 				printf("try_file2:%s\n",n.c_str());
@@ -193,7 +208,13 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		string filename_to_load = path+SEPARATOR_DIR+file;
 
-			return new HttpResponse("200 OK", request->Mime, request->IsBinary, CIO_Utils::readFile(filename_to_load, false) );
+		tBufferData data;
+
+		data.buffer=CZetNetUtils::readFile(filename_to_load,data.size, false);
+
+
+
+			return new HttpResponse("200 OK", request->Mime, request->IsBinary, data);
 
 			//return MakeFromFile(path+"\\"+file, request->Mime);
 		}
@@ -222,7 +243,7 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 		send_message+="Content-Type: " + mime + "\r\n";
 		send_message+="Accept-Ranges: bytes\r\n";
 		send_message+="Connection: Keep-Alive\r\n";
-		send_message+="Content-Length: " + CIO_Utils::intToString(this->data->length) + "\r\n";
+		send_message+="Content-Length: " + CZetNetUtils::intToString(this->data.size) + "\r\n";
 
 		if(is_binary){
 		/*if (   mime == "application/pdf"
@@ -240,14 +261,15 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 		printf("POST:\n%s\n",send_message.c_str());
 #endif
 
+		int total_size = send_message.size()+this->data.size+2;
 
-		buffer=(char *)malloc(send_message.size()+this->data->length+2+1);
-		memset(buffer,0,send_message.size()+this->data->length+2+1);
+		buffer=(char *)malloc(total_size);
+		memset(buffer,0,total_size);
 		memcpy(buffer										,send_message.c_str(),send_message.size());
-		memcpy(buffer+send_message.size()				    ,this->data->data_buffer,this->data->length);
-		memcpy(buffer+send_message.size()+this->data->length,"\r\n",2);
+		memcpy(buffer+send_message.size()				    ,this->data.buffer,this->data.size);
+		memcpy(buffer+send_message.size()+this->data.size,"\r\n",2);
 
-		CServer::putMsg(dst_socket,(uint8_t *)buffer,send_message.size()+this->data->length+2);
+		CServer::putMsg(dst_socket,(uint8_t *)buffer,total_size);
 
 		free(buffer);
 		//SDLNet_TCP_Send(dst_socket,this->data->data_buffer,this->data->length);
@@ -260,9 +282,9 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 	}
 	else // send error message
 	{
-		string error = (char *)data->data_buffer;
+		string error = (char *)data.buffer;
 		error +="\r\n";
-		send_message+="Content-Length: " + CIO_Utils::intToString(error.size()) + "\r\n\r\n";
+		send_message+="Content-Length: " + CZetNetUtils::intToString(error.size()) + "\r\n\r\n";
 		CServer::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
 		CServer::putMsg(dst_socket,(uint8_t *)error.c_str(),error.size());
 
@@ -271,3 +293,4 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 
 
 }
+};

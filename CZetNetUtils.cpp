@@ -1,8 +1,9 @@
 
-#include "HttpServer.h"
+#include "zetnet.h"
 
+namespace zetnet{
 
-string  CIO_Utils::replace(const string & str_old, const char old_ch, char new_ch){
+string  CZetNetUtils::replace(const string & str_old, const char old_ch, char new_ch){
 	string str = str_old;
 	for (unsigned i = 0; i < str.length(); ++i) {
 		if (str[i] == old_ch)
@@ -12,7 +13,7 @@ string  CIO_Utils::replace(const string & str_old, const char old_ch, char new_c
 	return str;
 }
 
-void CIO_Utils::replace(string & str_input, const string & toReplace, const string & replaceWith){
+void CZetNetUtils::replace(string & str_input, const string & toReplace, const string & replaceWith){
 
 	std::size_t found;;
 	while((found = str_input.find(toReplace)) != std::string::npos){
@@ -22,7 +23,7 @@ void CIO_Utils::replace(string & str_input, const string & toReplace, const stri
 
 }
 
-string  CIO_Utils::remove(string & str_old, char ch_to_remove){
+string  CZetNetUtils::remove(string & str_old, char ch_to_remove){
 	string str = str_old;
 	string str_new="";
 
@@ -34,7 +35,7 @@ string  CIO_Utils::remove(string & str_old, char ch_to_remove){
 	return str_new;
 }
 
-vector<string> & CIO_Utils::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+vector<string> & CZetNetUtils::split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
     std::string item;
     while (std::getline(ss, item, delim)) {
@@ -44,20 +45,20 @@ vector<string> & CIO_Utils::split(const std::string &s, char delim, std::vector<
 }
 
 
-vector<string> CIO_Utils::split(const std::string &s, char delim) {
+vector<string> CZetNetUtils::split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     split(s, delim, elems);
     return elems;
 }
 
-string CIO_Utils::intToString(int number){
+string CZetNetUtils::intToString(int number){
 
    std::stringstream ss;//create a stringstream
    ss << number;//add number to the stream
    return ss.str();//return a string with the contents of the stream
 }
 
-bool CIO_Utils::endsWith(const string & fullString, const string & ending){
+bool CZetNetUtils::endsWith(const string & fullString, const string & ending){
     if (fullString.length() >= ending.length()) {
         return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
     }
@@ -66,7 +67,7 @@ bool CIO_Utils::endsWith(const string & fullString, const string & ending){
 }
 
 
-string  CIO_Utils::getDirectory(const string & _filename) {
+string  CZetNetUtils::getDirectory(const string & _filename) {
 	size_t found;
 	string ss=".";
 	found=_filename.find_last_of("/\\");
@@ -78,7 +79,7 @@ string  CIO_Utils::getDirectory(const string & _filename) {
 
 }
 
-string  CIO_Utils::getFileName(const string & _filename) {
+string  CZetNetUtils::getFileName(const string & _filename) {
   size_t found;
   string ss=_filename;
 
@@ -92,7 +93,7 @@ string  CIO_Utils::getFileName(const string & _filename) {
   return ss;
 }
 
-string  CIO_Utils::getFileNameWithoutExtension(const string & _path) {
+string  CZetNetUtils::getFileNameWithoutExtension(const string & _path) {
 
 	string file = getFileName(_path);
 
@@ -114,7 +115,7 @@ string  CIO_Utils::getFileNameWithoutExtension(const string & _path) {
 
 
 
-bool CIO_Utils::fileExists(const string & m_file) {
+bool CZetNetUtils::fileExists(const string & m_file) {
 
 	if(m_file == "") return false;
 
@@ -139,7 +140,7 @@ bool CIO_Utils::fileExists(const string & m_file) {
 }
 
 
-ByteBuffer * CIO_Utils::readFile(const string & filename, bool end_string_char){
+uint8_t * CZetNetUtils::readFile(const string & filename,uint32_t & size, bool end_string_char){
 
 
 	int  file_length, readed_elements;
@@ -154,24 +155,24 @@ ByteBuffer * CIO_Utils::readFile(const string & filename, bool end_string_char){
 	{
 		if((file_length = getLength(filename)) != -1) {
 
+			size = file_length+with_end_char;
 
-			unsigned char *buffer = new unsigned char [file_length+with_end_char];
-			memset(buffer,0,file_length+with_end_char );
+			uint8_t *buffer = (uint8_t *)malloc(size);
+			memset(buffer,0,size );
+
 			readed_elements = fread(buffer, 1, file_length, fp);
+
+
 
 			if(readed_elements != file_length) {
 				fprintf(stderr,"number elements doesn't match with length file (%s)\n",filename.c_str());
-				delete  buffer;
+				free(buffer);
 				return NULL;
 			}
 
-			ByteBuffer *ch = new ByteBuffer(buffer, file_length+with_end_char);
-
-			delete [] buffer;
-
 			fclose(fp);
 
-			return ch;
+			return buffer;
 		}
 		else  fprintf(stderr,"I can't read file \"%s\"\n",filename.c_str());
 	}
@@ -182,7 +183,7 @@ ByteBuffer * CIO_Utils::readFile(const string & filename, bool end_string_char){
 }
 
 
-int  CIO_Utils::getLength(const  string  & file)
+int  CZetNetUtils::getLength(const  string  & file)
 {
 
 	int  ini,  end;
@@ -206,7 +207,7 @@ int  CIO_Utils::getLength(const  string  & file)
 	return    -1;
 }
 
-int  CIO_Utils::getLength(FILE  * file)
+int  CZetNetUtils::getLength(FILE  * file)
 {
 
 	int  ini,  end;
@@ -230,18 +231,18 @@ int  CIO_Utils::getLength(FILE  * file)
 	return    -1;
 }
 
-bool CIO_Utils::setWorkPath(const string & m_path) {
+bool CZetNetUtils::setWorkPath(const string & m_path) {
 
 	if(chdir(m_path.c_str())==-1) {
 		fprintf(stderr,"Cannot change working path to %s\n", m_path.c_str());
 		return false;
 	}
 	return true;
-	//print_info_cr("%s", CIO_Utils::formatString("cd %s",m_path.c_str()));
-	//system(CIO_Utils::formatString("cd %s",m_path.c_str()));
+	//print_info_cr("%s", CZetNetUtils::formatString("cd %s",m_path.c_str()));
+	//system(CZetNetUtils::formatString("cd %s",m_path.c_str()));
 }
 
-string CIO_Utils::getCwd(){
+string CZetNetUtils::getCwd(){
 	char cwd[MAX_PATH];
 #ifdef __GNUC__
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
@@ -261,7 +262,7 @@ string CIO_Utils::getCwd(){
 
 
 
-bool CIO_Utils::isDirectory(const string & filename){
+bool CZetNetUtils::isDirectory(const string & filename){
 	int status;
 	struct stat st_buf;
 	//int ret_stat;
@@ -280,17 +281,17 @@ bool CIO_Utils::isDirectory(const string & filename){
 
 
 
-vector<string>  CIO_Utils::getFiles(const string & folder, const string & filter, bool recursive){
+vector<string>  CZetNetUtils::getFiles(const string & folder, const string & filter, bool recursive){
 
 
 
 	vector<string> list_file;
-	vector<string> list_attribs = CIO_Utils::split(filter, '|');
+	vector<string> list_attribs = CZetNetUtils::split(filter, '|');
 
 	for(unsigned i = 0; i < list_attribs.size(); i++){
-		list_attribs[i] = CIO_Utils::remove(list_attribs[i],' ');
+		list_attribs[i] = CZetNetUtils::remove(list_attribs[i],' ');
 		if(list_attribs[i] != "*")
-			list_attribs[i] = CIO_Utils::remove(list_attribs[i],'*');
+			list_attribs[i] = CZetNetUtils::remove(list_attribs[i],'*');
 	}
 
 
@@ -318,7 +319,7 @@ vector<string>  CIO_Utils::getFiles(const string & folder, const string & filter
 
 					  for(unsigned i = 0; i < list_attribs.size() && !ok; i++){
 
-						  if((list_attribs[i] == "*") || CIO_Utils::endsWith(ent->d_name,list_attribs[i])) {
+						  if((list_attribs[i] == "*") || CZetNetUtils::endsWith(ent->d_name,list_attribs[i])) {
 							  list_file.push_back(data);
 							  ok=true;
 						  }
@@ -334,3 +335,4 @@ vector<string>  CIO_Utils::getFiles(const string & folder, const string & filter
 	return list_file;
 }
 
+};

@@ -165,10 +165,8 @@ endif()
 # Library
 set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 
-	spec.c
-	findfirst.c
 	CUri.cpp
-	CIO_Utils.cpp
+	CZetNetUtils.cpp
 	CServer.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp
@@ -199,10 +197,8 @@ SET(
 	HttpResponse.h
 	HttpServer.h
 	CUri.h
-	CThread.h
-	CIO_Utils.h
-	CStringUtils.h
-	CBuffer.h
+	ZetNetUtils.h
+	
 )
 
 
