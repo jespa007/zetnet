@@ -1,6 +1,6 @@
 #pragma once
 
-
+namespace zetnet{
 
 //---------------------------------------------------------------------
 //  DEFINES
@@ -143,7 +143,7 @@ public:
 	CServer();
 
 	bool  setup(int  port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
-	void setTimeout(unsigned int seconds);
+	void setTimeout( int seconds);
 	//void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
 
 	//bool  DisconnectedCable();
@@ -172,9 +172,9 @@ public:
 
 
 
+};
 
 
-int CNET_Demo();
 
 
 

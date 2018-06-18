@@ -3,7 +3,7 @@
 
 namespace zetnet{
 
-string  CZetNetUtils::replace(const string & str_old, const char old_ch, char new_ch){
+string  ZetNetUtils::replace(const string & str_old, const char old_ch, char new_ch){
 	string str = str_old;
 	for (unsigned i = 0; i < str.length(); ++i) {
 		if (str[i] == old_ch)
@@ -13,7 +13,7 @@ string  CZetNetUtils::replace(const string & str_old, const char old_ch, char ne
 	return str;
 }
 
-void CZetNetUtils::replace(string & str_input, const string & toReplace, const string & replaceWith){
+void ZetNetUtils::replace(string & str_input, const string & toReplace, const string & replaceWith){
 
 	std::size_t found;;
 	while((found = str_input.find(toReplace)) != std::string::npos){
@@ -23,7 +23,7 @@ void CZetNetUtils::replace(string & str_input, const string & toReplace, const s
 
 }
 
-string  CZetNetUtils::remove(string & str_old, char ch_to_remove){
+string  ZetNetUtils::remove(string & str_old, char ch_to_remove){
 	string str = str_old;
 	string str_new="";
 
@@ -35,7 +35,7 @@ string  CZetNetUtils::remove(string & str_old, char ch_to_remove){
 	return str_new;
 }
 
-vector<string> & CZetNetUtils::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+vector<string> & ZetNetUtils::split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
     std::string item;
     while (std::getline(ss, item, delim)) {
@@ -45,20 +45,20 @@ vector<string> & CZetNetUtils::split(const std::string &s, char delim, std::vect
 }
 
 
-vector<string> CZetNetUtils::split(const std::string &s, char delim) {
+vector<string> ZetNetUtils::split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     split(s, delim, elems);
     return elems;
 }
 
-string CZetNetUtils::intToString(int number){
+string ZetNetUtils::intToString(int number){
 
    std::stringstream ss;//create a stringstream
    ss << number;//add number to the stream
    return ss.str();//return a string with the contents of the stream
 }
 
-bool CZetNetUtils::endsWith(const string & fullString, const string & ending){
+bool ZetNetUtils::endsWith(const string & fullString, const string & ending){
     if (fullString.length() >= ending.length()) {
         return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
     }
@@ -67,7 +67,7 @@ bool CZetNetUtils::endsWith(const string & fullString, const string & ending){
 }
 
 
-string  CZetNetUtils::getDirectory(const string & _filename) {
+string  ZetNetUtils::getDirectory(const string & _filename) {
 	size_t found;
 	string ss=".";
 	found=_filename.find_last_of("/\\");
@@ -79,7 +79,7 @@ string  CZetNetUtils::getDirectory(const string & _filename) {
 
 }
 
-string  CZetNetUtils::getFileName(const string & _filename) {
+string  ZetNetUtils::getFileName(const string & _filename) {
   size_t found;
   string ss=_filename;
 
@@ -93,7 +93,7 @@ string  CZetNetUtils::getFileName(const string & _filename) {
   return ss;
 }
 
-string  CZetNetUtils::getFileNameWithoutExtension(const string & _path) {
+string  ZetNetUtils::getFileNameWithoutExtension(const string & _path) {
 
 	string file = getFileName(_path);
 
@@ -115,7 +115,7 @@ string  CZetNetUtils::getFileNameWithoutExtension(const string & _path) {
 
 
 
-bool CZetNetUtils::fileExists(const string & m_file) {
+bool ZetNetUtils::fileExists(const string & m_file) {
 
 	if(m_file == "") return false;
 
@@ -140,7 +140,7 @@ bool CZetNetUtils::fileExists(const string & m_file) {
 }
 
 
-uint8_t * CZetNetUtils::readFile(const string & filename,uint32_t & size, bool end_string_char){
+uint8_t * ZetNetUtils::readFile(const string & filename,uint32_t & size, bool end_string_char){
 
 
 	int  file_length, readed_elements;
@@ -183,7 +183,7 @@ uint8_t * CZetNetUtils::readFile(const string & filename,uint32_t & size, bool e
 }
 
 
-int  CZetNetUtils::getLength(const  string  & file)
+int  ZetNetUtils::getLength(const  string  & file)
 {
 
 	int  ini,  end;
@@ -207,7 +207,7 @@ int  CZetNetUtils::getLength(const  string  & file)
 	return    -1;
 }
 
-int  CZetNetUtils::getLength(FILE  * file)
+int  ZetNetUtils::getLength(FILE  * file)
 {
 
 	int  ini,  end;
@@ -231,18 +231,18 @@ int  CZetNetUtils::getLength(FILE  * file)
 	return    -1;
 }
 
-bool CZetNetUtils::setWorkPath(const string & m_path) {
+bool ZetNetUtils::setWorkPath(const string & m_path) {
 
 	if(chdir(m_path.c_str())==-1) {
 		fprintf(stderr,"Cannot change working path to %s\n", m_path.c_str());
 		return false;
 	}
 	return true;
-	//print_info_cr("%s", CZetNetUtils::formatString("cd %s",m_path.c_str()));
-	//system(CZetNetUtils::formatString("cd %s",m_path.c_str()));
+	//print_info_cr("%s", ZetNetUtils::formatString("cd %s",m_path.c_str()));
+	//system(ZetNetUtils::formatString("cd %s",m_path.c_str()));
 }
 
-string CZetNetUtils::getCwd(){
+string ZetNetUtils::getCwd(){
 	char cwd[MAX_PATH];
 #ifdef __GNUC__
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
@@ -262,7 +262,7 @@ string CZetNetUtils::getCwd(){
 
 
 
-bool CZetNetUtils::isDirectory(const string & filename){
+bool ZetNetUtils::isDirectory(const string & filename){
 	int status;
 	struct stat st_buf;
 	//int ret_stat;
@@ -281,17 +281,17 @@ bool CZetNetUtils::isDirectory(const string & filename){
 
 
 
-vector<string>  CZetNetUtils::getFiles(const string & folder, const string & filter, bool recursive){
+vector<string>  ZetNetUtils::getFiles(const string & folder, const string & filter, bool recursive){
 
 
 
 	vector<string> list_file;
-	vector<string> list_attribs = CZetNetUtils::split(filter, '|');
+	vector<string> list_attribs = ZetNetUtils::split(filter, '|');
 
 	for(unsigned i = 0; i < list_attribs.size(); i++){
-		list_attribs[i] = CZetNetUtils::remove(list_attribs[i],' ');
+		list_attribs[i] = ZetNetUtils::remove(list_attribs[i],' ');
 		if(list_attribs[i] != "*")
-			list_attribs[i] = CZetNetUtils::remove(list_attribs[i],'*');
+			list_attribs[i] = ZetNetUtils::remove(list_attribs[i],'*');
 	}
 
 
@@ -319,7 +319,7 @@ vector<string>  CZetNetUtils::getFiles(const string & folder, const string & fil
 
 					  for(unsigned i = 0; i < list_attribs.size() && !ok; i++){
 
-						  if((list_attribs[i] == "*") || CZetNetUtils::endsWith(ent->d_name,list_attribs[i])) {
+						  if((list_attribs[i] == "*") || ZetNetUtils::endsWith(ent->d_name,list_attribs[i])) {
 							  list_file.push_back(data);
 							  ok=true;
 						  }

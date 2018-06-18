@@ -166,7 +166,7 @@ endif()
 set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 
 	CUri.cpp
-	CZetNetUtils.cpp
+	utils.cpp
 	CServer.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp
@@ -188,6 +188,10 @@ if(MSVC)
 	set_target_properties(httpservercpp${POST_NAME} PROPERTIES COMPILE_DEFINITIONS HTTPSERVERCPP_EXPORTS)
 endif()
 	
+if(MINGW OR MSVC)
+	target_link_libraries(httpservercpp${POST_NAME} Ws2_32 )	
+endif()
+
 
 SET(
 	HS
@@ -197,7 +201,7 @@ SET(
 	HttpResponse.h
 	HttpServer.h
 	CUri.h
-	ZetNetUtils.h
+	utils.h
 	
 )
 
@@ -212,14 +216,6 @@ add_executable(httpserver_demo${POST_NAME}
 
 
 target_link_libraries(httpserver_demo${POST_NAME}  httpservercpp${POST_NAME} -pthread )	
-
-if(MINGW OR MSVC)
-    target_link_libraries(httpserver_demo${POST_NAME} Ws2_32)
-endif()
-
-if(LINUX)
-	target_link_libraries(httpserver_demo${POST_NAME} -pthread )
-endif()
 
 
 

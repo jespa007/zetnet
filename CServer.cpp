@@ -1,5 +1,6 @@
 #include "zetnet.h"
 
+namespace zetnet{
 
 const char * SERVER_FULL     = "FULL";
 
@@ -56,7 +57,7 @@ int  CServer::putMsg(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
 }
 
 
-void CServer::setTimeout(unsigned int seconds){
+void CServer::setTimeout( int seconds){
 	timeout = {seconds, 0};   // sleep for ten minutes!
 }
 
@@ -210,7 +211,7 @@ bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configu
 	    serv_addr.ai_flags = AI_PASSIVE;
 
 	    // Resolve the server address and port
-	   iResult = getaddrinfo(NULL, (const char *)CZetNetUtils::intToString(portno).c_str(), &serv_addr, &result);
+	   iResult = getaddrinfo(NULL, (const char *)ZetNetUtils::intToString(portno).c_str(), &serv_addr, &result);
 	   if ( iResult != 0 ) {
 		   fprintf(stderr,"getaddrinfo failed with error: %d\n", iResult);
 		   WSACleanup();
@@ -554,3 +555,5 @@ void  CServer::update()  //  Receive  messages,  gest  &  send...
 void  CServer::PrintStatus()
 {
 }
+
+};
