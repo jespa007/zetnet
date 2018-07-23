@@ -12,12 +12,12 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 		return NULL;
 	}
 
-	ZetNetUtils::replace(request,"\r", "");
+	CZetNetUtils::replace(request,"\r", "");
 
 	bool is_binary= false;
 	request=CUri::unescape(request);
-	vector<string> tokens = ZetNetUtils::split(request,'\n');
-	vector<string> url_token = ZetNetUtils::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
+	vector<string> tokens = CZetNetUtils::split(request,'\n');
+	vector<string> url_token = CZetNetUtils::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
 	string type = url_token[0]; // GET/POST/etc...
 	string url = "";
 
@@ -42,7 +42,7 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 
 		try{
 
-			file_extension =url.substr(find_extension);//ZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
+			file_extension =url.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
 
 	#ifdef __DEBUG__
 			printf("file extension: %s\n",file_extension.c_str());
@@ -83,7 +83,7 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 	vector<string> sub_token;
 
 
-	vector<string> lst= ZetNetUtils::split(url, '?');//.Split('?');
+	vector<string> lst= CZetNetUtils::split(url, '?');//.Split('?');
 	if (lst.size() > 1)
 	{
 		url = lst[0];
@@ -105,7 +105,7 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 		if (is_header)
 		{
 
-			sub_token = ZetNetUtils::split(tokens[i],':'); // split only the first : occurrence ...
+			sub_token = CZetNetUtils::split(tokens[i],':'); // split only the first : occurrence ...
 
 			if (sub_token.size() > 1) // it has header value ...
 			{
@@ -119,20 +119,20 @@ HttpRequest *HttpRequest::GetRequest(const string & str_request) {
 				}else if(variable ==  "Accept"){
 
 				}else if(variable ==  "Content-Type"){
-					content_type = ZetNetUtils::split(value,';')[0];
-					ZetNetUtils::replace(content_type," ","");
+					content_type = CZetNetUtils::split(value,';')[0];
+					CZetNetUtils::replace(content_type," ","");
 				}
 			}
 		}
 		else // check parameters...
 		{
-			vector<string> pre_check_param = ZetNetUtils::split(tokens[i],'&');
+			vector<string> pre_check_param = CZetNetUtils::split(tokens[i],'&');
 
 			if (pre_check_param.size() >= 1)
 			{
 				for (unsigned j = 0; j < pre_check_param.size(); j++)
 				{
-					sub_token = ZetNetUtils::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
+					sub_token = CZetNetUtils::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
 
 					if (sub_token.size() == 2)
 					{

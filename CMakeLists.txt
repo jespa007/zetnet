@@ -166,7 +166,7 @@ endif()
 set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 
 	CUri.cpp
-	utils.cpp
+	CZetnetUtils.cpp
 	CServer.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp
@@ -201,7 +201,7 @@ SET(
 	HttpResponse.h
 	HttpServer.h
 	CUri.h
-	utils.h
+	CZetnetUtils.h
 	
 )
 

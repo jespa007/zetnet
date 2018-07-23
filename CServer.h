@@ -159,8 +159,6 @@ public:
 	void pause();
 
 
-
-
 	tClientSocket  	clientSocket[MAX_SOCKETS];
 	int 			freeSocket[MAX_SOCKETS];
 	int        		n_freeSockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!

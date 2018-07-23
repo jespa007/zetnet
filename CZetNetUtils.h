@@ -2,7 +2,7 @@
 
 namespace zetnet{
 
-class ZetNetUtils
+class CZetNetUtils
 {
 
 
