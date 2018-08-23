@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
  
-project(httpservercpp)
+project(zetnet)
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -12,7 +12,7 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 
     FOREACH(HEADER ${${HEADER_LIST}})
         get_filename_component(DIR ${HEADER} DIRECTORY)
-        INSTALL(FILES ${HEADER} DESTINATION include/httpservercpp/${DIR})
+        INSTALL(FILES ${HEADER} DESTINATION include/zetnet/${DIR})
     ENDFOREACH(HEADER)
 
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
@@ -51,7 +51,7 @@ include_directories (
 
 message("-- Dest.dir: " ${CMAKE_INSTALL_PREFIX})
 
-set(HTTPSERVERCPP_LIB_SRCS "")
+set(ZETNET_LIB_SRCS "")
 
 if(MSVC)
 	MESSAGE ("-- Plataform: MSVC" )
@@ -95,7 +95,7 @@ else()
 				../memmanager
 		)
 		
-	   	set(HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS} ../memmanager/MEM_ram.cpp)
+	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../memmanager/MEM_ram.cpp)
 		
 	ELSE()
 		message("-- Memmanager: OFF")
@@ -163,7 +163,7 @@ endif()
 #
 
 # Library
-set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
+set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	CUri.cpp
 	CZetnetUtils.cpp
@@ -175,26 +175,27 @@ set( HTTPSERVERCPP_LIB_SRCS ${HTTPSERVERCPP_LIB_SRCS}
 )
 
 #HTTPSERVER TEST executable
-set(HTTPSERVERCPP_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
+set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
 
 
 
 # httpserver library
-add_library( httpservercpp${POST_NAME} ${LINK} ${HTTPSERVERCPP_LIB_SRCS} )
-target_link_libraries(httpservercpp${POST_NAME} "-Wl,--no-as-needed" )
+add_library( zetnet${POST_NAME} ${LINK} ${ZETNET_LIB_SRCS} )
+target_link_libraries(zetnet${POST_NAME} "-Wl,--no-as-needed" )
 
 if(MSVC)
 	#only for msvc...
-	set_target_properties(httpservercpp${POST_NAME} PROPERTIES COMPILE_DEFINITIONS HTTPSERVERCPP_EXPORTS)
+	set_target_properties(zetnet${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
 endif()
 	
 if(MINGW OR MSVC)
-	target_link_libraries(httpservercpp${POST_NAME} Ws2_32 )	
+	target_link_libraries(zetnet${POST_NAME} Ws2_32 )	
 endif()
 
 
 SET(
 	HS
+	zetnet.h
 	CServer.h
 	HttpHandleClient.h
 	HttpRequest.h
@@ -211,15 +212,15 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 #-----------------------------------------
 # EXECUTABLES
 add_executable(httpserver_demo${POST_NAME}
-	${HTTPSERVERCPP_DEMO_SRCS}
+	${ZETNET_DEMO_SRCS}
 )
 
 
-target_link_libraries(httpserver_demo${POST_NAME}  httpservercpp${POST_NAME} -pthread )	
+target_link_libraries(httpserver_demo${POST_NAME}  zetnet${POST_NAME} -pthread )	
 
 
 
-INSTALL(TARGETS httpservercpp${POST_NAME}
+INSTALL(TARGETS zetnet${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
 		RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
     	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
