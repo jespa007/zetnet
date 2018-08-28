@@ -177,10 +177,18 @@ CServer::CServer()
 	sockfd=-1;
 
 	portno=-1;
+	time_delay=1; // 1ms delay
+	IsStreamingServer=false;
+}
+
+//-------------------------------------------------------------------------------------
+void CServer::setTimeDelay(unsigned long delay){
+	time_delay = delay;
 }
 
 void CServer::mainLoop(CServer *tcp){
 	tcp->update();
+
 }
 //---------------------------------------------------------------------------------------------------------------------------
 bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configuration  of  machine  &  init  sdl_net...
@@ -189,7 +197,7 @@ bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configu
 	// kill thread if is active...
 	host = server_name;
 
-	unLoad();
+	unload();
 
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	portno = _portno;
@@ -436,7 +444,12 @@ void CServer::gestServer()
 			// If there is any activity on the client socket...
 			if (clientSocketActivity != 0)
 			{
-				if(getMsg(clientSocket[clientNumber].socket,  (uint8_t  *)buffer))  //  message readed ...
+				int ok=1;
+				if(!IsStreamingServer){ // read from client...
+					ok=getMsg(clientSocket[clientNumber].socket,  (uint8_t  *)buffer);
+				}
+
+				if(ok) // serve to client ...
 				{
 					if(!gestMessage(clientSocket[clientNumber].socket,buffer, sizeof(buffer))){
 #if __DEBUG__
@@ -490,7 +503,7 @@ void  CServer::internal_disconnect()
 }
 //------------------------------------------------------------------------------------------------------------------------
 //char  *str  =  NULL;
-void CServer::unLoad()
+void CServer::unload()
 {
 	if(thread != NULL){
 		end_loop_mdb=true;
@@ -509,7 +522,7 @@ void CServer::unLoad()
 }
 
 CServer::~CServer() {
-	unLoad();
+	unload();
 }
 //---------------------------------------------------------------------------------------------------------v
 void  CServer::getMessage()
@@ -545,7 +558,10 @@ void  CServer::update()  //  Receive  messages,  gest  &  send...
 			getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
 		}
 
-		usleep(20000); // 20ms
+		if(time_delay>0){
+			CZetNetUtils::delay(time_delay);
+		}
+
 	}
 
 	//return 0;

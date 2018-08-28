@@ -13,6 +13,7 @@ class CZetNetUtils
 
 public:
 
+	static void delay(unsigned long _ms);
 
 
 	static vector<string> &split(const string &s, char delim, vector<string> &elems);

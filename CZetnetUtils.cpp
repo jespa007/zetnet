@@ -3,6 +3,16 @@
 
 namespace zetnet{
 
+void CZetNetUtils::delay(unsigned long _ms){
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__)
+	    Sleep( _ms );
+#else
+	    usleep( _ms * 1000 );
+#endif
+
+
+}
+
 string  CZetNetUtils::replace(const string & str_old, const char old_ch, char new_ch){
 	string str = str_old;
 	for (unsigned i = 0; i < str.length(); ++i) {

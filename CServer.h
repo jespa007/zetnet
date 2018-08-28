@@ -48,6 +48,7 @@ class  CServer
 
 	std::thread *thread;
 	bool end_loop_mdb;
+	unsigned long time_delay;
 
 	// only linux ...
 
@@ -71,7 +72,7 @@ protected:
 	//void  *socket;
 
 
-
+	bool IsStreamingServer;
 	//---------------------------------------------------------------------
 	//IPaddress  ip;
 	bool configured;
@@ -98,7 +99,7 @@ protected:
 
 	//bool  createSocketSet();
 	//bool  		sendMessageToServer(Uint8  *data,  unsigned  len);//,  unsigned  NumeroMensaje=0);
-
+	void setTimeDelay(unsigned long delay);
 
 	void  internal_disconnect();
 	bool  internal_connect();
@@ -138,7 +139,7 @@ public:
 
 	//bool          IsServer();
 
-	void  unLoad();
+	void  unload();
 
 	CServer();
 
