@@ -13,7 +13,7 @@ HttpResponse::tBufferData  HttpResponse::GenerateError(int error_id, HttpServer 
 {
 
 	tHtmlError error;
-	string int_error = CZetNetUtils::intToString(error_id);
+	string int_error = string_utils::int_to_string(error_id);
 	tBufferData data;
 
 	if(error_id < MAX_ERROR_TYPES){
@@ -142,15 +142,15 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 		//fi = new FileInfo(file);
 		ok = false;
 
-		file = CZetNetUtils::getFileName(filename_with_path);
-		path = CZetNetUtils::getDirectory(filename_with_path);
+		file = path_utils::get_filename(filename_with_path);
+		path = path_utils::get_directory(filename_with_path);
 
 #ifdef __DEBUG__
 		printf("try_file:%s request:%s\n",filename_with_path.c_str(),request->URL.c_str());
 #endif
 
 
-		if (CZetNetUtils::fileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+		if (io_utils::file_exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
 		{
 #ifdef __DEBUG__
 			printf("file exists!!!\n");
@@ -162,16 +162,16 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 			//DirectoryInfo di = new DirectoryInfo(fi+"/");
 
-			if (!CZetNetUtils::isDirectory(path)){
+			if (!io_utils::is_directory(path)){
 				return MakePageNotFound(webserver);
 			}
 
-			vector<string> list_file = CZetNetUtils::getFiles(path);//,"*.html",false);
+			vector<string> list_file = io_utils::get_files(path);//,"*.html",false);
 
 			//FileInfo [] files = di.GetFiles();
 			for(unsigned f=0; f < list_file.size() && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
-				string n = CZetNetUtils::getFileName(list_file[f]);
+				string n = path_utils::get_filename(list_file[f]);
 
 #ifdef __DEBUG__
 				printf("try_file2:%s\n",n.c_str());
@@ -210,7 +210,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		tBufferData data;
 
-		data.buffer=CZetNetUtils::readFile(filename_to_load,data.size, false);
+		data.buffer=io_utils::read_file(filename_to_load,data.size, false);
 
 
 
@@ -243,7 +243,7 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 		send_message+="Content-Type: " + mime + "\r\n";
 		send_message+="Accept-Ranges: bytes\r\n";
 		send_message+="Connection: Keep-Alive\r\n";
-		send_message+="Content-Length: " + CZetNetUtils::intToString(this->data.size) + "\r\n";
+		send_message+="Content-Length: " + string_utils::int_to_string(this->data.size) + "\r\n";
 
 		if(is_binary){
 		/*if (   mime == "application/pdf"
@@ -284,7 +284,7 @@ void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const str
 	{
 		string error = (char *)data.buffer;
 		error +="\r\n";
-		send_message+="Content-Length: " + CZetNetUtils::intToString(error.size()) + "\r\n\r\n";
+		send_message+="Content-Length: " + string_utils::int_to_string(error.size()) + "\r\n\r\n";
 		CServer::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
 		CServer::putMsg(dst_socket,(uint8_t *)error.c_str(),error.size());
 

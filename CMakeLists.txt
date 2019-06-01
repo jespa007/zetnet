@@ -166,7 +166,10 @@ endif()
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	CUri.cpp
-	CZetnetUtils.cpp
+	string_utils.cpp
+	io_utils.cpp
+	path_utils.cpp
+	time_utils.cpp
 	CServer.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp

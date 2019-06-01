@@ -193,7 +193,7 @@ void CServer::mainLoop(CServer *tcp){
 //---------------------------------------------------------------------------------------------------------------------------
 bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
-	int opt = TRUE;
+	bool opt = true;
 	// kill thread if is active...
 	host = server_name;
 
@@ -559,7 +559,7 @@ void  CServer::update()  //  Receive  messages,  gest  &  send...
 		}
 
 		if(time_delay>0){
-			CZetNetUtils::delay(time_delay);
+			time_utils::delay(time_delay);
 		}
 
 	}
