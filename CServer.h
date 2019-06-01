@@ -1,28 +1,12 @@
 #pragma once
 
-namespace zetnet{
-
-//---------------------------------------------------------------------
-//  DEFINES
-//---------------------------------------------------------------------
-
-#define  MAX_BYTES_TO_SEND	512
-
-
-#define  TIME_TO_RECONNECT	3000	//  ms
-
-#define  MAX_TRIES_BAD_MESSAGE	3
-//#define  TIME_POLLIGN		1000
-#define  TIME_WAIT_ACK		3000	//  ms
-
-#define  MAX_SOCKETS					100
-//#define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
-
-#define DEFAULT_TIMEOUT_SECONDS 0
-
 
 #define  MAX_LENGTH_MESSAGE 16384
-#define SOCKET_CLIENT_NOT_AVAILABLE -1
+#define  MAX_SOCKETS					100
+namespace zetnet{
+
+
+
 
 typedef  struct  {
 	SOCKET socket;

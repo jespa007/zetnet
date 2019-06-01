@@ -51,6 +51,10 @@
 #define MAX_PATH		4096
 #endif
 
+#define ZETNET_MAJOR_VERSION 1
+#define ZETNET_MINOR_VERSION 0
+#define ZETNET_PATCH_VERSION 0
+
 
 using std::string;
 using std::vector;

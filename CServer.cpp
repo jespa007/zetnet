@@ -1,5 +1,21 @@
 #include "zetnet.h"
 
+
+#define  MAX_BYTES_TO_SEND	512
+
+
+#define  TIME_TO_RECONNECT	3000	//  ms
+
+#define  MAX_TRIES_BAD_MESSAGE	3
+//#define  TIME_POLLIGN		1000
+#define  TIME_WAIT_ACK		3000	//  ms
+
+
+//#define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
+
+#define DEFAULT_TIMEOUT_SECONDS 0
+#define SOCKET_CLIENT_NOT_AVAILABLE -1
+
 namespace zetnet{
 
 const char * SERVER_FULL     = "FULL";
