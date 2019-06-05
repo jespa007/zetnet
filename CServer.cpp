@@ -235,7 +235,7 @@ bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configu
 	    serv_addr.ai_flags = AI_PASSIVE;
 
 	    // Resolve the server address and port
-	   iResult = getaddrinfo(NULL, (const char *)CZetNetUtils::intToString(portno).c_str(), &serv_addr, &result);
+	   iResult = getaddrinfo(NULL, (const char *)string_utils::int_to_string(portno).c_str(), &serv_addr, &result);
 	   if ( iResult != 0 ) {
 		   fprintf(stderr,"getaddrinfo failed with error: %d\n", iResult);
 		   WSACleanup();

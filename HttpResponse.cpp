@@ -126,7 +126,7 @@ HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) 
 
 		string path_url = CUri::unescape(request->URL);
 #ifdef WIN32
-		path_url = CZetNetUtils::replace(path_url, '/','\\');//CUri::unescape(request->URL)
+		path_url = string_utils::replace(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
 		string filename_with_path = /*CZetNetUtils::getCwd()
