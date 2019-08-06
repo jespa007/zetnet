@@ -1,7 +1,6 @@
 #pragma once
 
 #include <thread>
-
 #include <time.h>
 #include <string>
 #include <sstream>
@@ -9,15 +8,12 @@
 #include <memory.h>
 
 
-
-
-
 #ifdef __GNUC__
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <errno.h>
+	#include <sys/stat.h>
+	#include <dirent.h>
+	#include <unistd.h>
+	#include <sys/types.h>
+	#include <errno.h>
 #endif
 
 // include socket platform
@@ -47,27 +43,20 @@
 #endif
 
 
-#ifndef MAX_PATH
-#define MAX_PATH		4096
-#endif
 
 #define ZETNET_MAJOR_VERSION 1
 #define ZETNET_MINOR_VERSION 0
 #define ZETNET_PATCH_VERSION 0
 
 
-using std::string;
-using std::vector;
+
+#include "string.h"
+#include "io.h"
+#include "path.h"
+#include "url.h"
 
 
 
-#include "string_utils.h"
-#include "io_utils.h"
-#include "path_utils.h"
-#include "time_utils.h"
-
-
-#include "CUri.h"
 #include "CServer.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"

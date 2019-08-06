@@ -2,61 +2,61 @@
 
 namespace zetnet{
 
-class HttpRequest
-{
-
-
-public:
-
-	struct tParamValue
+	class HttpRequest
 	{
-		string Name;
-		string Value;
 
-		tParamValue(const string & _Name, const string & _Value)
+
+	public:
+
+		struct ParamValue
 		{
-			Name = _Name;
-			Value = _Value;
+			std::string name;
+			std::string value;
+
+			ParamValue(const std::string & _name, const std::string & _value)
+			{
+				name = _name;
+				value = _value;
+			}
+		};
+
+		std::string type;
+		std::string URL;
+		std::string host;
+		std::string referer;
+		std::string mime;
+		bool is_binary;
+		std::string content_type;
+		std::vector<ParamValue> param;
+
+
+		static HttpRequest * getRequest(const std::string & request);
+
+	protected:
+
+	private:
+		HttpRequest(const std::string &  _type
+				, const std::string & _url
+				, const std::string & _host
+				, const std::string & _referer
+				, const std::string & _mime
+				, bool _is_binary
+				, const std::string & _content_type
+				, const std::vector<ParamValue> & _param
+				)
+		{
+			type 		= _type;
+			URL 		= _url;
+			host 		= _host;
+			referer 	= _referer;
+			mime 		= _mime;
+			is_binary 	= _is_binary;
+			content_type= _content_type;
+			param 		= _param;
+
 		}
+
+
 	};
-
-	string Type;
-	string URL;
-	string Host;
-	string Referer;
-	string Mime;
-	bool IsBinary;
-	string ContentType;
-	vector<tParamValue> Param;
-
-
-	static HttpRequest * GetRequest(const string & request);
-
-protected:
-
-private:
-	HttpRequest(const string &  _type
-			, const string & _url
-			, const string & _host
-			, const string & _referer
-			, const string & _mime
-			, bool is_binary
-			, const string & _content_type
-			, const vector<tParamValue> & _param
-			)
-	{
-		Type = _type;
-		URL = _url;
-		Host = _host;
-		Referer = _referer;
-		Mime = _mime;
-		IsBinary = is_binary;
-		ContentType = _content_type;
-		Param = _param;
-
-	}
-
-
-};
 
 };

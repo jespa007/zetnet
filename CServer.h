@@ -6,152 +6,148 @@
 namespace zetnet{
 
 
+	typedef  struct  {
+		SOCKET socket;
+		int    idxClient;
+		bool    header_sent; // for streaming purposes!
 
+	}  ClientSocket;
 
-typedef  struct  {
-	SOCKET socket;
-	int    idxClient;
-	bool    header_sent; // for streaming purposes!
+	class  CServer
+	{
+		 //set of socket descriptors
+		  fd_set readfds;
 
-}  tClientSocket;
+	#ifdef _WIN32
+		WSADATA wsaData;
+	#endif
 
+	#ifdef __GNUC__
+		struct timeval timeout;
+	#endif
 
+		std::thread *thread;
+		bool end_loop_mdb;
+		unsigned long time_delay;
 
-class  CServer
-{
-	 //set of socket descriptors
-	  fd_set readfds;
+		// only linux ...
 
-#ifdef _WIN32
-	WSADATA wsaData;
-#endif
+		struct addrinfo  serv_addr, cli_addr;
+		SOCKET sockfd;
+		int portno;
 
-#ifdef __GNUC__
-	struct timeval timeout;
-#endif
+		//bool  TCP_GetConnection();
+		//void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
 
-	std::thread *thread;
-	bool end_loop_mdb;
-	unsigned long time_delay;
+		void  update();  //  Receive  messages,  gest  &  send...
 
-	// only linux ...
+		static void mainLoop(CServer *);
 
-	struct addrinfo  serv_addr, cli_addr;
-    SOCKET sockfd;
-	int portno;
-
-	//bool  TCP_GetConnection();
-	//void  TCP_GetIpAddressFromSocket(TCPsocket  sock,  char  *buffer);
-
-	void  update();  //  Receive  messages,  gest  &  send...
-
-	static void mainLoop(CServer *);
-
-protected:
+	protected:
 
 
 
-	//void  TCP_GestClient();
+		//void  TCP_GestClient();
 
-	//void  *socket;
-
-
-	bool IsStreamingServer;
-	//---------------------------------------------------------------------
-	//IPaddress  ip;
-	bool configured;
-	//SDLNet_SocketSet socketSet;
-	char  *message;
-	const char *host;
-	uint32_t  ipaddr;
-	uint8_t  buffer[MAX_LENGTH_MESSAGE];
-
-	int	      src_port,dst_port;
+		//void  *socket;
 
 
-	bool  	connected
-	,RequestToConnect
-	,RequestToDisConnect
-	,Want_reconnection;
+		bool IsStreamingServer;
+		//---------------------------------------------------------------------
+		//IPaddress  ip;
+		bool configured;
+		//SDLNet_SocketSet socketSet;
+		char  *message;
+		const char *host;
+		uint32_t  ipaddr;
+		uint8_t  buffer[MAX_LENGTH_MESSAGE];
+
+		int	      src_port,dst_port;
 
 
-	//Uint32  TimeToReconnect, TimerActivityNet,TimerPolling;
-	string  ValueVariableHost;
+		bool  	connected
+		,RequestToConnect
+		,RequestToDisConnect
+		,Want_reconnection;
 
-	unsigned  initialized;
+
+		//Uint32  TimeToReconnect, TimerActivityNet,TimerPolling;
+		std::string  value_variable_host;
+
+		unsigned  initialized;
 
 
-	//bool  createSocketSet();
-	//bool  		sendMessageToServer(Uint8  *data,  unsigned  len);//,  unsigned  NumeroMensaje=0);
-	void setTimeDelay(unsigned long delay);
+		//bool  createSocketSet();
+		//bool  		sendMessageToServer(Uint8  *data,  unsigned  len);//,  unsigned  NumeroMensaje=0);
+		void setTimeDelay(unsigned long delay);
 
-	void  internal_disconnect();
-	bool  internal_connect();
-	virtual void  getMessage();
-	void  gestClient();
+		void  internal_disconnect();
+		bool  internal_connect();
+		virtual void  getMessage();
+		void  gestClient();
 
-	virtual bool gestServerBase();
-	virtual void  gestServer();
+		virtual bool gestServerBase();
+		virtual void  gestServer();
 
-	//Uint8	searchClient(const char *name_client);
-	//void sendAll(Uint8  ID_Message,  Uint8  *message=NULL,  int  len=0);
-	//bool  setupHost();
+		//Uint8	searchClient(const char *name_client);
+		//void sendAll(Uint8  ID_Message,  Uint8  *message=NULL,  int  len=0);
+		//bool  setupHost();
 
 
 
 
-	tClientSocket 		*getFreeSlot(); // adds client
-	bool 				freeSlot(tClientSocket * sockClient); // removes client...
+		ClientSocket 		*getFreeSlot(); // adds client
+		bool 				freeSlot(ClientSocket * sockClient); // removes client...
 
-	virtual bool 		gestMessage(SOCKET in_socket, uint8_t *buffer, uint32_t len)=0;
-
-
-	void closeSocket(SOCKET sock);
-	//int socketAdd(void *sock);
-	//int socketDel(void *sock);
-	SOCKET socketAccept();
-	bool socketReady(SOCKET sock);
+		virtual bool 		gestMessage(SOCKET in_socket, uint8_t *buffer, uint32_t len)=0;
 
 
+		void closeSocket(SOCKET sock);
+		//int socketAdd(void *sock);
+		//int socketDel(void *sock);
+		SOCKET socketAccept();
+		bool socketReady(SOCKET sock);
 
 
-public:
-
-	static int getMsg(SOCKET sock,uint8_t  *buf);
-	static int putMsg(SOCKET sock,uint8_t  *buf,  uint32_t  len);
 
 
-	//bool          IsServer();
+	public:
 
-	void  unload();
-
-	CServer();
-
-	bool  setup(int  port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
-	void setTimeout( int seconds);
-	//void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
-
-	//bool  DisconnectedCable();
-	//void  WaitToDisconnect();
-	//bool  ChangeIpReceived();
-
-	bool  isConnected();
-	virtual void  connect();
-	virtual void  disconnect();
-	void  Reconnection();
-
-	void resume();
-	void pause();
+		static int getMsg(SOCKET sock,uint8_t  *buf);
+		static int putMsg(SOCKET sock,uint8_t  *buf,  uint32_t  len);
 
 
-	tClientSocket  	clientSocket[MAX_SOCKETS];
-	int 			freeSocket[MAX_SOCKETS];
-	int        		n_freeSockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!
+		//bool          IsServer();
+
+		void  unload();
+
+		CServer();
+
+		bool  setup(int  port, const char *name_client="Server");  //  Reads  configuration  of  machine  &  init  sdl_net...
+		void setTimeout( int seconds);
+		//void  setupAsClient(  const char *ip, int _src_port, int _dst_port, const char *name_client="Client");
+
+		//bool  DisconnectedCable();
+		//void  WaitToDisconnect();
+		//bool  ChangeIpReceived();
+
+		bool  isConnected();
+		virtual void  connect();
+		virtual void  disconnect();
+		void  Reconnection();
+
+		void resume();
+		void pause();
 
 
-	void  PrintStatus();
-	virtual ~CServer();
-};
+		ClientSocket  	clientSocket[MAX_SOCKETS];
+		int 			freeSocket[MAX_SOCKETS];
+		int        		n_freeSockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!
+
+
+		void  PrintStatus();
+		virtual ~CServer();
+	};
 
 
 

@@ -1,9 +1,12 @@
 #include "zetnet.h"
 
+#ifndef MAX_PATH
+#define MAX_PATH		4096
+#endif
+
+
 namespace zetnet{
-	namespace io_utils{
-
-
+	namespace io{
 
 		bool file_exists(const std::string & m_file) {
 
@@ -26,9 +29,7 @@ namespace zetnet{
 			  return (stat (m_file.c_str(), &buffer) == 0);
 		#endif
 
-
 		}
-
 
 		uint8_t * read_file(const std::string & filename,uint32_t & size, bool end_string_char){
 
@@ -51,8 +52,6 @@ namespace zetnet{
 					memset(buffer,0,size );
 
 					readed_elements = fread(buffer, 1, file_length, fp);
-
-
 
 					if(readed_elements != file_length) {
 						fprintf(stderr,"number elements doesn't match with length file (%s)\n",filename.c_str());
@@ -86,9 +85,6 @@ namespace zetnet{
 				ini  =  ftell(fp);
 				fseek(fp,  0,SEEK_END);
 				end  =  ftell(fp);
-
-
-
 				fclose(fp);
 
 				return  (end  -  ini);
@@ -113,8 +109,6 @@ namespace zetnet{
 				end  =  ftell(fp);
 
 				fseek(fp,  current,SEEK_SET);
-				//fclose(fp);
-
 				return  (end  -  ini);
 			}
 
@@ -128,8 +122,6 @@ namespace zetnet{
 				return false;
 			}
 			return true;
-			//print_info_cr("%s", formatString("cd %s",m_path.c_str()));
-			//system(formatString("cd %s",m_path.c_str()));
 		}
 
 		std::string get_cwd(){
@@ -149,36 +141,28 @@ namespace zetnet{
 			return s_cwd;
 		}
 
-
-
 		bool is_directory(const std::string & filename){
 			int status;
 			struct stat st_buf;
 			//int ret_stat;
 
 			status = stat (filename.c_str(), &st_buf);
-				if (status != 0) {
-					//print_error_cr ("Error, errno = %d\n", errno);
-					return false;
-				}
-
+			if (status != 0) {
+				return false;
+			}
 
 			return S_ISDIR (st_buf.st_mode) != 0;
-
-
 		}
 
 		std::vector<std::string>  get_files(const std::string & folder, const std::string & filter, bool recursive){
 
-
-
 			std::vector<std::string> list_file;
-			std::vector<std::string> list_attribs = string_utils::split(filter, '|');
+			std::vector<std::string> list_attribs = string::split(filter, '|');
 
 			for(unsigned i = 0; i < list_attribs.size(); i++){
-				list_attribs[i] = string_utils::remove(list_attribs[i],' ');
+				list_attribs[i] = string::remove(list_attribs[i],' ');
 				if(list_attribs[i] != "*")
-					list_attribs[i] = string_utils::remove(list_attribs[i],'*');
+					list_attribs[i] = string::remove(list_attribs[i],'*');
 			}
 
 
@@ -206,7 +190,7 @@ namespace zetnet{
 
 							  for(unsigned i = 0; i < list_attribs.size() && !ok; i++){
 
-								  if((list_attribs[i] == "*") || string_utils::ends_with(ent->d_name,list_attribs[i])) {
+								  if((list_attribs[i] == "*") || string::ends_with(ent->d_name,list_attribs[i])) {
 									  list_file.push_back(data);
 									  ok=true;
 								  }

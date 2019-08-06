@@ -11,7 +11,7 @@ class HttpHandleClient //:public CThread
 	HttpServer *server;
 	uint8_t *rcv_buffer_data;
 	uint32_t    rcv_buffer_data_len;
-	string clNo;
+	std::string clNo;
 public:
 
 	HttpHandleClient(SOCKET _socket_client, HttpServer *_server, uint8_t *_rcv_data, uint32_t _rcv_data_len);

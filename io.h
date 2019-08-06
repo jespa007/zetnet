@@ -1,7 +1,7 @@
 #pragma once
 
 namespace zetnet{
-	namespace io_utils{
+	namespace io{
 		 bool file_exists(const std::string & m_file);
 		// bool readFile(const string & filename, char *buffer, int length);
 		 uint8_t * read_file(const std::string & filename, uint32_t & bytes_readed, bool end_string_char = true);

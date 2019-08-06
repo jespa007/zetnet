@@ -165,11 +165,10 @@ endif()
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	CUri.cpp
-	string_utils.cpp
-	io_utils.cpp
-	path_utils.cpp
-	time_utils.cpp
+	url.cpp
+	string.cpp
+	io.cpp
+	path.cpp
 	CServer.cpp
 	HttpHandleClient.cpp
 	HttpRequest.cpp
@@ -198,13 +197,15 @@ endif()
 
 SET(
 	HS
+	io.h
+	string.h
+	url.h
 	zetnet.h
 	CServer.h
 	HttpHandleClient.h
 	HttpRequest.h
 	HttpResponse.h
 	HttpServer.h
-	CUri.h
 	CZetnetUtils.h
 	
 )

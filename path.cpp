@@ -1,7 +1,7 @@
 #include "zetnet.h"
 
 namespace zetnet{
-	namespace path_utils{
+	namespace path{
 		std::string  get_directory(const std::string & _filename) {
 			size_t found;
 			std::string ss=".";
