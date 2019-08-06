@@ -18,8 +18,8 @@ namespace zetnet{
 		request=CUri::unescape(request);
 		std::vector<std::string> tokens = string::split(request,'\n');
 		std::vector<std::string> url_token = string::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
-		string type = url_token[0]; // GET/POST/etc...
-		string url = "";
+		std::string type = url_token[0]; // GET/POST/etc...
+		std::string url = "";
 
 		if(url_token.size() >= 2){
 
@@ -28,13 +28,13 @@ namespace zetnet{
 
 
 
-		string mime = "text/html";
-		string content_type="";
+		std::string mime = "text/html";
+		std::string content_type="";
 		std::vector<ParamValue> param;// = new List<tParamValue>();
 		bool is_header = true;
 
 
-		string file_extension = "";
+		std::string file_extension = "";
 
 		int find_extension=url.find_last_of(".");
 
@@ -80,7 +80,7 @@ namespace zetnet{
 			}
 		}
 
-		std::vector<string> sub_token;
+		std::vector<std::string> sub_token;
 
 
 		std::vector<string> lst= string::split(url, '?');//.Split('?');
@@ -89,13 +89,13 @@ namespace zetnet{
 			url = lst[0];
 		}
 
-		string host = "";// tokens[2];
-		string referer = "";
+		std::string host = "";// tokens[2];
+		std::string referer = "";
 
 		for (unsigned i = 0; i < tokens.size(); i++)
 		{
-			string variable="";
-			string value="";
+			std::string variable="";
+			std::string value="";
 
 			if (tokens[i] == "")
 			{
@@ -137,7 +137,7 @@ namespace zetnet{
 						if (sub_token.size() == 2)
 						{
 							param.push_back(
-								 tParamValue(
+								 ParamValue(
 									sub_token[0],
 									sub_token[1]
 								)

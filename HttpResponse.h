@@ -46,7 +46,6 @@ namespace zetnet{
 
 
 		HttpResponse(
-				//TCPsocket _dst_socket
 				 const std::string  & status
 				,const std::string & mime
 				, bool is_binary

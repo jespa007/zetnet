@@ -9,11 +9,11 @@ namespace zetnet{
 	};
 
 
-	HttpResponse::tBufferData  HttpResponse::generateError(int error_id, HttpServer * webserver)
+	HttpResponse::BufferData  HttpResponse::generateError(int error_id, HttpServer * webserver)
 	{
 
 		tHtmlError error;
-		string int_error = string::to_string(error_id);
+		std::string int_error = string::to_string(error_id);
 		BufferData data;
 
 		if(error_id < MAX_ERROR_TYPES){
@@ -23,7 +23,7 @@ namespace zetnet{
 			error.description="not implemented";
 		}
 
-		string str=
+		std::string str=
 				"<html>"
 					"<body>"
 						"<center>"
@@ -47,12 +47,11 @@ namespace zetnet{
 		strcpy((char *)data.buffer,(char *)str.c_str());
 
 
-		return data;//new ((uint8_t *)str.c_str(), str.size());
+		return data;
 
 	}
 
 	HttpResponse::HttpResponse( const std::string & status,const std::string & mime,bool is_binary, BufferData data) {
-			//this->dst_socket = _dst_socket;
 			this->data = data;
 			this->status = status;
 			this->mime = mime;
@@ -60,16 +59,6 @@ namespace zetnet{
 
 	}
 
-	HttpResponse::~HttpResponse(){
-		// data is ByteBuffer allocated from Response::From
-		free(this->data.buffer);
-	}
-	/*
-	HttpResponse * HttpResponse::MakeFromFile(const string & file, const string & mime)
-	{
-		ByteBuffer *buffer = CZetNetUtils::readFile(file);
-		return new HttpResponse("200 OK", mime, buffer);
-	}*/
 
 	HttpResponse * HttpResponse::makeFromString(const std::string & str, const std::string & mime)
 	{
@@ -98,48 +87,27 @@ namespace zetnet{
 		return new HttpResponse("404 Bad Request", "html/text", false, HttpResponse::generateError(HTML_ERROR_404, webserver));
 	}
 
-	string  getFileName(const std::string & _filename) {
-	  size_t found;
-	  string ss=_filename;
-
-	  //JEME_MEM_DISABLE_REGISTER_MEMORYLEAKS;
-
-	  found=_filename.find_last_of("/\\");
-	  if((int)found != -1)
-		  ss= _filename.substr(found+1);
-
-	  //JEME_MEM_ENABLE_REGISTER_MEMORYLEAKS;
-	  return ss;
-	}
-
 	HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) {
 		if (request == NULL)
-			return MakeNullRequest(webserver);
+			return makeNullRequest(webserver);
 
 		std::string file="";
 		std::string path="";
 
-		//FileInfo fi = null;
 		bool ok = false;
 
-		if(request->Type== "GET"){
+		if(request->type== "GET"){
 
-			string path_url = CUri::unescape(request->URL);
+			std::string path_url = url::unescape(request->URL);
 	#ifdef WIN32
 			path_url = string::replace(path_url, '/','\\');//CUri::unescape(request->URL)
 	#endif
 
-			string filename_with_path = /*CZetNetUtils::getCwd()
+			std::string filename_with_path = /*CZetNetUtils::getCwd()
 				+"\\"*/
 				  webserver->WEB_DIR
 				+ path_url;
 
-			/*string filename_with_path=_filename_with_path;
-			if(_filename_with_path[0]=='/'){
-				filename_with_path = _filename_with_path.substr (1,_filename_with_path.size());
-			}*/
-
-			//fi = new FileInfo(file);
 			ok = false;
 
 			file = path::get_filename(filename_with_path);
@@ -159,19 +127,15 @@ namespace zetnet{
 			}
 			else
 			{
-
-				//DirectoryInfo di = new DirectoryInfo(fi+"/");
-
 				if (!io::is_directory(path)){
-					return MakePageNotFound(webserver);
+					return makePageNotFound(webserver);
 				}
 
 				std::vector<std::string> list_file = io::get_files(path);//,"*.html",false);
 
-				//FileInfo [] files = di.GetFiles();
 				for(unsigned f=0; f < list_file.size() && !ok; f++){ //foreach(FileInfo ff in files){
 					//String n = ff.Name;
-					string n = path::get_filename(list_file[f]);
+					std::string n = path::get_filename(list_file[f]);
 
 	#ifdef __DEBUG__
 					printf("try_file2:%s\n",n.c_str());
@@ -181,20 +145,6 @@ namespace zetnet{
 						file=n;
 						ok = true;
 					}
-
-			/*		if(
-						n.find("default.html")
-						|| n.find("default.htm")
-	#if DEBUG
-						|| n.find("index_debug.html") // get this first for debug purpouses...
-	#endif
-						|| n.find("index.htm")
-						|| n.find("index.html")
-					  )
-					{
-						fi=ff;
-						ok = true;
-					}*/
 				}
 			}
 
@@ -206,34 +156,28 @@ namespace zetnet{
 	#define SEPARATOR_DIR "/"
 	#endif
 
-			string filename_to_load = path+SEPARATOR_DIR+file;
+			std::string filename_to_load = path+SEPARATOR_DIR+file;
 
 			BufferData data;
 
 			data.buffer=io::read_file(filename_to_load,data.size, false);
 
-
-
-				return new HttpResponse("200 OK", request->Mime, request->IsBinary, data);
-
-				//return MakeFromFile(path+"\\"+file, request->Mime);
+				return new HttpResponse("200 OK", request->mime, request->is_binary, data);
 			}
 
 		}
 		else{
-			return MakeMethodNotAllowed(webserver);
+			return makeMethodNotAllowed(webserver);
 		}
 
-		return MakePageNotFound(webserver);
+		return makePageNotFound(webserver);
 	}
 
-	void HttpResponse::Post(SOCKET dst_socket, HttpServer * webserver) //, const string & response_action)
+	void HttpResponse::post(SOCKET dst_socket, HttpServer * webserver) //, const string & response_action)
 	{
-		string send_message="";
+		std::string send_message="";
 
 		char *buffer;
-
-
 
 		send_message= "HTTP/1.1 " + this->status + "\r\n";
 		send_message+="Server: " + webserver->NAME + "\r\n";
@@ -272,17 +216,10 @@ namespace zetnet{
 			CServer::putMsg(dst_socket,(uint8_t *)buffer,total_size);
 
 			free(buffer);
-			//SDLNet_TCP_Send(dst_socket,this->data->data_buffer,this->data->length);
-
-			//if(txt_message){
-				// sends carry end...
-			//SDLNet_TCP_Send(dst_socket,"\r\n",2);
-			//}
-
 		}
 		else // send error message
 		{
-			string error = (char *)data.buffer;
+			std::string error = (char *)data.buffer;
 			error +="\r\n";
 			send_message+="Content-Length: " + string::to_string(error.size()) + "\r\n\r\n";
 			CServer::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
@@ -290,7 +227,9 @@ namespace zetnet{
 
 		}
 
+	}
 
-
+	HttpResponse::~HttpResponse(){
+		free(this->data.buffer);
 	}
 };

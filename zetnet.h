@@ -1,16 +1,22 @@
 #pragma once
 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <thread>
 #include <thread>
 #include <time.h>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <memory.h>
-
+#include <dirent.h>
 
 #ifdef __GNUC__
+	#include <fcntl.h>
+ 	#include <sys/types.h>
 	#include <sys/stat.h>
-	#include <dirent.h>
+
 	#include <unistd.h>
 	#include <sys/types.h>
 	#include <errno.h>
