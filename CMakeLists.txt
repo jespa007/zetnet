@@ -165,15 +165,15 @@ endif()
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	url.cpp
-	string.cpp
-	io.cpp
-	path.cpp
+	utils/url.cpp
+	utils/string.cpp
+	utils/io.cpp
+	utils/path.cpp
 	CServer.cpp
-	HttpHandleClient.cpp
-	HttpRequest.cpp
-	HttpResponse.cpp
-	HttpServer.cpp
+	CHttpHandleClient.cpp
+	CHttpRequest.cpp
+	CHttpResponse.cpp
+	CHttpServer.cpp
 )
 
 #HTTPSERVER TEST executable
@@ -197,16 +197,16 @@ endif()
 
 SET(
 	HS
-	io.h
-	string.h
-	url.h
+	utils/io.h
+	utils/string.h
+	utils/path.h
+	utils/url.h
 	zetnet.h
 	CServer.h
-	HttpHandleClient.h
-	HttpRequest.h
-	HttpResponse.h
-	HttpServer.h
-	CZetnetUtils.h
+	CHttpHandleClient.h
+	CHttpRequest.h
+	CHttpResponse.h
+	CHttpServer.h
 	
 )
 

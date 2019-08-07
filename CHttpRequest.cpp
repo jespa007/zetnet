@@ -3,7 +3,7 @@
 
 namespace zetnet{
 
-	HttpRequest *HttpRequest::getRequest(const std::string & str_request) {
+	CHttpRequest *CHttpRequest::getRequest(const std::string & str_request) {
 
 		std::string request = str_request;
 
@@ -15,7 +15,7 @@ namespace zetnet{
 		string::replace(request,"\r", "");
 
 		bool is_binary= false;
-		request=CUri::unescape(request);
+		request=url::unescape(request);
 		std::vector<std::string> tokens = string::split(request,'\n');
 		std::vector<std::string> url_token = string::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
 		std::string type = url_token[0]; // GET/POST/etc...
@@ -83,7 +83,7 @@ namespace zetnet{
 		std::vector<std::string> sub_token;
 
 
-		std::vector<string> lst= string::split(url, '?');//.Split('?');
+		std::vector<std::string> lst= string::split(url, '?');//.Split('?');
 		if (lst.size() > 1)
 		{
 			url = lst[0];
@@ -149,7 +149,7 @@ namespace zetnet{
 			}
 		}
 
-		return new HttpRequest(type, url, host, referer,mime, is_binary,content_type, param);
+		return new CHttpRequest(type, url, host, referer,mime, is_binary,content_type, param);
 
 	}
 

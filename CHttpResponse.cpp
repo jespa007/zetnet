@@ -2,14 +2,14 @@
 
 namespace zetnet{
 
-	HttpResponse::tHtmlError HttpResponse::html_error [MAX_ERROR_TYPES]={
+	CHttpResponse::tHtmlError CHttpResponse::html_error [MAX_ERROR_TYPES]={
 		 {"400 - Bad Request","Please check the above url is valid"}
 		,{"404 - Not found","We could not found the above page on our server"}
 		,{"405 - Method not allowed","The method specified in the Request Line is not allowed for the resource identified by the request. Please ensure that you have the proper MIME type set up for the resource you are requesting<br><br>. Please contact the server's administrator if this problem persists."}
 	};
 
 
-	HttpResponse::BufferData  HttpResponse::generateError(int error_id, HttpServer * webserver)
+	CHttpResponse::BufferData  CHttpResponse::generateError(int error_id, CHttpServer * webserver)
 	{
 
 		tHtmlError error;
@@ -51,7 +51,7 @@ namespace zetnet{
 
 	}
 
-	HttpResponse::HttpResponse( const std::string & status,const std::string & mime,bool is_binary, BufferData data) {
+	CHttpResponse::CHttpResponse( const std::string & status,const std::string & mime,bool is_binary, BufferData data) {
 			this->data = data;
 			this->status = status;
 			this->mime = mime;
@@ -60,7 +60,7 @@ namespace zetnet{
 	}
 
 
-	HttpResponse * HttpResponse::makeFromString(const std::string & str, const std::string & mime)
+	CHttpResponse * CHttpResponse::makeFromString(const std::string & str, const std::string & mime)
 	{
 		BufferData data;
 		data.size=str.size();
@@ -69,25 +69,25 @@ namespace zetnet{
 		strcpy((char *)data.buffer,(char *)str.c_str());
 
 
-		return new HttpResponse("200 OK", mime, false, data);
+		return new CHttpResponse("200 OK", mime, false, data);
 	}
 
-	HttpResponse * HttpResponse::makeMethodNotAllowed(HttpServer * webserver)
+	CHttpResponse * CHttpResponse::makeMethodNotAllowed(CHttpServer * webserver)
 	{
-		return new HttpResponse("405 Method not allowed", "html/text", false, HttpResponse::generateError(HTML_ERROR_405, webserver));
+		return new CHttpResponse("405 Method not allowed", "html/text", false, CHttpResponse::generateError(HTML_ERROR_405, webserver));
 	}
 
-	HttpResponse * HttpResponse::makeNullRequest(HttpServer * webserver)
+	CHttpResponse * CHttpResponse::makeNullRequest(CHttpServer * webserver)
 	{
-		return new HttpResponse("400 Bad Request", "html/text",false,  HttpResponse::generateError(HTML_ERROR_400, webserver));
+		return new CHttpResponse("400 Bad Request", "html/text",false,  CHttpResponse::generateError(HTML_ERROR_400, webserver));
 	}
 
-	HttpResponse * HttpResponse::makePageNotFound(HttpServer * webserver)
+	CHttpResponse * CHttpResponse::makePageNotFound(CHttpServer * webserver)
 	{
-		return new HttpResponse("404 Bad Request", "html/text", false, HttpResponse::generateError(HTML_ERROR_404, webserver));
+		return new CHttpResponse("404 Bad Request", "html/text", false, CHttpResponse::generateError(HTML_ERROR_404, webserver));
 	}
 
-	HttpResponse *HttpResponse::From(HttpRequest * request, HttpServer * webserver) {
+	CHttpResponse *CHttpResponse::from(CHttpRequest * request, CHttpServer * webserver) {
 		if (request == NULL)
 			return makeNullRequest(webserver);
 
@@ -162,7 +162,7 @@ namespace zetnet{
 
 			data.buffer=io::read_file(filename_to_load,data.size, false);
 
-				return new HttpResponse("200 OK", request->mime, request->is_binary, data);
+				return new CHttpResponse("200 OK", request->mime, request->is_binary, data);
 			}
 
 		}
@@ -173,7 +173,7 @@ namespace zetnet{
 		return makePageNotFound(webserver);
 	}
 
-	void HttpResponse::post(SOCKET dst_socket, HttpServer * webserver) //, const string & response_action)
+	void CHttpResponse::post(SOCKET dst_socket, CHttpServer * webserver) //, const string & response_action)
 	{
 		std::string send_message="";
 
@@ -229,7 +229,7 @@ namespace zetnet{
 
 	}
 
-	HttpResponse::~HttpResponse(){
+	CHttpResponse::~CHttpResponse(){
 		free(this->data.buffer);
 	}
 };

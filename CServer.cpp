@@ -105,19 +105,49 @@ namespace zetnet{
 		}
 
 		//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
-
 		int activity = select( max_sd + 1 , &readfds , NULL , NULL , &timeout);
 
 		if ((activity < 0) && (errno!=EINTR))
 		{
-			fprintf(stderr,"select error");
+#if _WIN32
+			int wsa_error=WSAGetLastError();
+
+
+			switch(wsa_error){
+			default:
+				fprintf(stderr,"select error:unknow error (%i)\n",wsa_error);
+				break;
+			case WSANOTINITIALISED:
+				fprintf(stderr,"select error:A successful WSAStartup call must occur before using this function.\n");
+				break;
+			case WSAEFAULT:
+				fprintf(stderr,"select error:The Windows Sockets implementation was unable to allocate needed resources for its internal operations, or the readfds, writefds, exceptfds, or timeval parameters are not part of the user address space.\n");
+				break;
+			case WSAENETDOWN:
+				fprintf(stderr,"select error:The network subsystem has failed.\n");
+				break;
+			case WSAEINVAL:
+				fprintf(stderr,"select error:The time-out value is not valid, or all three descriptor parameters were null.\n");
+				break;
+			case WSAEINTR:
+				fprintf(stderr,"select error:A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.\n");
+				break;
+			case WSAEINPROGRESS:
+				fprintf(stderr,"select error:A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.\n");
+				break;
+			case WSAENOTSOCK:
+				fprintf(stderr,"select error:One of the descriptor sets contains an entry that is not a socket or fd_set is not valid.\n");
+				break;
+			}
+#else
+			fprintf(stderr,"select error:unknow error (%i)\n",activity);
+#endif
+
 		}
 
 		//If something happened on the socket server, then its an incoming connection
 		if (FD_ISSET(sockfd, &readfds))
 		{
-
-
 
 	#ifdef _WIN32
 		newsockfd = accept(sockfd, NULL, NULL);
@@ -193,13 +223,13 @@ namespace zetnet{
 		sockfd=-1;
 
 		portno=-1;
-		time_delay=1; // 1ms delay
+		time_delay_ms=10; // 10ms delay
 		IsStreamingServer=false;
 	}
 
 	//-------------------------------------------------------------------------------------
 	void CServer::setTimeDelay(unsigned long delay){
-		time_delay = delay;
+		time_delay_ms = delay;
 	}
 
 	void CServer::mainLoop(CServer *tcp){
@@ -574,11 +604,11 @@ namespace zetnet{
 				getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
 			}
 
-			if(time_delay>0){
+			if(time_delay_ms>0){
 	#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__)
-			Sleep( _ms );
+			Sleep( time_delay_ms );
 	#else
-			usleep( _ms * 1000 );
+			usleep( time_delay_ms * 1000 );
 	#endif
 			}
 

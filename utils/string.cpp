@@ -18,7 +18,7 @@ namespace zetnet{
 			return elems;
 		}
 
-		/*std::string  replace(const std::string & str_input, char old_ch, char new_ch){
+		std::string  replace(const std::string & str_input, char old_ch, char new_ch){
 			std::string str_new = str_input;
 			for (unsigned i = 0; i < str_input.length(); ++i) {
 				if (str_new[i] == old_ch)
@@ -26,7 +26,7 @@ namespace zetnet{
 			}
 
 			return str_new;
-		}*/
+		}
 
 		std::string  replace(const std::string & str_input, const std::string & old_str, const std::string & new_str){
 			std::string str_replaced = str_input;

@@ -28,7 +28,7 @@ namespace zetnet{
 
 		std::thread *thread;
 		bool end_loop_mdb;
-		unsigned long time_delay;
+		unsigned long time_delay_ms;
 
 		// only linux ...
 

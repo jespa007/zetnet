@@ -3,7 +3,7 @@
 namespace zetnet{
 
 
-	HttpServer::HttpServer(){
+	CHttpServer::CHttpServer(){
 
 		this->NAME = "unknow";
 		this->WEB_DIR = ".";
@@ -12,7 +12,7 @@ namespace zetnet{
 	}
 
 
-	 void HttpServer::setup(int _port
+	 void CHttpServer::setup(int _port
 				,const std::string & web_dir
 				,const std::string & instance_name){
 
@@ -24,22 +24,22 @@ namespace zetnet{
 
 	 }
 
-	void  HttpServer::SetLogoBase64(std::string _image_base_64)
+	void  CHttpServer::setLogoBase64(std::string _image_base_64)
 	{
 		LOGO_BASE64 = _image_base_64;
 	}
 
-	bool HttpServer::gestMessage(SOCKET socket, uint8_t *data, uint32_t size){
+	bool CHttpServer::gestMessage(SOCKET socket, uint8_t *data, uint32_t size){
 
-		HttpHandleClient hc = HttpHandleClient(socket, this,data, size);
+		CHttpHandleClient hc = CHttpHandleClient(socket, this,data, size);
 		hc.doHandle();
 		return true;
 	}
 
 
-	void HttpServer::onGetUserRequest(SOCKET  _socket_client,const std::vector<HttpRequest::ParamValue> & param){
+	void CHttpServer::onGetUserRequest(SOCKET  _socket_client,const std::vector<CHttpRequest::ParamValue> & param){
 
-		HttpResponse *resp = HttpResponse::MakeFromString("onGetUserRequest is not implemented!", "application/json");
+		CHttpResponse *resp = CHttpResponse::makeFromString("onGetUserRequest is not implemented!", "application/json");
 
 		resp->post(_socket_client, this);
 

@@ -2,37 +2,37 @@
 
 using namespace zetnet;
 
-class MyCustomHttpServer: public HttpServer{
+class MyCustomHttpServer: public CHttpServer{
 
 
 public:
 
-	virtual void onGetUserRequest(SOCKET in_socket, const vector<HttpRequest::tParamValue> & Param){
+	virtual void onGetUserRequest(SOCKET in_socket, const std::vector<CHttpRequest::ParamValue> & param){
 
 
-		string returning_value = "{\"status\":false, \"msg\":\"unknow value\"}";
+		std::string returning_value = "{\"status\":false, \"msg\":\"unknow value\"}";
 
-        if (Param.size() > 0)
+        if (param.size() > 0)
         {
-            if (Param[0].Name == "cmd")
+            if (param[0].name == "cmd")
             {
-            	if(Param[0].Value == "text"){
+            	if(param[0].value == "text"){
             		returning_value="{\"status\":ok, \"msg\":\"message ok\"}";
             	}
             	else{
-            		returning_value = "{\"status\":false, \"msg\":\"unknow value  "+Param[0].Name+" for cmd value\"}";
+            		returning_value = "{\"status\":false, \"msg\":\"unknow value  "+param[0].name+" for cmd value\"}";
             	}
 
             }else{
-            	returning_value = "{\"status\":false, \"msg\":\"unknow cmd "+Param[0].Name+"\"}";
+            	returning_value = "{\"status\":false, \"msg\":\"unknow cmd "+param[0].name+"\"}";
             }
         }
 
 
-    	HttpResponse *resp = HttpResponse::MakeFromString(returning_value, "application/json");
+    	CHttpResponse *resp = CHttpResponse::makeFromString(returning_value, "application/json");
 
 
-    	resp->Post(in_socket, this);
+    	resp->post(in_socket, this);
 
     	delete resp;
         //return returning_value;
@@ -43,17 +43,7 @@ public:
 int main(int argc, char *argv[])
 {
 
-	//CThread::createSingletons();
-
-	/*if(SDLNet_Init()==-1) {
-	    printf("SDLNet_Init: %s\n", SDLNet_GetError());
-	    exit(-1);
-	}*/
-
-
-	//bool server_enable = false;
-
-	HttpServer *Server = new MyCustomHttpServer();
+	CHttpServer *Server = new MyCustomHttpServer();
 
 	Server->setup(8081, ".","httpservercpp_demo");
 
@@ -61,17 +51,11 @@ int main(int argc, char *argv[])
 
 	Server->connect();
 	
-	do{
-	
-	}while(getchar()!='s');
+	getchar();
 	
 	printf("shutdown...\n");
 
 	delete Server;
-
-	//CThread::destroySingletons();
-
-	//SDLNet_Quit();
 
 	return 0;
 }

@@ -2,7 +2,7 @@
 
 namespace zetnet{
 
-	class HttpRequest
+	class CHttpRequest
 	{
 
 
@@ -30,12 +30,12 @@ namespace zetnet{
 		std::vector<ParamValue> param;
 
 
-		static HttpRequest * getRequest(const std::string & request);
+		static CHttpRequest * getRequest(const std::string & request);
 
 	protected:
 
 	private:
-		HttpRequest(const std::string &  _type
+		CHttpRequest(const std::string &  _type
 				, const std::string & _url
 				, const std::string & _host
 				, const std::string & _referer
