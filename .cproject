@@ -21,7 +21,7 @@
 							<builder arguments="-j2" autoBuildTarget="all" buildPath="" cleanBuildTarget="clean" command="make" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.base.285616619" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1398265056" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1263628371" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
-								<option id="gnu.cpp.compiler.option.include.paths.1873910351" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1873910351" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${MINGWDIR}\mingw32\i686-w64-mingw32\include\c++\i686-w64-mingw32&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${MINGWDIR}\mingw32\i686-w64-mingw32\include\c++&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${MINGWDIR}\mingw32\i686-w64-mingw32\include&quot;"/>
@@ -139,7 +139,7 @@
 			<target name="CMake Debug" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>cmake</buildCommand>
 				<buildArguments/>
-				<buildTarget>-DTARGET=debug -DLINK=STATIC</buildTarget>
+				<buildTarget>-DTARGET=debug</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
@@ -147,7 +147,7 @@
 			<target name="CMake Release" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>cmake</buildCommand>
 				<buildArguments/>
-				<buildTarget>-DTARGET=release -DLINK=STATIC</buildTarget>
+				<buildTarget>-DTARGET=release</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
