@@ -42,17 +42,20 @@
 	#endif
 #endif
 
+#include "util/string.h"
+#include "util/io.h"
+#include "util/path.h"
+#include "util/url.h"
 
-#include "utils/string.h"
-#include "utils/io.h"
-#include "utils/path.h"
-#include "utils/url.h"
 
 #include "CServer.h"
 #include "CHttpRequest.h"
 #include "CHttpResponse.h"
 #include "CHttpHandleClient.h"
 #include "CHttpServer.h"
+#ifdef __MEMMGR__
+#include "MEM_ram.h"
+#endif
 
 
 #define ZETNET_MAJOR_VERSION 1

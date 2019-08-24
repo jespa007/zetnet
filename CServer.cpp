@@ -193,13 +193,10 @@ namespace zetnet{
 		dst_port=0;
 		ipaddr=0;
 		host=NULL;//"127.0.0.1";
-		RequestToDisConnect=false;
+		disconnect_request=false;
 
 
 		initialized  =  false;
-		Want_reconnection = false;
-
-
 
 
 		for(int i=0; i < MAX_SOCKETS; i++){
@@ -214,7 +211,7 @@ namespace zetnet{
 		message=NULL;
 
 		connected  =  false;
-		RequestToConnect  =  false;
+		reconnection_request  =  false;
 		configured = false;
 
 		thread = NULL;
@@ -224,7 +221,8 @@ namespace zetnet{
 
 		portno=-1;
 		time_delay_ms=10; // 10ms delay
-		IsStreamingServer=false;
+
+		is_streaming_server=false;
 	}
 
 	//-------------------------------------------------------------------------------------
@@ -236,10 +234,28 @@ namespace zetnet{
 		tcp->update();
 
 	}
+
+	const char * CServer::getErrorSockOpt(){
+		switch(errno){
+		case EBADF:
+		    return "The argument sockfd is not a valid descriptor.";
+		case EFAULT:
+			return "The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), this error may also be returned if optlen is not in a valid part of the process address space.";
+		case EINVAL:
+		    return "optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval (e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).";
+		case ENOPROTOOPT:
+		    return "The option is unknown at the level indicated.";
+		case ENOTSOCK:
+		    return "The argument sockfd is a file, not a socket.";
+		}
+
+		return "unknow";
+	}
 	//---------------------------------------------------------------------------------------------------------------------------
 	bool  CServer::setup(  int _portno, const char *server_name)  //  Reads  configuration  of  machine  &  init  sdl_net...
 	{
-		bool opt = true;
+		int opt = 1;
+		int error=0;
 		// kill thread if is active...
 		host = server_name;
 
@@ -317,9 +333,9 @@ namespace zetnet{
 			 }
 
 			 //set server socket to allow multiple connections , this is just a good habit, it will work without this
-			 if( setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt)) < 0 )
+			 if(( setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt))) < 0 )
 			 {
-				 fprintf(stderr,"setsockopt");
+				 fprintf(stderr,"setsockopt:%s",getErrorSockOpt());
 				 return false;
 			 }
 
@@ -387,7 +403,7 @@ namespace zetnet{
 
 	}
 	//--------------------------------------------------------------------
-	ClientSocket * CServer::getFreeSlot(){
+	CServer::ClientSocket * CServer::getFreeSlot(){
 
 		ClientSocket *cs=NULL;
 
@@ -441,12 +457,6 @@ namespace zetnet{
 	{
 		int  numready=0;
 
-
-
-
-
-			//socketAdd(c->socket);
-
 		return true;
 	}
 
@@ -491,7 +501,7 @@ namespace zetnet{
 				if (clientSocketActivity != 0)
 				{
 					int ok=1;
-					if(!IsStreamingServer){ // read from client...
+					if(!is_streaming_server){ // read from client...
 						ok=getMsg(clientSocket[clientNumber].socket,  (uint8_t  *)buffer);
 					}
 
@@ -521,29 +531,28 @@ namespace zetnet{
 		{
 			connected  =  false;
 
-
-				// remove all clients boot (only for TCP protocol)
-				for(int i = 0; i < MAX_SOCKETS; i++){
-					if(clientSocket[i].socket!=INVALID_SOCKET){
-						closeSocket(clientSocket[i].socket);
-						clientSocket[i].socket=INVALID_SOCKET;
-						clientSocket[i].header_sent=false;
-					}
+			// remove all clients boot (only for TCP protocol)
+			for(int i = 0; i < MAX_SOCKETS; i++){
+				if(clientSocket[i].socket!=INVALID_SOCKET){
+					closeSocket(clientSocket[i].socket);
+					clientSocket[i].socket=INVALID_SOCKET;
+					clientSocket[i].header_sent=false;
 				}
+			}
 
-				for(int i=0; i < MAX_SOCKETS; i++){
-					freeSocket[i]=i;
-				}
+			for(int i=0; i < MAX_SOCKETS; i++){
+				freeSocket[i]=i;
+			}
 
-				n_freeSockets=MAX_SOCKETS;
+			n_freeSockets=MAX_SOCKETS;
 
-				if(sockfd != 0){
-					// close and free socket server...
-					closeSocket(sockfd);
-				}
+			if(sockfd != 0){
+				// close and free socket server...
+				closeSocket(sockfd);
+			}
 
-				sockfd = 0;
-				printf("Disconnect server!\n");
+			sockfd = 0;
+			printf("Disconnect server!\n");
 
 		}
 	}
@@ -580,25 +589,21 @@ namespace zetnet{
 	//--------------------------------------------------------------------
 	void  CServer::connect()
 	{
-		RequestToConnect  =  true;
+		reconnection_request  =  true;
 	}
 	//--------------------------------------------------------------------
 	void  CServer::disconnect()
 	{
-		RequestToDisConnect  =  true;
-	}
-	//--------------------------------------------------------------------
-	void  CServer::Reconnection() {
-		Want_reconnection = true;
+		disconnect_request  =  true;
 	}
 	//--------------------------------------------------------------------
 	void  CServer::update()  //  Receive  messages,  gest  &  send...
 	{
 		while(!end_loop_mdb)
 		{
-			if(RequestToConnect){
+			if(reconnection_request){
 				connected=true;
-				RequestToConnect=false;
+				reconnection_request=false;
 			}
 			else{
 				getMessage();  //  For  server  update  connections  &  get  messages  from  clients...
@@ -618,7 +623,7 @@ namespace zetnet{
 	}
 
 	//--------------------------------------------------------------------
-	void  CServer::PrintStatus()
+	void  CServer::printStatus()
 	{
 	}
 

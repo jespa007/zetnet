@@ -47,8 +47,6 @@ int main(int argc, char *argv[])
 
 	Server->setup(8081, ".","httpservercpp_demo");
 
-
-
 	Server->connect();
 	
 	getchar();
@@ -56,6 +54,10 @@ int main(int argc, char *argv[])
 	printf("shutdown...\n");
 
 	delete Server;
+
+#ifdef __MEMMGR__
+	MEM_ViewStatus();
+#endif
 
 	return 0;
 }

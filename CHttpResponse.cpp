@@ -42,7 +42,7 @@ namespace zetnet{
 
 
 		data.size = str.size();
-		data.buffer = (uint8_t *)malloc(data.size);
+		data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
 		memset(data.buffer,0,data.size);
 		strcpy((char *)data.buffer,(char *)str.c_str());
 
@@ -64,7 +64,7 @@ namespace zetnet{
 	{
 		BufferData data;
 		data.size=str.size();
-		data.buffer=(uint8_t *)malloc(data.size);
+		data.buffer=(uint8_t *)malloc(data.size+1);
 		memset(data.buffer,0,data.size);
 		strcpy((char *)data.buffer,(char *)str.c_str());
 
@@ -230,6 +230,8 @@ namespace zetnet{
 	}
 
 	CHttpResponse::~CHttpResponse(){
-		free(this->data.buffer);
+		if(this->data.buffer!=NULL){
+			free(this->data.buffer);
+		}
 	}
 };

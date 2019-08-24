@@ -18,14 +18,14 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
 macro(configure_files srcDir destDir)
-    message(STATUS "Configuring directory ${destDir}")
+    message(STATUS "Configuring files to ${destDir}")
     make_directory(${destDir})
 
     file(GLOB templateFiles RELATIVE ${srcDir} ${srcDir}/*)
     foreach(templateFile ${templateFiles})
         set(srcTemplatePath ${srcDir}/${templateFile})
         if(NOT IS_DIRECTORY ${srcTemplatePath})
-            message(STATUS "Configuring file ${srcTemplatePath} to ${destDir}/${templateFile}")
+            message(STATUS "Copying file ${srcTemplatePath} to ${destDir}/${templateFile}")
             configure_file(
                     ${srcTemplatePath}
                     ${destDir}/${templateFile}
@@ -39,17 +39,12 @@ endmacro(configure_files)
 # COMMON PARAMS
 #
 
-IF (NOT  (("${LINK}" STREQUAL "SHARED") OR ("${LINK}" STREQUAL "STATIC")))
-   SET ( LINK "SHARED" )
-ENDIF()
-
-message("-- Link: " ${LINK})
 
 include_directories (
 	${PROJECT_SOURCE_DIR}
 )
 
-message("-- Dest.dir: " ${CMAKE_INSTALL_PREFIX})
+message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
 
 set(ZETNET_LIB_SRCS "")
 
@@ -65,37 +60,35 @@ if(MSVC)
 
 else()
 
-	SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__STDC_CONSTANT_MACROS --no-rtti -std=gnu++0x -I -Wall")
+	SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__STDC_CONSTANT_MACROS -pthread --no-rtti -std=gnu++0x -I -Wall")
    
 	if (MINGW)
 	
 		
 		SET( COMMON_PARAMS " ${COMMON_PARAMS} -I$ENV{MINGWDIR}/local32/include " )
 	
-		MESSAGE ("-- Plataform: MINGW" )
+		MESSAGE ("-- Plataform: MinGW" )
 		message("-- Mingw path: $ENV{MINGWDIR} ")
 		
 		set(CMAKE_LEGACY_MINGW_WIN32 0)
 		set(CMAKE_PREFIX_PATH "$ENV{MINGWDIR}/local32/lib")
-		
-		
-  
+	
 	  	message("-- params: ${COMMON_PARAMS} ")
 	  
-	    elseif(GNU)
-	    	MESSAGE ("-- Plataform: GNU" )
-	    else()
-	    	MESSAGE ("-- Plataform: Unknown" )
-		endif()
+	elseif(UNIX)
+	   	MESSAGE ("-- Plataform: Unix" )
+	else()
+	   	MESSAGE ("-- Plataform: Unknown" )
+	endif()
 	
-		IF (MEMMANAGER)
-			message("-- Memmanager: ON (Warning execution time could be slow)")
-			SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMANAGER__")
-			include_directories (
-				../memmanager
+	IF ("${MEMMGR}" STREQUAL "ON")
+		message("-- Memmanager: ON (Warning execution time could be slow)")
+		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMGR__")
+		include_directories (
+			../zetmemmgr
 		)
 		
-	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../memmanager/MEM_ram.cpp)
+	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../zetmemmgr/MEM_ram.cpp)
 		
 	ELSE()
 		message("-- Memmanager: OFF")
@@ -165,10 +158,10 @@ endif()
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	utils/url.cpp
-	utils/string.cpp
-	utils/io.cpp
-	utils/path.cpp
+	util/url.cpp
+	util/string.cpp
+	util/io.cpp
+	util/path.cpp
 	CServer.cpp
 	CHttpHandleClient.cpp
 	CHttpRequest.cpp
@@ -182,7 +175,7 @@ set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
 
 
 # httpserver library
-add_library( zetnet${POST_NAME} ${LINK} ${ZETNET_LIB_SRCS} )
+add_library( zetnet${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
 target_link_libraries(zetnet${POST_NAME} "-Wl,--no-as-needed" )
 
 if(MSVC)
@@ -197,17 +190,17 @@ endif()
 
 SET(
 	HS
-	utils/io.h
-	utils/string.h
-	utils/path.h
-	utils/url.h
+	util/io.h
+	util/string.h
+	util/path.h
+	util/url.h
 	zetnet.h
 	CServer.h
 	CHttpHandleClient.h
 	CHttpRequest.h
 	CHttpResponse.h
 	CHttpServer.h
-	
+
 )
 
 

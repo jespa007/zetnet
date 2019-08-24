@@ -17,7 +17,7 @@ namespace zetnet{
 		bool is_binary= false;
 		request=url::unescape(request);
 		std::vector<std::string> tokens = string::split(request,'\n');
-		std::vector<std::string> url_token = string::split(tokens[0],' ');//split(new char[] { ' ' }, 2);
+		std::vector<std::string> url_token = string::split(tokens[0],' ');
 		std::string type = url_token[0]; // GET/POST/etc...
 		std::string url = "";
 
@@ -30,7 +30,7 @@ namespace zetnet{
 
 		std::string mime = "text/html";
 		std::string content_type="";
-		std::vector<ParamValue> param;// = new List<tParamValue>();
+		std::vector<ParamValue> param;
 		bool is_header = true;
 
 

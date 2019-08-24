@@ -29,12 +29,14 @@ namespace zetnet{
 		}
 
 		std::string  replace(const std::string & str_input, const std::string & old_str, const std::string & new_str){
-			std::string str_replaced = str_input;
-			std::size_t found;
-			while((found = str_input.find(old_str)) != std::string::npos){
-				str_replaced = (str_replaced.replace(found, old_str.length(), new_str));
+			std::string str = str_input;
+			size_t start_pos = 0;
+			while((start_pos = str.find(old_str, start_pos)) != std::string::npos) {
+				str.replace(start_pos, old_str.length(), new_str);
+				start_pos += new_str.length(); // Handles case where 'str_new' is a substring of 'str_old'
 			}
-			return str_replaced;
+
+			return str;
 
 		}
 
