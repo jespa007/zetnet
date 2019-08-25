@@ -43,6 +43,7 @@ public:
 int main(int argc, char *argv[])
 {
 
+
 	CHttpServer *Server = new MyCustomHttpServer();
 
 	Server->setup(8081, ".","httpservercpp_demo");
