@@ -85,10 +85,10 @@ else()
 		message("-- Memmanager: ON (Warning execution time could be slow)")
 		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMGR__")
 		include_directories (
-			../zetmemmgr
+			../memmgr
 		)
 		
-	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../zetmemmgr/MEM_ram.cpp)
+	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../memmgr/memmgr.cpp)
 		
 	ELSE()
 		message("-- Memmanager: OFF")

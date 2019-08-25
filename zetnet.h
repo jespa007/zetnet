@@ -54,7 +54,7 @@
 #include "CHttpHandleClient.h"
 #include "CHttpServer.h"
 #ifdef __MEMMGR__
-#include "MEM_ram.h"
+#include "memmgr.h"
 #endif
 
 

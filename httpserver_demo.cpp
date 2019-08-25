@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	delete Server;
 
 #ifdef __MEMMGR__
-	MEM_ViewStatus();
+	MEMMGR_print_status();
 #endif
 
 	return 0;
