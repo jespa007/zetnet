@@ -1,7 +1,5 @@
-#pragma once
-
-
-namespace zetnet{
+#ifndef __HTTP_HANDLE_CLIENT__
+#define __HTTP_HANDLE_CLIENT__
 
 
 	class CHttpServer;
@@ -21,3 +19,5 @@ namespace zetnet{
 	};
 
 };
+
+#endif

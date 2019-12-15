@@ -1,12 +1,11 @@
 #pragma once
 
-#include <thread>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <time.h>
-#include <string>
-#include <sstream>
-#include <vector>
 #include <memory.h>
-
+#include <pthread.h>
 
 #ifdef __GNUC__
 #include <sys/stat.h>
@@ -42,17 +41,18 @@
 	#endif
 #endif
 
-#include "util/string.h"
-#include "util/io.h"
-#include "util/path.h"
-#include "util/url.h"
+#include "util/ZNList.h"
+#include "util/ZNString.h"
+#include "util/ZNIO.h"
+#include "util/ZNPath.h"
+#include "util/ZNUrl.h"
 
 
-#include "Server.h"
-#include "HttpRequest.h"
-#include "HttpResponse.h"
-#include "HttpHandleClient.h"
-#include "HttpServer.h"
+#include "TcpServer.h"
+//#include "HttpRequest.h"
+//#include "HttpResponse.h"
+//#include "HttpHandleClient.h"
+//#include "HttpServer.h"
 #ifdef __MEMMGR__
 #include "memmgr.h"
 #endif

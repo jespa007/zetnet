@@ -49,53 +49,37 @@ message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
 set(ZETNET_LIB_SRCS "")
 
 if(MSVC)
-	MESSAGE ("-- Plataform: MSVC" )
-	
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-	
-	#disable C4103 warning because is perfectly valid. Only MSVC complains about it
-	add_definitions(/wd4103)
-	add_definitions(/wd4800)
-	add_definitions(/wd4244)
 
-else()
 
-	SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__STDC_CONSTANT_MACROS -pthread --no-rtti -std=gnu++0x -I -Wall")
-   
-	if (MINGW)
-	
+else() 
+
+	set(TARGET_FLAGS " -O2 ")
+	set( POST_NAME "")
+
+
+	IF ( "${TARGET}" STREQUAL "debug")
 		
-		SET( COMMON_PARAMS " ${COMMON_PARAMS} -I$ENV{MINGWDIR}/local32/include " )
-	
-		MESSAGE ("-- Plataform: MinGW" )
-		message("-- Mingw path: $ENV{MINGWDIR} ")
+		set( POST_NAME "_d")	
 		
-		set(CMAKE_LEGACY_MINGW_WIN32 0)
-		set(CMAKE_PREFIX_PATH "$ENV{MINGWDIR}/local32/lib")
-	
-	  	message("-- params: ${COMMON_PARAMS} ")
-	  
-	elseif(UNIX)
-	   	MESSAGE ("-- Plataform: Unix" )
-	else()
-	   	MESSAGE ("-- Plataform: Unknown" )
-	endif()
-	
-	IF ("${MEMMGR}" STREQUAL "ON")
+		set(TARGET_FLAGS " -O0 ")
+		set(TARGET_FLAGS " ${TARGET_FLAGS} -g -D__DEBUG__ ")
+	ENDIF ()
+
+	if ( "${MEMMANAGER}" STREQUAL "ON")
 		message("-- Memmanager: ON (Warning execution time could be slow)")
 		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMGR__")
 		include_directories (
-			../memmgr
+			../../lib/memmgr
 		)
 		
-	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../memmgr/memmgr.cpp)
-		
-	ELSE()
-		message("-- Memmanager: OFF")
-	ENDIF()
-	
+	   	set(ZG_CORE_LIB_SRCS ${ZETNET_LIB_SRCS} ../../lib/memmgr/memmgr.c)
+	   		
+	else()
+		MESSAGE ("-- Memmanager: OFF " )
+	endif()
 
 endif()
+
 
 
 #
@@ -134,18 +118,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 		set(TARGET_FLAGS " ${TARGET_FLAGS} -g -fomit-frame-pointer ")
 	ENDIF ()
 
-	SET(CMAKE_C_FLAGS " ")
-	SET(CMAKE_CXX_FLAGS   " ${TARGET_FLAGS} ${COMMON_PARAMS}  " )
-	
-
-	#Redefine output dir ...
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${TARGET})
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${TARGET})
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${TARGET})
-	LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-	
 endif()
 
+SET(CMAKE_C_FLAGS   " ${TARGET_FLAGS} ${COMMON_PARAMS}  " )
+
+#Redefine output dir ...
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${TARGET})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${TARGET})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${TARGET})
+LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 #
 # RELEASE PARAMS
@@ -158,25 +139,25 @@ endif()
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	util/url.cpp
-	util/string.cpp
-	util/io.cpp
-	util/path.cpp
-	CServer.cpp
-	CHttpHandleClient.cpp
-	CHttpRequest.cpp
-	CHttpResponse.cpp
-	CHttpServer.cpp
+	#util/ZNUrl.c
+	util/ZNString.c
+	util/ZNIo.c
+	util/ZNPath.c
+	TcpServer.c
+	#HttpHandleClient.c
+	#HttpRequest.c
+	#HttpResponse.c
+	#HttpServer.c
 )
 
 #HTTPSERVER TEST executable
-set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.cpp)
+set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.c)
 
 
 
 # httpserver library
 add_library( zetnet${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
-target_link_libraries(zetnet${POST_NAME} "-Wl,--no-as-needed" )
+target_link_libraries(zetnet${POST_NAME} )
 
 if(MSVC)
 	#only for msvc...
@@ -190,16 +171,16 @@ endif()
 
 SET(
 	HS
-	util/io.h
-	util/string.h
-	util/path.h
+	util/ZNIo.h
+	util/ZNString.h
+	util/ZNPath.h
 	util/url.h
 	zetnet.h
-	CServer.h
-	CHttpHandleClient.h
-	CHttpRequest.h
-	CHttpResponse.h
-	CHttpServer.h
+	TcpServer.h
+	HttpHandleClient.h
+	HttpRequest.h
+	HttpResponse.h
+	HttpServer.h
 
 )
 
