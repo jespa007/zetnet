@@ -146,15 +146,16 @@ bool ZNIO_IsDirectory(const char * filename){
 	return S_ISDIR (st_buf.st_mode) != 0;
 }
 
-ZNList  ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
+ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
 
-	ZNList list_file;
-	ZNList list_attribs = ZNString_Split(filter, '|');
+	ZNList *list_file;
+	ZNList *list_attribs = ZNString_Split(filter, '|');
 
-	for(unsigned i = 0; i < list_attribs.size(); i++){
-		list_attribs[i] = string::remove(list_attribs[i],' ');
-		if(list_attribs[i] != "*")
-			list_attribs[i] = ZNString_Remove(list_attribs[i],'*');
+	for(unsigned i = 0; i < list_attribs->count; i++){
+		ZNString_Remove((char *)list_attribs->items[i],' ');
+		if(strcmp((char *)list_attribs->items[i],"*")!=0){
+			ZNString_Remove((char *)list_attribs->items[i],'*');
+		}
 	}
 
 
@@ -171,19 +172,23 @@ ZNList  ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
 
 				  char data[1024]={0};
 				  sprintf(data,"%s/%s",folder,ent->d_name);
-				  if(is_directory(data)){
+				  if(ZNIO_IsDirectory(data)){
 
 						  if(recursive){
 							  ZNList * r = ZNIO_GetFiles(data,filter,true);
-							  list_file.insert(list_file.end(), r.begin(), r.end());
+							  // add all resulting item elements to current list...
+							  ZNList_AddList(list_file,r);
+
+							  // r is not used any more, so delete it...
+							  ZNList_Delete(r);
 						  }
 				  }
 				  else{
 					  ok=false;
 
-					  for(unsigned i = 0; i < list_attribs->count() && !ok; i++){
+					  for(unsigned i = 0; i < list_attribs->count && !ok; i++){
 
-						  if((list_attribs[i] == "*") || ZNString_EndsWith(ent->d_name,list_attribs[i])) {
+						  if((strcmp((char *)list_attribs->items[i],"*")==0) || ZNString_EndsWith(ent->d_name,(char *)list_attribs->items[i])) {
 							  ZNList_Add(list_file,data);
 							  ok=true;
 						  }

@@ -2,22 +2,22 @@
 
 #define MAX_ELEMENTS_VECTOR	16000
 
-bool 		ZNList_AddSlot(ZNList *v){
-	if (v->size == 0) {
-		v->size = 10;
-		v->items = malloc(sizeof(void*) * v->size);
-		memset(v->items, '\0', sizeof(void) * v->size);
+bool	ZNList_AddSlot(ZNList *v){
+	if (v->_size == 0) {
+		v->_size = 10;
+		v->items = malloc(sizeof(void*) * v->_size);
+		memset(v->items, '\0', sizeof(void) * v->_size);
 	}
 
 	// condition to increase v->items:
 	// last slot exhausted
-	if (v->size == v->count) {
-		if((v->size+10) >= MAX_ELEMENTS_VECTOR){
+	if (v->_size == v->count) {
+		if((v->_size+10) >= MAX_ELEMENTS_VECTOR){
 			Log_Error("Max elements vector");
 			return false;
 		}
-		v->size += 10;
-		v->items = realloc(v->items, sizeof(void*) * v->size);
+		v->_size += 10;
+		v->items = realloc(v->items, sizeof(void*) * v->_size);
 	}
 
 	v->count++;
@@ -72,6 +72,14 @@ void ZNList_Erase(ZNList *this, uint16_t idx){
 void ZNList_Add(ZNList *v, void *e){
 	if(ZNList_AddSlot(v)){
 		v->items[v->count-1] = e; // add element to end list...
+	}
+}
+
+void ZNList_AddList(ZNList *this, ZNList *list){
+	if(this != NULL && list) {
+		for(unsigned i=0; i <  list->count; i++){
+			ZNList_Add(this, list->items[i]);
+		}
 	}
 
 }

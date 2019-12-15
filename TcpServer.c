@@ -17,13 +17,14 @@
 #define SOCKET_CLIENT_NOT_AVAILABLE -1
 
 
+void  * TcpServer_Update(void * varg);
 
 const char * SERVER_FULL     = "FULL";
 
 //  receive  a  buffer  from  a  TCP  socket  with  error  checking
 //  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  TcpServer_GetMsg(SOCKET  sock,  uint8_t  *buf)
+int  TcpServer_ReceiveBytes(SOCKET  sock,  uint8_t  *buf)
 {
 //#define MAXLEN 1024
 	int result;
@@ -52,7 +53,7 @@ int  TcpServer_GetMsg(SOCKET  sock,  uint8_t  *buf)
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  TcpServer_PutMsg(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
+int  TcpServer_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
 	uint32_t  result=0;
 
 	if(!len) {
@@ -75,6 +76,10 @@ void TcpServer_SetTimeout(TcpServer * tcp_server,int seconds){
 	tcp_server->timeout = (struct timeval){
 		.tv_sec=seconds
 		,.tv_usec=0};   // sleep for ten minutes!
+}
+
+bool TcpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len){
+	return false;
 }
 
 SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
@@ -176,7 +181,7 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 
 }
 
-bool TcpServer_socketReady(TcpServer * tcp_server,SOCKET sock){
+bool TcpServer_SocketReady(TcpServer * tcp_server,SOCKET sock){
 
 	if (FD_ISSET( sock , &tcp_server->readfds)){
 		return true;
@@ -216,7 +221,7 @@ TcpServer * TcpServer_New()
 	tcp_server->reconnection_request  =  false;
 	tcp_server->configured = false;
 
-	tcp_server->thread = NULL;
+	tcp_server->thread = -1;
 	tcp_server->end_loop_mdb=false;
 
 	tcp_server->sockfd=-1;
@@ -224,6 +229,8 @@ TcpServer * TcpServer_New()
 	tcp_server->time_delay_ms=10; // 10ms delay
 
 	tcp_server->is_streaming_server=false;
+
+	tcp_server->TcpServer_GestMessage=TcpServer_GestMessageDefault;
 }
 
 //-------------------------------------------------------------------------------------
@@ -277,7 +284,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_n
 		tcp_server->serv_addr.ai_flags = AI_PASSIVE;
 
 		// Resolve the server address and port
-	   iResult = getaddrinfo(NULL, (const char *)ZNString_NumberToString(_portno), &tcp_server->serv_addr, &result);
+	   iResult = getaddrinfo(NULL, (const char *)ZNString_IntToString(_portno), &tcp_server->serv_addr, &result);
 	   if ( iResult != 0 ) {
 		   fprintf(stderr,"getaddrinfo failed with error: %d\n", iResult);
 		   WSACleanup();
@@ -360,7 +367,9 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_n
 			tcp_server->portno);
 
 
-	 pthread_create(tcp_server->thread,tcp_server,TcpServer_Update);//mainLoop(this));
+	 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
+		 tcp_server->thread=-1;
+	 }
 
 	return true;
 }
@@ -405,7 +414,7 @@ ClientSocket * TcpServer_GetFreeSlot(TcpServer * tcp_server){
 
 	if(tcp_server->n_freeSockets > 0){
 
-		if(freeSocket[tcp_server->n_freeSockets-1] != SOCKET_CLIENT_NOT_AVAILABLE){
+		if(tcp_server->freeSocket[tcp_server->n_freeSockets-1] != SOCKET_CLIENT_NOT_AVAILABLE){
 			cs = &tcp_server->clientSocket[tcp_server->freeSocket[tcp_server->n_freeSockets-1]];
 			tcp_server->freeSocket[tcp_server->n_freeSockets-1]=SOCKET_CLIENT_NOT_AVAILABLE;
 			tcp_server->n_freeSockets--;
@@ -429,7 +438,7 @@ bool TcpServer_FreeSlot(TcpServer * tcp_server,ClientSocket *clientSock){
 			tcp_server->freeSocket[tcp_server->n_freeSockets]=clientSock->idxClient;
 
 			//socketDel(clientSock->socket);
-			closeSocket(clientSock->socket);
+			TcpServer_CloseSocket(tcp_server,clientSock->socket);
 			clientSock->socket = INVALID_SOCKET;
 			clientSock->header_sent = false;
 
@@ -456,7 +465,7 @@ bool TcpServer_GestServerBase(TcpServer * tcp_server)
 	return true;
 }
 
-void TcpServer_GestServer(TcpServer * tcp_server,)
+void TcpServer_GestServer(TcpServer * tcp_server)
 {
 
 
@@ -467,13 +476,13 @@ void TcpServer_GestServer(TcpServer * tcp_server,)
 
 	// accept socket client (you're ready to get / send messages from/to this socket)...
 
-	if((new_socket =socketAccept()) != INVALID_SOCKET){
+	if((new_socket =TcpServer_SocketAccept(tcp_server)) != INVALID_SOCKET){
 
-		ClientSocket *c = getFreeSlot();
+		ClientSocket *c = TcpServer_GetFreeSlot(tcp_server);
 
 		if(c==NULL){ // no space left ... reject client ...
 			fprintf(stderr,"*** Maximum client count reached - rejecting client connection ***\n");
-			closeSocket(new_socket);
+			TcpServer_CloseSocket(tcp_server,new_socket);
 		}else{
 
 #if __DEBUG__
@@ -489,7 +498,7 @@ void TcpServer_GestServer(TcpServer * tcp_server,)
 	for (int clientNumber = 0; clientNumber < MAX_SOCKETS; clientNumber++)  {
 		// If the socket is ready (i.e. it has data we can read)... (SDLNet_SocketReady returns non-zero if there is activity on the socket, and zero if there is no activity)
 		if(tcp_server->clientSocket[clientNumber].socket != INVALID_SOCKET){
-			int clientSocketActivity = socketReady(tcp_server->clientSocket[clientNumber].socket);
+			int clientSocketActivity = TcpServer_SocketReady(tcp_server,tcp_server->clientSocket[clientNumber].socket);
 #if __DEBUG__
 		//	printf("Just checked client number %i  and received activity status is: %i\n", clientNumber,clientSocketActivity);
 #endif
@@ -498,22 +507,22 @@ void TcpServer_GestServer(TcpServer * tcp_server,)
 			{
 				int ok=1;
 				if(!tcp_server->is_streaming_server){ // read from client...
-					ok=getMsg(tcp_server->clientSocket[clientNumber].socket,  (uint8_t  *)buffer);
+					ok=TcpServer_ReceiveBytes(tcp_server->clientSocket[clientNumber].socket,  (uint8_t  *)tcp_server->buffer);
 				}
 
 				if(ok) // serve to client ...
 				{
-					if(!gestMessage(tcp_server->clientSocket[clientNumber].socket,buffer, sizeof(buffer))){
+					if(!tcp_server->TcpServer_GestMessage(tcp_server,tcp_server->clientSocket[clientNumber].socket,tcp_server->buffer, sizeof(tcp_server->buffer))){
 #if __DEBUG__
 						printf("gestMessage:Erasing client %i (gestMessage)\n",clientNumber);
 #endif
-						freeSlot(&tcp_server->clientSocket[clientNumber]);
+						TcpServer_FreeSlot(tcp_server,&tcp_server->clientSocket[clientNumber]);
 					}
 				}else{ // remove that socket because client closed the connection ...
 #if __DEBUG__
 					printf("gestMessage:Erasing client %i (getMessage)\n",clientNumber);
 #endif
-					freeSlot(&tcp_server->clientSocket[clientNumber]);
+					TcpServer_FreeSlot(tcp_server,&tcp_server->clientSocket[clientNumber]);
 				}
 
 			} // End of if client socket is active check
@@ -521,7 +530,7 @@ void TcpServer_GestServer(TcpServer * tcp_server,)
 	}// End of server socket check sockets loop
 }
 //------------------------------------------------------------------------------------------------
-void  TcpServer_internal_Disconnect(TcpServer * tcp_server)
+void  TcpServer_InternalDisconnect(TcpServer * tcp_server)
 {
 	if( tcp_server->connected)
 	{
@@ -530,7 +539,7 @@ void  TcpServer_internal_Disconnect(TcpServer * tcp_server)
 		// remove all clients boot (only for TCP protocol)
 		for(int i = 0; i < MAX_SOCKETS; i++){
 			if(tcp_server->clientSocket[i].socket!=INVALID_SOCKET){
-				closeSocket(tcp_server->clientSocket[i].socket);
+				TcpServer_CloseSocket(tcp_server,tcp_server->clientSocket[i].socket);
 				tcp_server->clientSocket[i].socket=INVALID_SOCKET;
 				tcp_server->clientSocket[i].header_sent=false;
 			}
@@ -544,7 +553,7 @@ void  TcpServer_internal_Disconnect(TcpServer * tcp_server)
 
 		if(tcp_server->sockfd != 0){
 			// close and free socket server...
-			closeSocket(tcp_server->sockfd);
+			TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
 		}
 
 		tcp_server->sockfd = 0;
@@ -558,12 +567,11 @@ void TcpServer_Unload(TcpServer * tcp_server)
 {
  // valid
 	tcp_server->end_loop_mdb=true;
-	pthread_join(&tcp_server->thread);
+	pthread_join(tcp_server->thread,NULL);
 	TcpServer_InternalDisconnect(tcp_server);
 
-	pthread_destroy(&tcp_server->thread);
 
-	closeSocket(tcp_server->sockfd);
+	TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
 
 #ifdef _WIN32
 	WSACleanup();
@@ -617,7 +625,7 @@ void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 		}
 	}
 
-	//return 0;
+	return 0;
 }
 
 

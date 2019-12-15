@@ -97,7 +97,7 @@ void  ZNString_Remove(char * str, char ch_to_remove){
 }
 
 
-char * ZNString_ToString(int number){
+char * ZNString_IntToString(int number){
 	static char to_number[256];
 	sprintf(to_number,"%i",number);
 	return to_number;

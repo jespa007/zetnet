@@ -39,6 +39,8 @@ struct  TcpServer
 
 	unsigned  initialized;
 
+	bool 		(* TcpServer_GestMessage)(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len);
+
 /*	void TcpServer_SetTimeDelay(unsigned long delay);
 
 	void  TcpServer_InternalDisconnect(TcpServer * tcp_server);
@@ -52,7 +54,7 @@ struct  TcpServer
 	ClientSocket 		*TcpServer_GetFreeSlot(TcpServer * tcp_server); // adds client
 	bool 				TcpServer_FreeSlot(TcpServer * tcp_server,ClientSocket * sockClient); // removes client...
 
-	bool 		TcpServer_GestMessage(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len)=0;
+
 
 
 	void TcpServer_closeSocket(TcpServer * tcp_server,SOCKET sock);

@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-using namespace zetnet;
+
 
 class MyCustomHttpServer: public CHttpServer{
 
