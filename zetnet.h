@@ -48,11 +48,11 @@
 #include "util/url.h"
 
 
-#include "CServer.h"
-#include "CHttpRequest.h"
-#include "CHttpResponse.h"
-#include "CHttpHandleClient.h"
-#include "CHttpServer.h"
+#include "Server.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
+#include "HttpHandleClient.h"
+#include "HttpServer.h"
 #ifdef __MEMMGR__
 #include "memmgr.h"
 #endif
