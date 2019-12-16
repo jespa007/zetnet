@@ -1,63 +1,43 @@
 ﻿#ifndef __HTTP_REQUEST__
 #define __HTTP_REQUEST__
 
-class CHttpRequest
+typedef struct ParamValue ParamValue;
+
+struct ParamValue
+{
+	char name[256];
+	char value[256];
+};
+
+ParamValue * ParamValue_New(const char * _name, const char * _value);
+
+//--
+
+typedef struct HttpRequest HttpRequest;
+
+struct HttpRequest
 {
 
-
-public:
-
-	struct ParamValue
-	{
-		std::string name;
-		std::string value;
-
-		ParamValue(const std::string & _name, const std::string & _value)
-		{
-			name = _name;
-			value = _value;
-		}
-	};
-
-	std::string type;
-	std::string URL;
-	std::string host;
-	std::string referer;
-	std::string mime;
+	char  type[100];
+	char  URL[4096];
+	char  host[1024];
+	char referer[1024];
+	char mime[60];
 	bool is_binary;
-	std::string content_type;
-	std::vector<ParamValue> param;
+	char  content_type[512];
+	ZNList * param;
 
 
-	static CHttpRequest * getRequest(const std::string & request);
+
 
 protected:
 
 private:
-	CHttpRequest(const std::string &  _type
-			, const std::string & _url
-			, const std::string & _host
-			, const std::string & _referer
-			, const std::string & _mime
-			, bool _is_binary
-			, const std::string & _content_type
-			, const std::vector<ParamValue> & _param
-			)
-	{
-		type 		= _type;
-		URL 		= _url;
-		host 		= _host;
-		referer 	= _referer;
-		mime 		= _mime;
-		is_binary 	= _is_binary;
-		content_type= _content_type;
-		param 		= _param;
 
-	}
 
 
 };
 
-
+static CHttpRequest * getRequest(const std::string & request);
 
 #endif

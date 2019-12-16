@@ -1,8 +1,8 @@
 #include "zetnet.h"
 
+//typedef struct MyCustomHttpServer MyCustomHttpServer;
 
-
-class MyCustomHttpServer: public CHttpServer{
+/*class MyCustomHttpServer: public CHttpServer{
 
 
 public:
@@ -38,13 +38,13 @@ public:
         //return returning_value;
 	}
 };
-
+*/
 
 int main(int argc, char *argv[])
 {
 
 
-	CHttpServer *Server = new MyCustomHttpServer();
+	HttpServer *Server = HttpServer_New();
 
 	Server->setup(8081, ".","httpservercpp_demo");
 

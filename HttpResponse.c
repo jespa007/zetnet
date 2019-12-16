@@ -1,237 +1,295 @@
 #include "zetnet.h"
 
-namespace zetnet{
+typedef enum{
+	HTML_ERROR_400=0,
+	HTML_ERROR_404,
+	HTML_ERROR_405,
+	MAX_ERROR_TYPES
+}HTML_ERROR;
 
-	CHttpResponse::tHtmlError CHttpResponse::html_error [MAX_ERROR_TYPES]={
-		 {"400 - Bad Request","Please check the above url is valid"}
-		,{"404 - Not found","We could not found the above page on our server"}
-		,{"405 - Method not allowed","The method specified in the Request Line is not allowed for the resource identified by the request. Please ensure that you have the proper MIME type set up for the resource you are requesting<br><br>. Please contact the server's administrator if this problem persists."}
-	};
+HtmlError html_error [MAX_ERROR_TYPES]={
+	 {"400 - Bad Request","Please check the above url is valid"}
+	,{"404 - Not found","We could not found the above page on our server"}
+	,{"405 - Method not allowed","The method specified in the Request Line is not allowed for the resource identified by the request. Please ensure that you have the proper MIME type set up for the resource you are requesting<br><br>. Please contact the server's administrator if this problem persists."}
+};
+
+// STATIC
+HttpResponse * makeFromFile(const char * file, const char * mime){
+
+}
+
+HttpResponse * makeMethodNotAllowed(CHttpServer * webserver){
+
+}
+
+HttpResponse * makeNullRequest(CHttpServer *webserver){
+
+}
+
+HttpResponse * makePageNotFound(CHttpServer *webserver){
+
+}
 
 
-	CHttpResponse::BufferData  CHttpResponse::generateError(int error_id, CHttpServer * webserver)
-	{
+HttpResponse * from(HttpRequest * request, CHttpServer  * webserver){
 
-		tHtmlError error;
-		std::string int_error = string::to_string(error_id);
-		BufferData data;
+}
 
-		if(error_id < MAX_ERROR_TYPES){
-			error = html_error[error_id];
-		}else{
-			error.title=(const char *)int_error.c_str();
-			error.description="not implemented";
+BufferData generateError(int error_id, CHttpServer * webserver){
+
+}
+
+HttpResponse * makeFromString(const char * si, const char * mime){
+
+}
+
+
+
+BufferData  HttpResponse_GenerateError(int error_id, HttpServer * webserver)
+{
+
+	HtmlError error;
+	char * int_error = string::to_string(error_id);
+	BufferData data;
+
+	if(error_id < MAX_ERROR_TYPES){
+		error = html_error[error_id];
+	}else{
+		error.title=(const char *)int_error.c_str();
+		error.description="not implemented";
+	}
+
+	std::string str=
+			"<html>"
+				"<body>"
+					"<center>"
+						"<div>"
+							"<div style=\"float:left;width:50%;text-align:right;margin-top:30\">"
+								"<img  src=\"" + webserver->LOGO_BASE64+ "\"/>"
+							"</div>"
+							"<div style=\"float:right;width:48%;text-align:left;font-family:Arial\">"
+								"<h1>" + error.title + "</h1>"
+								"<h3>"+  error.description+"</h3>"
+							"</div>"
+						"</div>"
+					"</center>"
+				"</body>"
+			"</html>";
+
+
+	data.size = str.size();
+	data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
+	memset(data.buffer,0,data.size);
+	strcpy((char *)data.buffer,(char *)str.c_str());
+
+
+	return data;
+
+}
+
+HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_binary, BufferData data) {
+	HttpResponse * http_response = malloc(sizeof(HttpResponse));
+	http_response->data = data;
+	http_response->status = status;
+	http_response->mime = mime;
+	http_response->is_binary = is_binary;
+}
+
+
+HttpResponse * HttpResponse_makeFromString(const char * str, const char * mime)
+{
+	BufferData data;
+	data.size=strlen(str);
+	data.buffer=(uint8_t *)malloc(data.size+1);
+	memset(data.buffer,0,data.size);
+	strcpy((char *)data.buffer,(char *)str);
+
+
+	return HttpResponse_New("200 OK", mime, false, data);
+}
+
+HttpResponse * HttpResponse_makeMethodNotAllowed(HttpServer * webserver)
+{
+	return HttpResponse_New("405 Method not allowed", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_405, webserver));
+}
+
+HttpResponse * HttpResponse_MakeNullRequest(HttpServer * webserver)
+{
+	return HttpResponse_New("400 Bad Request", "html/text",false,  HttpResponse_GenerateError(HTML_ERROR_400, webserver));
+}
+
+HttpResponse * HttpResponse_MakePageNotFound(HttpServer * webserver)
+{
+	return HttpResponse_New("404 Bad Request", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_404, webserver));
+}
+
+HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
+	char filename_with_path[4096]={0};
+	char path_url[4096]={0};
+	char *file="";
+	char *path="";
+
+
+	if (request == NULL){
+		return makeNullRequest(webserver);
+	}
+
+
+
+	bool ok = false;
+
+	if(request->type== "GET"){
+
+		sprintf(path_url,"%s",ZNUrl_Unescape(request->URL));
+#ifdef WIN32
+		path_url = ZNString_Replace(path_url, '/','\\');//CUri::unescape(request->URL)
+#endif
+
+		sprintf(filename_with_path,
+				"%s%s",
+			  webserver->WEB_DIR,
+			path_url);
+
+		ok = false;
+
+		file = ZNPath_GetFilename(filename_with_path);
+		path = ZNPath_GetDirectory(filename_with_path);
+
+#ifdef __DEBUG__
+		printf("try_file:%s request:%s\n",filename_with_path.c_str(),request->URL.c_str());
+#endif
+
+
+		if (ZNIO_FileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+		{
+#ifdef __DEBUG__
+			printf("file exists!!!\n");
+#endif
+			ok = true;
+		}
+		else
+		{
+			if (!ZNIO_IsDirectory(path)){
+				return HttpResponse_MakePageNotFound(webserver);
+			}
+
+			ZNList * list_file = ZNIO_GetFiles(path);//,"*.html",false);
+
+			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
+				//String n = ff.Name;
+				char * n = Path_GetFilename((char *)list_file->items[f]);
+
+#ifdef __DEBUG__
+				printf("try_file2:%s\n",n);
+#endif
+
+				if(strcmp(n,"index.html")==0){
+					file=n;
+					ok = true;
+				}
+			}
 		}
 
-		std::string str=
-				"<html>"
-					"<body>"
-						"<center>"
-							"<div>"
-								"<div style=\"float:left;width:50%;text-align:right;margin-top:30\">"
-									"<img  src=\"" + webserver->LOGO_BASE64+ "\"/>"
-								"</div>"
-								"<div style=\"float:right;width:48%;text-align:left;font-family:Arial\">"
-									"<h1>" + error.title + "</h1>"
-									"<h3>"+  error.description+"</h3>"
-								"</div>"
-							"</div>"
-						"</center>"
-					"</body>"
-				"</html>";
+		if (ok)
+		{
+#ifdef _WIN32
+#define SEPARATOR_DIR "\\"
+#else
+#define SEPARATOR_DIR "/"
+#endif
 
-
-		data.size = str.size();
-		data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
-		memset(data.buffer,0,data.size);
-		strcpy((char *)data.buffer,(char *)str.c_str());
-
-
-		return data;
-
-	}
-
-	CHttpResponse::CHttpResponse( const std::string & status,const std::string & mime,bool is_binary, BufferData data) {
-			this->data = data;
-			this->status = status;
-			this->mime = mime;
-			this->is_binary = is_binary;
-
-	}
-
-
-	CHttpResponse * CHttpResponse::makeFromString(const std::string & str, const std::string & mime)
-	{
-		BufferData data;
-		data.size=str.size();
-		data.buffer=(uint8_t *)malloc(data.size+1);
-		memset(data.buffer,0,data.size);
-		strcpy((char *)data.buffer,(char *)str.c_str());
-
-
-		return new CHttpResponse("200 OK", mime, false, data);
-	}
-
-	CHttpResponse * CHttpResponse::makeMethodNotAllowed(CHttpServer * webserver)
-	{
-		return new CHttpResponse("405 Method not allowed", "html/text", false, CHttpResponse::generateError(HTML_ERROR_405, webserver));
-	}
-
-	CHttpResponse * CHttpResponse::makeNullRequest(CHttpServer * webserver)
-	{
-		return new CHttpResponse("400 Bad Request", "html/text",false,  CHttpResponse::generateError(HTML_ERROR_400, webserver));
-	}
-
-	CHttpResponse * CHttpResponse::makePageNotFound(CHttpServer * webserver)
-	{
-		return new CHttpResponse("404 Bad Request", "html/text", false, CHttpResponse::generateError(HTML_ERROR_404, webserver));
-	}
-
-	CHttpResponse *CHttpResponse::from(CHttpRequest * request, CHttpServer * webserver) {
-		if (request == NULL)
-			return makeNullRequest(webserver);
-
-		std::string file="";
-		std::string path="";
-
-		bool ok = false;
-
-		if(request->type== "GET"){
-
-			std::string path_url = url::unescape(request->URL);
-	#ifdef WIN32
-			path_url = string::replace(path_url, '/','\\');//CUri::unescape(request->URL)
-	#endif
-
-			std::string filename_with_path = /*CZetNetUtils::getCwd()
-				+"\\"*/
-				  webserver->WEB_DIR
-				+ path_url;
-
-			ok = false;
-
-			file = path::get_filename(filename_with_path);
-			path = path::get_directory(filename_with_path);
-
-	#ifdef __DEBUG__
-			printf("try_file:%s request:%s\n",filename_with_path.c_str(),request->URL.c_str());
-	#endif
-
-
-			if (io::file_exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
-			{
-	#ifdef __DEBUG__
-				printf("file exists!!!\n");
-	#endif
-				ok = true;
-			}
-			else
-			{
-				if (!io::is_directory(path)){
-					return makePageNotFound(webserver);
-				}
-
-				std::vector<std::string> list_file = io::get_files(path);//,"*.html",false);
-
-				for(unsigned f=0; f < list_file.size() && !ok; f++){ //foreach(FileInfo ff in files){
-					//String n = ff.Name;
-					std::string n = path::get_filename(list_file[f]);
-
-	#ifdef __DEBUG__
-					printf("try_file2:%s\n",n.c_str());
-	#endif
-
-					if(n == "index.html"){
-						file=n;
-						ok = true;
-					}
-				}
-			}
-
-			if (ok)
-			{
-	#ifdef _WIN32
-	#define SEPARATOR_DIR "\\"
-	#else
-	#define SEPARATOR_DIR "/"
-	#endif
-
-			std::string filename_to_load = path+SEPARATOR_DIR+file;
+			char filename_to_load[4096];
+			sprintf(filename_to_load,"%s%s%s",path,SEPARATOR_DIR,file);
 
 			BufferData data;
 
-			data.buffer=io::read_file(filename_to_load,data.size, false);
+			data.buffer=ZNIO_ReadFile(filename_to_load,data.size);
 
-				return new CHttpResponse("200 OK", request->mime, request->is_binary, data);
-			}
-
-		}
-		else{
-			return makeMethodNotAllowed(webserver);
+			return HttpResponse_New("200 OK", request->mime, request->is_binary, data);
 		}
 
-		return makePageNotFound(webserver);
+	}
+	else{
+		return HttpResponse_MakeMethodNotAllowed(webserver);
 	}
 
-	void CHttpResponse::post(SOCKET dst_socket, CHttpServer * webserver) //, const string & response_action)
+	return HttpResponse_MakePageNotFound(webserver);
+}
+
+void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, CHttpServer * webserver) //, const string & response_action)
+{
+	char send_message[4096]={0};
+	size_t send_message_len=0;
+	char *buffer;
+	int total_size=0;
+
+	strcat(send_message,"HTTP/1.1 ");
+	strcat(send_message,http_response->status);
+	strcat(send_message,"\n");
+	strcat(send_message,"Server: ");
+	strcat(send_message,webserver->NAME);
+	strcat(send_message,"\n");
+
+	if (strcmp(http_response->status,"200 OK")==0) // send response content
 	{
-		std::string send_message="";
+		strcat(send_message,"Content-Type: ");
+		strcat(send_message, http_response->mime);
+		strcat(send_message,"\n");
+		strcat(send_message,"Accept-Ranges: bytes\n");
+		strcat(send_message,"Connection: Keep-Alive\n");
+		strcat(send_message,"Content-Length: ");
+		strcat(send_message,ZNString_NumberToString(http_response->data.size));
 
-		char *buffer;
-
-		send_message= "HTTP/1.1 " + this->status + "\r\n";
-		send_message+="Server: " + webserver->NAME + "\r\n";
-
-		if (this->status == "200 OK") // send response content
-		{
-			send_message+="Content-Type: " + mime + "\r\n";
-			send_message+="Accept-Ranges: bytes\r\n";
-			send_message+="Connection: Keep-Alive\r\n";
-			send_message+="Content-Length: " + string::to_string(this->data.size) + "\r\n";
-
-			if(is_binary){
-			/*if (   mime == "application/pdf"
-				|| mime == "image/png"
-				|| mime == "application/octet-stream"
-					) // binary ...
-			{*/
-				send_message+="Content-Transfer-Encoding: binary\r\n";
-				//txt_message=false;
-			}
-
-			send_message+="\r\n";
-
-	#ifdef __DEBUG__
-			printf("POST:\n%s\n",send_message.c_str());
-	#endif
-
-			int total_size = send_message.size()+this->data.size+2;
-
-			buffer=(char *)malloc(total_size);
-			memset(buffer,0,total_size);
-			memcpy(buffer										,send_message.c_str(),send_message.size());
-			memcpy(buffer+send_message.size()				    ,this->data.buffer,this->data.size);
-			memcpy(buffer+send_message.size()+this->data.size,"\r\n",2);
-
-			CServer::putMsg(dst_socket,(uint8_t *)buffer,total_size);
-
-			free(buffer);
+		if(http_response->is_binary){
+			strcat(send_message,"Content-Transfer-Encoding: binary");
 		}
-		else // send error message
-		{
-			std::string error = (char *)data.buffer;
-			error +="\r\n";
-			send_message+="Content-Length: " + string::to_string(error.size()) + "\r\n\r\n";
-			CServer::putMsg(dst_socket,(uint8_t *)send_message.c_str(),send_message.size());
-			CServer::putMsg(dst_socket,(uint8_t *)error.c_str(),error.size());
 
-		}
+		strcat(send_message,"\n\n");
+
+#ifdef __DEBUG__
+		printf("POST:\n%s\n",send_message.c_str());
+#endif
+
+		send_message_len=strlen(send_message);
+		total_size = strlen(send_message)+http_response->data.size+2;
+
+		buffer=(char *)malloc(total_size);
+		memset(buffer,0,total_size);
+		memcpy(buffer										,send_message,send_message_len);
+		memcpy(buffer+send_message_len				    ,http_response->data.buffer,http_response->data.size);
+		memcpy(buffer+send_message_len+http_response->data.size,"\n",2);
+
+		TcpServer_PutMsg(dst_socket,(uint8_t *)buffer,total_size);
+
+		free(buffer);
+	}
+	else // send error message
+	{
+
+		char error[4096]={0};
+		sprintf("%s\n"
+				"Content-Length: %s"
+				"\n"
+				"\n"
+				,(char *)http_response->data.buffer
+				,ZNString_NumberToString(strlen(error)) + "\r\n\r\n"
+		);
+
+
+		TcpServer_PutMsg(dst_socket,(uint8_t *)send_message,strlen(send_message));
+		TcpServer_PutMsg(dst_socket,(uint8_t *)error,strlen(error));
 
 	}
 
-	CHttpResponse::~CHttpResponse(){
-		if(this->data.buffer!=NULL){
-			free(this->data.buffer);
+}
+
+void HttpResponse_Delete(HttpResponse * http_response){
+	if(http_response != NULL){
+		if(http_response->data.buffer!=NULL){
+			free(http_response->data.buffer);
 		}
+
+		free(http_response);
 	}
-};
+}
+

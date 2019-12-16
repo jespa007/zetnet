@@ -49,10 +49,10 @@
 
 
 #include "TcpServer.h"
-//#include "HttpRequest.h"
-//#include "HttpResponse.h"
-//#include "HttpHandleClient.h"
-//#include "HttpServer.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
+#include "HttpHandleClient.h"
+#include "HttpServer.h"
 #ifdef __MEMMGR__
 #include "memmgr.h"
 #endif

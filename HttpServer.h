@@ -1,31 +1,29 @@
 ﻿#ifndef __HTTP_SERVER__
 #define __HTTP_SERVER__
 
-class HttpServer:public CServer
+typedef struct HttpServer HttpServer;
+
+
+struct HttpServer
 {
-public:
-	std::string MSG_DIR;
-	std::string WEB_DIR;
-	std::string VERSION;
-	std::string NAME;
-	std::string LOGO_BASE64;
+	const char * MSG_DIR;
+	const char * WEB_DIR;
+	const char * VERSION;
+	const char * NAME;
+	const char * LOGO_BASE64;
 
-	CHttpServer(
-	);
+	TcpServer * tcp_server;
 
-	void setup(	int _port,const std::string & web_dir,const std::string &  instance_name);
+	void (*HttpServer_OnGetUserRequest)(HttpServer * http_server,SOCKET  _socket_client, ZNList * param);
 
-
-	virtual void onGetUserRequest(SOCKET  _socket_client,const std::vector<CHttpRequest::ParamValue> & param);
-
-protected:
-	void setLogoBase64(std::string _image_base_64);
-	virtual bool gestMessage(SOCKET in_socket, uint8_t *buffer, uint32_t len);
-
-private:
-
+	//private
 	void * web_client;
 
 };
+
+HttpServer *HttpServer_New();
+void HttpServer_Setup(HttpServer * http_server,	int _port,const char * web_dir,const char *  instance_name);
+void HttpServer_Delete(HttpServer *http_server);
+
 
 #endif
