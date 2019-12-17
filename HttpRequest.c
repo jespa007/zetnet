@@ -1,13 +1,6 @@
 #include "zetnet.h"
 
-ParamValue * ParamValue_New(const char * _name, const char * _value)
-{
-	ParamValue * param_value = malloc(sizeof(ParamValue));
-	strcpy(param_value->name, _name);
-	strcpy(param_value->value, _value);
 
-	return param_value
-}
 
 HttpRequest * HttpRequest_New(const char *  _type
 		, const char * _url
@@ -19,21 +12,25 @@ HttpRequest * HttpRequest_New(const char *  _type
 		, ZNList * _param
 		)
 {
-	HttpRequest http_request=malloc(sizeof(HttpRequest));
+	HttpRequest * http_request=malloc(sizeof(HttpRequest));
 	strcpy(http_request->type, _type);
 	strcpy(http_request->URL ,_url);
 	strcpy(http_request->host, _host);
 	strcpy(http_request->referer, _referer);
 	strcpy(http_request->mime, _mime);
-	http_request->is_binary 	= _is_binary);
+	http_request->is_binary 	= _is_binary;
 	strcpy(http_request->content_type, _content_type);
 	http_request->param 		= _param;
+
+	return http_request;
 
 }
 
 HttpRequest *HttpRequest_GetRequest(const char * str_request) {
-
+	char url[4096]="";
 	char *request=malloc(strlen(str_request));
+	char *file_extension[10] = "";
+
 	if(request==NULL){
 		return NULL;
 	}
@@ -43,14 +40,14 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		return NULL;
 	}
 
-	ZNString_replace(request,"\r", "");
+	ZNString_Replace(request,"\r", "");
 
 	bool is_binary= false;
-	request=ZNUrl_Unescape(request);
+	request=ZNUrl_Decode(request);
 	ZNList * tokens = ZNString_Split(request,'\n');
-	ZNList * url_token = ZNString_Split(tokens[0],' ');
+	ZNList * url_token = ZNString_Split(tokens->items[0],' ');
 	char *type = url_token->items[0]; // GET/POST/etc...
-	std::string url = "";
+
 
 	if(url_token->count >= 2){
 
@@ -60,18 +57,18 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 
 	const char *mime = "text/html";
-	std::string content_type="";
-	std::vector<ParamValue> param;
+	char * content_type="";
+	ZNList * param;
 	bool is_header = true;
 
 
-	std::string file_extension = "";
+
 
 	int find_extension=url.find_last_of(".");
 
 	if(find_extension != -1){
 
-		try{
+
 
 			file_extension =url.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
 
@@ -79,56 +76,52 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 			printf("file extension: %s\n",file_extension.c_str());
 	#endif
 
-			if (file_extension==".png"){
+			if((strcmp(file_extension,".png")==0){
 				mime = "image/png";
 				is_binary=true;
 			}
 
-			if (file_extension==".css"){
+			iif((strcmp(file_extension,".css")==0){
 				mime = "text/css";
 
-			}else if (file_extension==  ".json"){
+			}else if(strcmp(file_extension,  ".json")==0){
 				mime = "application/json";
 			}
-			else if (file_extension== ".pdf"){
+			else if(strcmp(file_extension, ".pdf")==0){
 				mime = "application/pdf";
 				is_binary=true;
 			}
 			else if(
-					 file_extension==".eot"
-				  || file_extension==".svg"
-				  || file_extension==".ttf"
-				  || file_extension==".woff"
-				  || file_extension==".woff2"
+					 (strcmp(file_extension,".eot")==0)
+				  || (strcmp(file_extension,".svg")==0)
+				  || (strcmp(file_extension,".ttf")==0)
+				  || (strcmp(file_extension,".woff")==0)
+				  || (strcmp(file_extension,".woff2")==0)
 				){
 				mime="application/octet-stream";
 				is_binary=true;
 			}
-		}catch(std::exception & ex){
-	#ifdef __DEBUG__
-			printf("GetRequest:%s \n",ex.what());
-	#endif
-		}
+
 	}
 
-	std::vector<std::string> sub_token;
+	ZNList * sub_token;
 
 
-	std::vector<std::string> lst= string::split(url, '?');//.Split('?');
-	if (lst.size() > 1)
+	ZNList * lst= ZNString_Split(url, '?');//.Split('?');
+	if (lst->count > 1)
 	{
-		url = lst[0];
+		url = lst->items[0];
 	}
 
-	std::string host = "";// tokens[2];
-	std::string referer = "";
+	char *host = "";// tokens[2];
+	char *referer = "";
 
-	for (unsigned i = 0; i < tokens.size(); i++)
+	for (unsigned i = 0; i < tokens->count; i++)
 	{
-		std::string variable="";
-		std::string value="";
+		char variable[256]="";
+		char value[256]="";
 
-		if (tokens[i] == "")
+		if (strcmp(tokens->items[i],"")==0)
 		{
 			is_header = false;
 		}
@@ -136,41 +129,44 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		if (is_header)
 		{
 
-			sub_token = string::split(tokens[i],':'); // split only the first : occurrence ...
+			sub_token = ZNString_Split(tokens->items[i],':'); // split only the first : occurrence ...
 
-			if (sub_token.size() > 1) // it has header value ...
+			if (sub_token->count > 1) // it has header value ...
 			{
-				variable = sub_token[0];
-				value = sub_token[1];
+				variable = sub_token->items[0];
+				value = sub_token->items[1];
 
-				if (variable == "Referer"){
+				if (strcmp(variable,"Referer")==0){
 					referer = value;
-				}else if(variable == "Host"){
+				}else if(strcmp(variable , "Host")==0){
 					host = value;
-				}else if(variable ==  "Accept"){
+				}else if(strcmp(variable ,  "Accept")==0){
 
-				}else if(variable ==  "Content-Type"){
-					content_type = string::split(value,';')[0];
-					string::replace(content_type," ","");
+				}else if(strcmp(variable ,  "Content-Type")==0){
+					ZNList *tl=ZNString_Split(value,';')->items[0];
+					if(tl->count > 0){
+						content_type =tl->items[0];
+					}
+					ZNString_Replace(content_type," ","");
 				}
 			}
 		}
 		else // check parameters...
 		{
-			std::vector<std::string> pre_check_param = string::split(tokens[i],'&');
+			ZNList * pre_check_param = ZNString_Split(tokens->items[i],'&');
 
-			if (pre_check_param.size() >= 1)
+			if (pre_check_param->count >= 1)
 			{
-				for (unsigned j = 0; j < pre_check_param.size(); j++)
+				for (unsigned j = 0; j < pre_check_param->count; j++)
 				{
-					sub_token = string::split(pre_check_param[j], '=' ); // split only the first = occurrence ...
+					sub_token = ZNString_Split(pre_check_param->items[j], '=' ); // split only the first = occurrence ...
 
-					if (sub_token.size() == 2)
+					if (sub_token->count == 2)
 					{
-						param.push_back(
-							 ParamValue(
-								sub_token[0],
-								sub_token[1]
+						param->Add(
+							 ParamValue_New(
+								sub_token->item[0],
+								sub_token->item[1]
 							)
 						);
 					}
@@ -180,7 +176,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		}
 	}
 
-	return new CHttpRequest(type, url, host, referer,mime, is_binary,content_type, param);
+	return HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, param);
 
 }
 

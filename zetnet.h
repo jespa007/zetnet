@@ -49,6 +49,7 @@
 
 
 #include "TcpServer.h"
+#include "HttpParamValue.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "HttpHandleClient.h"

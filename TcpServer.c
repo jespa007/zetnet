@@ -587,7 +587,7 @@ void  TcpServer_GetMessage(TcpServer * tcp_server)
 {
 	if(!tcp_server->connected)  return;
 
-	gestServer();
+	TcpServer_GestServer(tcp_server);
 }
 //--------------------------------------------------------------------
 void  TcpServer_Connect(TcpServer * tcp_server)

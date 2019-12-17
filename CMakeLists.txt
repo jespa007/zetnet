@@ -139,15 +139,15 @@ LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	#util/ZNUrl.c
+	util/ZNUrl.c
 	util/ZNString.c
 	util/ZNIo.c
 	util/ZNPath.c
 	TcpServer.c
-	#HttpHandleClient.c
-	#HttpRequest.c
-	#HttpResponse.c
-	#HttpServer.c
+	HttpHandleClient.c
+	HttpRequest.c
+	HttpResponse.c
+	HttpServer.c
 )
 
 #HTTPSERVER TEST executable

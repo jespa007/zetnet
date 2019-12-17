@@ -1,5 +1,10 @@
 #include "zetnet.h"
 
+typedef struct{
+	const char * title;
+	const char * description;
+}HtmlError;
+
 typedef enum{
 	HTML_ERROR_400=0,
 	HTML_ERROR_404,
@@ -18,24 +23,24 @@ HttpResponse * makeFromFile(const char * file, const char * mime){
 
 }
 
-HttpResponse * makeMethodNotAllowed(CHttpServer * webserver){
+HttpResponse * makeMethodNotAllowed(HttpServer * webserver){
 
 }
 
-HttpResponse * makeNullRequest(CHttpServer *webserver){
+HttpResponse * makeNullRequest(HttpServer *webserver){
 
 }
 
-HttpResponse * makePageNotFound(CHttpServer *webserver){
+HttpResponse * makePageNotFound(HttpServer *webserver){
 
 }
 
 
-HttpResponse * from(HttpRequest * request, CHttpServer  * webserver){
+HttpResponse * from(HttpRequest * request, HttpServer  * webserver){
 
 }
 
-BufferData generateError(int error_id, CHttpServer * webserver){
+BufferData generateError(int error_id, HttpServer * webserver){
 
 }
 
@@ -45,42 +50,50 @@ HttpResponse * makeFromString(const char * si, const char * mime){
 
 
 
-BufferData  HttpResponse_GenerateError(int error_id, HttpServer * webserver)
+BufferData  HttpResponse_GenerateError(int error_id, HttpServer * http_server)
 {
 
 	HtmlError error;
-	char * int_error = string::to_string(error_id);
+	char int_error[100];
 	BufferData data;
+	char str[2096];
+
+	sprintf(int_error,"%i",error_id);
 
 	if(error_id < MAX_ERROR_TYPES){
 		error = html_error[error_id];
 	}else{
-		error.title=(const char *)int_error.c_str();
+		error.title=int_error;
 		error.description="not implemented";
 	}
 
-	std::string str=
+
+	sprintf(str,
 			"<html>"
 				"<body>"
 					"<center>"
 						"<div>"
 							"<div style=\"float:left;width:50%;text-align:right;margin-top:30\">"
-								"<img  src=\"" + webserver->LOGO_BASE64+ "\"/>"
+								"<img  src=\"%s\"/>"
 							"</div>"
 							"<div style=\"float:right;width:48%;text-align:left;font-family:Arial\">"
-								"<h1>" + error.title + "</h1>"
-								"<h3>"+  error.description+"</h3>"
+								"<h1>%s</h1>"
+								"<h3>%s</h3>"
 							"</div>"
 						"</div>"
 					"</center>"
 				"</body>"
-			"</html>";
+			"</html>"
+	,http_server->LOGO_BASE64
+	,error.title
+	,error.description
+	);
 
 
-	data.size = str.size();
+	data.size = strlen(str);//.size();
 	data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
 	memset(data.buffer,0,data.size);
-	strcpy((char *)data.buffer,(char *)str.c_str());
+	strcpy((char *)data.buffer,(char *)str);
 
 
 	return data;
@@ -216,7 +229,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 	return HttpResponse_MakePageNotFound(webserver);
 }
 
-void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, CHttpServer * webserver) //, const string & response_action)
+void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer * http_server) //, const string & response_action)
 {
 	char send_message[4096]={0};
 	size_t send_message_len=0;
@@ -227,7 +240,7 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, CHttpServe
 	strcat(send_message,http_response->status);
 	strcat(send_message,"\n");
 	strcat(send_message,"Server: ");
-	strcat(send_message,webserver->NAME);
+	strcat(send_message,http_server->NAME);
 	strcat(send_message,"\n");
 
 	if (strcmp(http_response->status,"200 OK")==0) // send response content

@@ -1,7 +1,7 @@
 #ifndef __ZNURL__
 #define __ZNURL__
 
-char * ZNURL_Escape(const char * s, const unsigned char mask); // mask=0xff
-char * ZNURL_Unescape(const char * s);
+char * ZNUrl_Encode(const char * s);
+char * ZNUrl_Decode(const char * s);
 
 #endif

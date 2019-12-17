@@ -9,12 +9,8 @@ typedef struct{
 	uint32_t size;
 }BufferData;
 
-typedef struct{
-	const char * title;
-	const char * description;
-}HtmlError;
 
-
+typedef struct HttpServer HttpServer;
 typedef struct HttpResponse HttpResponse;
 
 struct HttpResponse
@@ -34,8 +30,7 @@ HttpResponse *HttpResponse_New(
 		,BufferData  data
 		);
 
-void HttpResponse_Post(SOCKET dst_socket, CHttpServer * webserver);
-
+void HttpResponse_Post(HttpResponse * http_response,SOCKET dst_socket, HttpServer * http_server);
 void HttpResponse_Delete(HttpResponse * http_response);
 
 
