@@ -2,11 +2,11 @@
 
 
 
-HttpHandleClient * HttpHandleClient_New(SOCKET _socket_client, HttpServer * _server, uint8_t *_rcv_data, uint32_t _rcv_len)
+HttpHandleClient * HttpHandleClient_New(SOCKET _socket_client, HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
 {
 	HttpHandleClient * http_handle_client = malloc(sizeof(HttpHandleClient));
 	http_handle_client->socket_client = _socket_client;
-	http_handle_client->server = _server;
+	http_handle_client->http_server = _http_server;
 
 	http_handle_client->rcv_buffer_data=_rcv_data;
 	http_handle_client->rcv_buffer_data_len=_rcv_len;
@@ -26,12 +26,12 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data );
 
 	if(req->type == "POST"){
-		HttpServer_OnGetUserRequest(http_handle_client->server,http_handle_client->socket_client,req->param);
+		http_handle_client->http_server->OnGetUserRequest(http_handle_client->http_server,http_handle_client->socket_client,req->param);
 	}
 	else{
 
-		HttpResponse *resp = HttpResponse_From(req, http_handle_client->server);
-		HttpResponse_Post(resp,http_handle_client->socket_client, http_handle_client->server);
+		HttpResponse *resp = HttpResponse_From(req, http_handle_client->http_server);
+		HttpResponse_Post(resp,http_handle_client->socket_client, http_handle_client->http_server);
 		HttpResponse_Delete(resp);
 	}
 	HttpRequest_Delete(req);

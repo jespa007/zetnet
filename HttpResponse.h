@@ -17,8 +17,8 @@ struct HttpResponse
 {
 	BufferData data;
 
-	char *status;
-	char *mime;
+	const char *status;
+	const char *mime;
 	bool is_binary;
 
 };
@@ -30,8 +30,9 @@ HttpResponse *HttpResponse_New(
 		,BufferData  data
 		);
 
-void HttpResponse_Post(HttpResponse * http_response,SOCKET dst_socket, HttpServer * http_server);
-void HttpResponse_Delete(HttpResponse * http_response);
+HttpResponse *	HttpResponse_From(HttpRequest * request, HttpServer * webserver);
+void 			HttpResponse_Post(HttpResponse * http_response,SOCKET dst_socket, HttpServer * http_server);
+void 			HttpResponse_Delete(HttpResponse * http_response);
 
 
 

@@ -7,7 +7,7 @@ bool ZNURL_IsNonSymbol(char c)
     return (c_int >= 48 && c_int <= 57) || (c_int >= 65 && c_int <= 90) || (c_int >= 97 && c_int <= 122);
 }
 
-char * ZNURL_Encode(const char * input)
+char * ZNURL_Escape(const char * input)
 {
 	int end = strlen(input);
 	size_t final_size = (end * 3) + 1;
@@ -41,7 +41,7 @@ char * ZNURL_Encode(const char * input)
 }
 
 
-char * ZNUrl_Decode(const char * input)
+char * ZNUrl_Unescape(const char * input)
 {
 	int input_length = strlen(input);
 

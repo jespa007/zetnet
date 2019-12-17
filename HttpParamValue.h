@@ -9,4 +9,6 @@ struct HttpParamValue
 	char value[256];
 };
 
+HttpParamValue * HttpParamValue_New(char *name, char *value);
+
 #endif

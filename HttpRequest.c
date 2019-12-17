@@ -29,7 +29,18 @@ HttpRequest * HttpRequest_New(const char *  _type
 HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	char url[4096]="";
 	char *request=malloc(strlen(str_request));
-	char *file_extension[10] = "";
+	char file_extension[10] = "";
+	char * find_extension=NULL;
+	ZNList * param=NULL;
+	char * content_type="";
+	const char *mime = "text/html";
+	bool is_header = true;
+	ZNList * sub_token=NULL;
+	ZNList * lst=NULL;
+	bool is_binary;
+	ZNList * tokens = NULL;
+	ZNList * url_token = NULL;
+	char *type = 0; // GET/POST/etc...
 
 	if(request==NULL){
 		return NULL;
@@ -40,48 +51,41 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		return NULL;
 	}
 
-	ZNString_Replace(request,"\r", "");
+	ZNString_ReplaceString(request,"\r", "");
 
-	bool is_binary= false;
-	request=ZNUrl_Decode(request);
-	ZNList * tokens = ZNString_Split(request,'\n');
-	ZNList * url_token = ZNString_Split(tokens->items[0],' ');
-	char *type = url_token->items[0]; // GET/POST/etc...
+	is_binary= false;
+	request=ZNUrl_Unescape(request);
+	tokens = ZNString_Split(request,'\n');
+	url_token = ZNString_Split(tokens->items[0],' ');
+	type = url_token->items[0]; // GET/POST/etc...
 
 
 	if(url_token->count >= 2){
-
-		url = url_token->items[1].substr(0,url_token[1].find_last_of(' '));
+		char *p=strrchr(url_token->items[1], ' ');
+		if(p!=NULL){
+			strncpy(url,url_token->items[1],p-(char *)url_token->items[1]+1);
+		}
+		//url = url_token->items[1].substr(0,url_token[1].find_last_of(' '));
 	}
 
 
 
-	const char *mime = "text/html";
-	char * content_type="";
-	ZNList * param;
-	bool is_header = true;
+	find_extension=strrchr(url,'.');
 
 
+	if(find_extension != NULL){
 
-
-	int find_extension=url.find_last_of(".");
-
-	if(find_extension != -1){
-
-
-
-			file_extension =url.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
+			strncpy(file_extension,find_extension,find_extension-url+1);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
 
 	#ifdef __DEBUG__
-			printf("file extension: %s\n",file_extension.c_str());
+			printf("file extension: %s\n",file_extension);
 	#endif
 
-			if((strcmp(file_extension,".png")==0){
+			if(strcmp(file_extension,".png")==0){
 				mime = "image/png";
 				is_binary=true;
 			}
-
-			iif((strcmp(file_extension,".css")==0){
+			else if(strcmp(file_extension,".css")==0){
 				mime = "text/css";
 
 			}else if(strcmp(file_extension,  ".json")==0){
@@ -104,13 +108,11 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 	}
 
-	ZNList * sub_token;
 
-
-	ZNList * lst= ZNString_Split(url, '?');//.Split('?');
+	lst= ZNString_Split(url, '?');//.Split('?');
 	if (lst->count > 1)
 	{
-		url = lst->items[0];
+		strcpy(url,lst->items[0]);
 	}
 
 	char *host = "";// tokens[2];
@@ -133,8 +135,8 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 			if (sub_token->count > 1) // it has header value ...
 			{
-				variable = sub_token->items[0];
-				value = sub_token->items[1];
+				strcpy(variable,sub_token->items[0]);
+				strcpy(value,sub_token->items[1]);
 
 				if (strcmp(variable,"Referer")==0){
 					referer = value;
@@ -147,7 +149,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 					if(tl->count > 0){
 						content_type =tl->items[0];
 					}
-					ZNString_Replace(content_type," ","");
+					ZNString_ReplaceString(content_type," ","");
 				}
 			}
 		}
@@ -163,10 +165,10 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 					if (sub_token->count == 2)
 					{
-						param->Add(
-							 ParamValue_New(
-								sub_token->item[0],
-								sub_token->item[1]
+						ZNList_Add(param,
+							 HttpParamValue_New(
+								sub_token->items[0],
+								sub_token->items[1]
 							)
 						);
 					}
@@ -181,3 +183,8 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 }
 
 
+void		  HttpRequest_Delete(HttpRequest *http_request){
+	if(http_request!=NULL){
+		ZNList_Delete(http_request->param);
+	}
+}

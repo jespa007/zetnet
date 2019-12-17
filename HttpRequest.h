@@ -18,5 +18,6 @@ struct HttpRequest
 };
 
 HttpRequest * HttpRequest_GetRequest(const char * request);
+void		  HttpRequest_Delete(HttpRequest *http_request);
 
 #endif

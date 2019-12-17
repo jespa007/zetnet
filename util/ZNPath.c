@@ -12,7 +12,7 @@
 #define MAX_ABSOLUTE_FILENAME_LENGTH (MAX_FILENAME_LENGTH+MAX_PATH_LENGTH)
 #endif
 
-const char *  ZNPath_GetFolder(const char * _absolute_filename) {
+const char *  ZNPath_GetDirectory(const char * _absolute_filename) {
 	static char ss[MAX_ABSOLUTE_FILENAME_LENGTH]={0};
 	char * found=strrchr(_absolute_filename,'\\'); // locate the last ocurrence of '\\'
 	if(found==NULL){

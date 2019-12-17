@@ -139,23 +139,20 @@ HttpResponse * HttpResponse_MakePageNotFound(HttpServer * webserver)
 HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 	char filename_with_path[4096]={0};
 	char path_url[4096]={0};
-	char *file="";
-	char *path="";
-
+	const char *file="";
+	const char *path="";
+	ZNList * list_file=NULL;
+	bool ok = false;
 
 	if (request == NULL){
 		return makeNullRequest(webserver);
 	}
 
-
-
-	bool ok = false;
-
 	if(request->type== "GET"){
 
 		sprintf(path_url,"%s",ZNUrl_Unescape(request->URL));
 #ifdef WIN32
-		path_url = ZNString_Replace(path_url, '/','\\');//CUri::unescape(request->URL)
+		ZNString_ReplaceChar(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
 		sprintf(filename_with_path,
@@ -186,11 +183,11 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				return HttpResponse_MakePageNotFound(webserver);
 			}
 
-			ZNList * list_file = ZNIO_GetFiles(path);//,"*.html",false);
+			list_file = ZNIO_GetFiles(path,NULL,NULL);//,"*.html",false);
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
-				char * n = Path_GetFilename((char *)list_file->items[f]);
+				const char * n = Path_GetFilename(list_file->items[f]);
 
 #ifdef __DEBUG__
 				printf("try_file2:%s\n",n);
