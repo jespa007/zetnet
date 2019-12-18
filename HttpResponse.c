@@ -19,33 +19,17 @@ HtmlError html_error [MAX_ERROR_TYPES]={
 };
 
 // STATIC
-HttpResponse * makeFromFile(const char * file, const char * mime){
-
+HttpResponse * HttpResponse_MakeFromFile(const char * file, const char * mime){
+	return NULL;
 }
 
-HttpResponse * makeMethodNotAllowed(HttpServer * webserver){
-
-}
-
-HttpResponse * makeNullRequest(HttpServer *webserver){
-
-}
-
-HttpResponse * makePageNotFound(HttpServer *webserver){
-
+HttpResponse * HttpResponse_MakeMethodNotAllowed(HttpServer * webserver){
+	return NULL;
 }
 
 
-HttpResponse * from(HttpRequest * request, HttpServer  * webserver){
-
-}
-
-BufferData generateError(int error_id, HttpServer * webserver){
-
-}
-
-HttpResponse * makeFromString(const char * si, const char * mime){
-
+HttpResponse * HttpResponse_MakeFromString(const char * si, const char * mime){
+	return NULL;
 }
 
 
@@ -145,7 +129,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 	bool ok = false;
 
 	if (request == NULL){
-		return makeNullRequest(webserver);
+		return HttpResponse_MakeNullRequest(webserver);
 	}
 
 	if(request->type== "GET"){
@@ -187,7 +171,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
-				const char * n = Path_GetFilename(list_file->items[f]);
+				const char * n = ZNPath_GetFilename(list_file->items[f]);
 
 #ifdef __DEBUG__
 				printf("try_file2:%s\n",n);
@@ -213,7 +197,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 			BufferData data;
 
-			data.buffer=ZNIO_ReadFile(filename_to_load,data.size);
+			data.buffer=ZNIO_ReadFile(filename_to_load,&data.size);
 
 			return HttpResponse_New("200 OK", request->mime, request->is_binary, data);
 		}
@@ -248,7 +232,7 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 		strcat(send_message,"Accept-Ranges: bytes\n");
 		strcat(send_message,"Connection: Keep-Alive\n");
 		strcat(send_message,"Content-Length: ");
-		strcat(send_message,ZNString_NumberToString(http_response->data.size));
+		strcat(send_message,ZNString_IntToString(http_response->data.size));
 
 		if(http_response->is_binary){
 			strcat(send_message,"Content-Transfer-Encoding: binary");
@@ -269,7 +253,7 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 		memcpy(buffer+send_message_len				    ,http_response->data.buffer,http_response->data.size);
 		memcpy(buffer+send_message_len+http_response->data.size,"\n",2);
 
-		TcpServer_PutMsg(dst_socket,(uint8_t *)buffer,total_size);
+		TcpServer_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
 
 		free(buffer);
 	}
@@ -282,12 +266,12 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 				"\n"
 				"\n"
 				,(char *)http_response->data.buffer
-				,ZNString_NumberToString(strlen(error)) + "\r\n\r\n"
+				,ZNString_IntToString(strlen(error))
 		);
 
 
-		TcpServer_PutMsg(dst_socket,(uint8_t *)send_message,strlen(send_message));
-		TcpServer_PutMsg(dst_socket,(uint8_t *)error,strlen(error));
+		TcpServer_SendBytes(dst_socket,(uint8_t *)send_message,strlen(send_message));
+		TcpServer_SendBytes(dst_socket,(uint8_t *)error,strlen(error));
 
 	}
 

@@ -81,6 +81,8 @@ struct  TcpServer
 	int portno;
 
 };
+// static
+int  TcpServer_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len);
 
 
 TcpServer * TcpServer_New();

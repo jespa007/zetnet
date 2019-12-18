@@ -141,9 +141,11 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	util/ZNUrl.c
 	util/ZNString.c
+	util/ZNList.c
 	util/ZNIo.c
 	util/ZNPath.c
 	TcpServer.c
+	HttpParamValue.c
 	HttpHandleClient.c
 	HttpRequest.c
 	HttpResponse.c

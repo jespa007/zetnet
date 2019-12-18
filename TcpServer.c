@@ -561,27 +561,6 @@ void  TcpServer_InternalDisconnect(TcpServer * tcp_server)
 
 	}
 }
-//------------------------------------------------------------------------------------------------------------------------
-//char  *str  =  NULL;
-void TcpServer_Unload(TcpServer * tcp_server)
-{
- // valid
-	tcp_server->end_loop_mdb=true;
-	pthread_join(tcp_server->thread,NULL);
-	TcpServer_InternalDisconnect(tcp_server);
-
-
-	TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
-
-#ifdef _WIN32
-	WSACleanup();
-#endif
-
-}
-
-void TcpServer_Delete(TcpServer * tcp_server) {
-	TcpServer_Unload(tcp_server);
-}
 //---------------------------------------------------------------------------------------------------------v
 void  TcpServer_GetMessage(TcpServer * tcp_server)
 {
@@ -629,5 +608,26 @@ void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 }
 
 
+//------------------------------------------------------------------------------------------------------------------------
+//char  *str  =  NULL;
+void TcpServer_Unload(TcpServer * tcp_server)
+{
+ // valid
+	tcp_server->end_loop_mdb=true;
+	pthread_join(tcp_server->thread,NULL);
+	TcpServer_InternalDisconnect(tcp_server);
+
+
+	TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
+
+}
+
+void TcpServer_Delete(TcpServer * tcp_server) {
+	TcpServer_Unload(tcp_server);
+}
 
 

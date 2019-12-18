@@ -1,8 +1,6 @@
 #include "zetnet.h"
 
 
-void HttpServer_SetLogoBase64( HttpServer *http_server,const char * _image_base_64);
-
 
 bool Http_GestMessageDefault(HttpServer * http_server,SOCKET socket, uint8_t *data, uint32_t size){
 
@@ -34,7 +32,7 @@ void HttpServer_Connect(HttpServer *http_server){
 }
 
 
-void HttpServer_OnGetUserRequest(HttpServer * http_server,SOCKET  _socket_client,ZNList * param){
+void HttpServer_OnGetUserRequest(HttpServer * http_server,SOCKET  _socket_client, HttpParamValue  * param, size_t param_len){
 
 	HttpResponse *resp = HttpResponse_MakeFromString("onGetUserRequest is not implemented!", "application/json");
 
@@ -44,5 +42,10 @@ void HttpServer_OnGetUserRequest(HttpServer * http_server,SOCKET  _socket_client
 }
 
 
-
+void HttpServer_Delete(HttpServer *http_server){
+	if(http_server!=NULL){
+		TcpServer_Delete(http_server->tcp_server);
+		free(http_server);
+	}
+}
 

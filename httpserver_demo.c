@@ -6,7 +6,7 @@ void MyCustomHttpServer_OnGetUserRequest(HttpServer *http_server, SOCKET in_sock
 	char returning_value[1024]= "{\"status\":false, \"msg\":\"unknow value\"}";
 
 
-	if (param!=NULL > 0 && param_len>0)
+	if (param!=NULL && param_len>0)
 	{
 		if (param[0].name == "cmd")
 		{

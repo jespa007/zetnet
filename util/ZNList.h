@@ -21,7 +21,7 @@ void 		ZNList_Erase(ZNList *this, uint16_t idx);
  * Insert item at the end
  */
 void 		ZNList_Add(ZNList *this, void *e);
-void 		ZNList_AddList(ZNList *this, void *list);
+void 		ZNList_AddList(ZNList *this, ZNList *list);
 /**
  * Insert item at position idx.
  */

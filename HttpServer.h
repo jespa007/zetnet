@@ -14,7 +14,7 @@ struct HttpServer
 
 	TcpServer * tcp_server;
 
-	void (*OnGetUserRequest)(HttpServer * http_server,SOCKET  _socket_client, ZNList * param);
+	void (*OnGetUserRequest)(HttpServer * http_server,SOCKET  _socket_client, HttpParamValue  * param, size_t param_len);
 
 	//private
 	void * web_client;

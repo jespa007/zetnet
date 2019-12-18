@@ -13,7 +13,7 @@ bool	ZNList_AddSlot(ZNList *v){
 	// last slot exhausted
 	if (v->_size == v->count) {
 		if((v->_size+10) >= MAX_ELEMENTS_VECTOR){
-			Log_Error("Max elements vector");
+			fprintf(stderr,"Max elements vector");
 			return false;
 		}
 		v->_size += 10;
@@ -25,7 +25,7 @@ bool	ZNList_AddSlot(ZNList *v){
 }
 
 ZNList * ZNList_New(){
-	ZNList *v=NEW(ZNList);
+	ZNList *v=malloc(sizeof(ZNList));
 	memset(v,0,sizeof(ZNList));
 	return v;
 }
@@ -34,7 +34,7 @@ ZNList * ZNList_New(){
 
 void ZNList_Set(ZNList *v, uint16_t idx, void *e){
 	if (idx >= v->count) {
-		Log_Error("idx out of bounds");
+		fprintf(stderr,"idx out of bounds");
 		return;
 	}
 	v->items[idx] = e;
@@ -46,7 +46,7 @@ size_t ZNList_Count(ZNList *v){
 
 void *ZNList_Get(ZNList *v, uint16_t idx){
 	if (idx >= v->count) {
-		Log_Error("idx out of bounds");
+		fprintf(stderr,"idx out of bounds");
 		return NULL;
 	}
 
@@ -55,7 +55,7 @@ void *ZNList_Get(ZNList *v, uint16_t idx){
 
 void ZNList_Erase(ZNList *this, uint16_t idx){
 	if (idx >= this->count) {
-		Log_Error("idx out of bounds");
+		fprintf(stderr,"idx out of bounds");
 		return;
 	}
 
@@ -86,7 +86,7 @@ void ZNList_AddList(ZNList *this, ZNList *list){
 
 void 		ZNList_Insert(ZNList *v, uint16_t idx, void *e){
 	if(idx > (v->count+1)){
-		Log_Error("idx should be 0 to %i",v->count+1);
+		fprintf(stderr,"idx should be 0 to %i",v->count+1);
 		return;
 	}
 
@@ -102,21 +102,21 @@ void 		ZNList_Insert(ZNList *v, uint16_t idx, void *e){
 
 void 		ZNList_Clear(ZNList *this){
 	if(this->items!=NULL){
-		FREE(this->items);
+		free(this->items);
 	}
 	memset(this,0,sizeof(ZNList));
 }
 
 void ZNList_Delete(ZNList *this){
 	if(this->items!=NULL){
-		FREE(this->items);
+		free(this->items);
 	}
-	FREE(this);
+	free(this);
 }
 
 void ZNList_DeleteAndFreeAllItems(ZNList *v){
 	for(unsigned i=0; i < v->count; i++){
-		FREE(v->items[i]);
+		free(v->items[i]);
 	}
 	ZNList_Delete(v);
 }
