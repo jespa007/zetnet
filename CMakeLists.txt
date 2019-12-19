@@ -48,36 +48,27 @@ message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
 
 set(ZETNET_LIB_SRCS "")
 
+
 if(MSVC)
+	MESSAGE ("Target: MSVC" )
+	
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -DJSON2CPP_EXPORTS)
 
+	#disable C4103 warning because is perfectly valid. Only MSVC complains about it
+	add_definitions(/wd4103)
+	add_definitions(/wd4800)
+	add_definitions(/wd4244)
 
-else() 
-
-	set(TARGET_FLAGS " -O2 ")
-	set( POST_NAME "")
-
-
-	IF ( "${TARGET}" STREQUAL "debug")
-		
-		set( POST_NAME "_d")	
-		
-		set(TARGET_FLAGS " -O0 ")
-		set(TARGET_FLAGS " ${TARGET_FLAGS} -g -D__DEBUG__ ")
-	ENDIF ()
-
-	if ( "${MEMMANAGER}" STREQUAL "ON")
-		message("-- Memmanager: ON (Warning execution time could be slow)")
-		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMGR__")
-		include_directories (
-			../../lib/memmgr
-		)
-		
-	   	set(ZG_CORE_LIB_SRCS ${ZETNET_LIB_SRCS} ../../lib/memmgr/memmgr.c)
-	   		
+else()  # g++ / gcc
+	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -std=c99 -pipe -Wall ")
+	  
+	if (MINGW)
+		MESSAGE ("Target: MinGW" )
+		set(CMAKE_LEGACY_MINGW_WIN32 0)
+		SET( COMMON_PARAMS " ${COMMON_PARAMS} -DCMAKE_SH='CMAKE_SH-NOTFOUND'")
 	else()
-		MESSAGE ("-- Memmanager: OFF " )
-	endif()
-
+		MESSAGE ("Target: Unix" )
+	endif()  
 endif()
 
 

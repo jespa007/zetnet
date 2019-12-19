@@ -90,23 +90,27 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 	FD_ZERO(&tcp_server->readfds);
 
 	//add master socket to set
+	// Always look for connection attempts
 	FD_SET(tcp_server->sockfd, &tcp_server->readfds);
 	SOCKET max_sd = tcp_server->sockfd;
 
 	//add child sockets to set
 	for (int i = 0 ; i < MAX_SOCKETS ; i++)
 	{
-		//socket descriptor
-		SOCKET sd = tcp_server->clientSocket[i].socket;
+		if(tcp_server->clientSocket[i].socket!=INVALID_SOCKET){
+			//socket descriptor
+			SOCKET sd = tcp_server->clientSocket[i].socket;
 
-		//if valid socket descriptor then add to read list
-		if(sd > 0){
-			FD_SET( sd , &tcp_server->readfds);
+			//if valid socket descriptor then add to read list
+			if(sd > 0){
+				FD_SET( sd , &tcp_server->readfds);
+			}
+
+			//highest file descriptor number, need it for the select function
+			if(sd > max_sd){
+				max_sd = sd;
+			}
 		}
-
-		//highest file descriptor number, need it for the select function
-		if(sd > max_sd)
-			max_sd = sd;
 	}
 
 	//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
@@ -231,6 +235,8 @@ TcpServer * TcpServer_New()
 	tcp_server->is_streaming_server=false;
 
 	tcp_server->TcpServer_GestMessage=TcpServer_GestMessageDefault;
+
+	return tcp_server;
 }
 
 //-------------------------------------------------------------------------------------
@@ -257,12 +263,12 @@ const char * TcpServer_GetErrorSockOpt(){
 //---------------------------------------------------------------------------------------------------------------------------
 bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_name)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
-	int opt = 1;
-	bool error=false;
+	//int opt = 1;
+	//bool error=false;
 	// kill thread if is active...
 	tcp_server->host = server_name;
 
-	TcpServer_Unload(tcp_server);
+	//TcpServer_Unload(tcp_server);
 
 
 	tcp_server->end_loop_mdb=false;
@@ -296,7 +302,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_n
 	   // Create a SOCKET for connecting to server
 	   tcp_server->sockfd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 		  if (tcp_server->sockfd == INVALID_SOCKET) {
-			  fprintf(stderr,"socket failed with error: %ld\n", WSAGetLastError());
+			  fprintf(stderr,"socket failed with error: %i\n", WSAGetLastError());
 			  freeaddrinfo(result);
 			  WSACleanup();
 			  return false;
@@ -305,7 +311,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_n
 		  // Setup the TCP listening socket
 		   iResult = bind( tcp_server->sockfd, result->ai_addr, (int)result->ai_addrlen);
 		   if (iResult == SOCKET_ERROR) {
-			   fprintf(stderr,"bind failed with error: %d\n", WSAGetLastError());
+			   fprintf(stderr,"bind failed with error: %i\n", WSAGetLastError());
 			   freeaddrinfo(result);
 			   closesocket(tcp_server->sockfd);
 			   WSACleanup();
@@ -464,7 +470,7 @@ bool TcpServer_FreeSlot(TcpServer * tcp_server,ClientSocket *clientSock){
 //---------------------------------------------------------------------------------------------------------------
 bool TcpServer_GestServerBase(TcpServer * tcp_server)
 {
-	int  numready=0;
+	//int  numready=0;
 
 	return true;
 }
@@ -616,24 +622,23 @@ void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 
 //------------------------------------------------------------------------------------------------------------------------
 //char  *str  =  NULL;
-void TcpServer_Unload(TcpServer * tcp_server)
-{
- // valid
-	tcp_server->end_loop_mdb=true;
-	pthread_join(tcp_server->thread,NULL);
-	TcpServer_InternalDisconnect(tcp_server);
-
-
-	TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
-
-#ifdef _WIN32
-	WSACleanup();
-#endif
-
-}
 
 void TcpServer_Delete(TcpServer * tcp_server) {
-	TcpServer_Unload(tcp_server);
+	if(tcp_server!=NULL){
+
+		tcp_server->end_loop_mdb=true;
+		pthread_join(tcp_server->thread,NULL);
+		TcpServer_InternalDisconnect(tcp_server);
+
+
+		TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
+
+	#ifdef _WIN32
+		WSACleanup();
+	#endif
+
+		free(tcp_server);
+	}
 }
 
 

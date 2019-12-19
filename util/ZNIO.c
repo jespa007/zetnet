@@ -148,7 +148,7 @@ bool ZNIO_IsDirectory(const char * filename){
 
 ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
 
-	ZNList *list_file;
+	ZNList *list_file=NULL;
 	ZNList *list_attribs = ZNString_Split(filter, '|');
 
 	for(unsigned i = 0; i < list_attribs->count; i++){
