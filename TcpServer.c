@@ -258,12 +258,14 @@ const char * TcpServer_GetErrorSockOpt(){
 bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_name)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
 	int opt = 1;
-	int error=0;
+	bool error=false;
 	// kill thread if is active...
 	tcp_server->host = server_name;
 
 	TcpServer_Unload(tcp_server);
 
+
+	tcp_server->end_loop_mdb=false;
 	bzero((char *) &tcp_server->serv_addr, sizeof(tcp_server->serv_addr));
 	tcp_server->portno = _portno;
 
@@ -368,7 +370,9 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_n
 
 
 	 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
+		 fprintf(stderr,"error creating thread\n");
 		 tcp_server->thread=-1;
+		 return false;
 	 }
 
 	return true;
@@ -583,9 +587,11 @@ void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 {
 	if(varg != NULL){
 		TcpServer * tcp_server=(TcpServer *)varg;
+		//printf("reco %i\n",tcp_server->end_loop_mdb);
 		while(!tcp_server->end_loop_mdb)
 		{
 			if(tcp_server->reconnection_request){
+
 				tcp_server->connected=true;
 				tcp_server->reconnection_request=false;
 			}

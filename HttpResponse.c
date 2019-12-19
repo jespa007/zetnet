@@ -150,7 +150,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 		path = ZNPath_GetDirectory(filename_with_path);
 
 #ifdef __DEBUG__
-		printf("try_file:%s request:%s\n",filename_with_path.c_str(),request->URL.c_str());
+		printf("try_file:%s request:%s\n",filename_with_path,request->URL);
 #endif
 
 
@@ -241,7 +241,7 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 		strcat(send_message,"\n\n");
 
 #ifdef __DEBUG__
-		printf("POST:\n%s\n",send_message.c_str());
+		printf("POST:\n%s\n",send_message);
 #endif
 
 		send_message_len=strlen(send_message);

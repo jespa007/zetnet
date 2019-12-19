@@ -153,7 +153,7 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 )
 
 #HTTPSERVER TEST executable
-set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/httpserver_demo.c)
+set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/http_server_demo.c)
 
 
 
@@ -191,12 +191,12 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(httpserver_demo${POST_NAME}
+add_executable(http_server_demo${POST_NAME}
 	${ZETNET_DEMO_SRCS}
 )
 
 
-target_link_libraries(httpserver_demo${POST_NAME}  zetnet${POST_NAME} -pthread )	
+target_link_libraries(http_server_demo${POST_NAME}  zetnet${POST_NAME} -pthread )	
 
 
 

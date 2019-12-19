@@ -23,6 +23,8 @@ HttpServer * HttpServer_New(
 	// init tcp server...
 	http_server->tcp_server=TcpServer_New();
 	TcpServer_Setup(http_server->tcp_server,_port,http_server->NAME);
+
+	return http_server;
 }
 
 

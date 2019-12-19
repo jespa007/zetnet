@@ -4,6 +4,6 @@ Date: XX/XX/XXXX
 Version: 1.0.0
 Exit version
 
-[] Client do handle start thread.
 [] Review memory leaks
+[] Client do handle start thread.
 [] Review static returns for utils (is not thread safe)
