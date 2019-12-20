@@ -52,7 +52,7 @@ set(ZETNET_LIB_SRCS "")
 if(MSVC)
 	MESSAGE ("Target: MSVC" )
 	
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS -DJSON2CPP_EXPORTS)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS )
 
 	#disable C4103 warning because is perfectly valid. Only MSVC complains about it
 	add_definitions(/wd4103)
