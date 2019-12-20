@@ -1,8 +1,14 @@
+a good tutorial for winsockets
+
+https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html
 
 //----------------------------
 Date: XX/XX/XXXX
 Version: 1.0.0
 Exit version
+
+
+
 
 [] Review memory leaks
 [] Client do handle start thread.
