@@ -43,8 +43,6 @@ int main(int argc, char *argv[])
 
 	printf("press any key to stop http_server...\n");
 	getchar();
-	Sleep(20000);
-
 	
 	printf("shutdown...\n");
 

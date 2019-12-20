@@ -57,10 +57,10 @@ BufferData  HttpResponse_GenerateError(int error_id, HttpServer * http_server)
 				"<body>"
 					"<center>"
 						"<div>"
-							"<div style=\"float:left;width:50%;text-align:right;margin-top:30\">"
+							"<div style=\"float:left;width:50%%;text-align:right;margin-top:30\">"
 								"<img  src=\"%s\"/>"
 							"</div>"
-							"<div style=\"float:right;width:48%;text-align:left;font-family:Arial\">"
+							"<div style=\"float:right;width:48%%;text-align:left;font-family:Arial\">"
 								"<h1>%s</h1>"
 								"<h3>%s</h3>"
 							"</div>"
@@ -90,6 +90,8 @@ HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_b
 	http_response->status = status;
 	http_response->mime = mime;
 	http_response->is_binary = is_binary;
+
+	return http_response;
 }
 
 
@@ -132,7 +134,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 		return HttpResponse_MakeNullRequest(webserver);
 	}
 
-	if(request->type== "GET"){
+	if(strcmp(request->type,"GET")==0){
 
 		sprintf(path_url,"%s",ZNUrl_Unescape(request->URL));
 #ifdef WIN32
