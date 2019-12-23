@@ -4,6 +4,11 @@
 typedef struct HttpServer HttpServer;
 
 
+typedef struct{
+	void (*callback_function)(HttpServer * http_server,SOCKET  _socket_client, HttpParamValue  * param, size_t param_len,void *user_data);
+	void *user_data;
+}HttpServerOnGetUserRequest;
+
 struct HttpServer
 {
 	const char * MSG_DIR;
@@ -14,7 +19,7 @@ struct HttpServer
 
 	TcpServer * tcp_server;
 
-	void (*OnGetUserRequest)(HttpServer * http_server,SOCKET  _socket_client, HttpParamValue  * param, size_t param_len);
+	HttpServerOnGetUserRequest http_server_on_get_user_request;
 
 	//private
 	void * web_client;

@@ -78,7 +78,7 @@ void TcpServer_SetTimeout(TcpServer * tcp_server,int seconds){
 		,.tv_usec=0};   // sleep for ten minutes!
 }
 
-bool TcpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len){
+bool TcpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len, void *user_data){
 	return false;
 }
 
@@ -234,7 +234,10 @@ TcpServer * TcpServer_New()
 
 	tcp_server->is_streaming_server=false;
 
-	tcp_server->TcpServer_GestMessage=TcpServer_GestMessageDefault;
+	tcp_server->tcp_server_on_gest_message=(TcpServerOnGestMessage){
+		.callback_function=TcpServer_GestMessageDefault
+		,.user_data=NULL
+	};
 
 	return tcp_server;
 }
@@ -522,7 +525,8 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 
 				if(ok) // serve to client ...
 				{
-					if(!tcp_server->TcpServer_GestMessage(tcp_server,tcp_server->clientSocket[clientNumber].socket,tcp_server->buffer, sizeof(tcp_server->buffer))){
+					TcpServerOnGestMessage cf=tcp_server->tcp_server_on_gest_message;
+					if(!cf.callback_function(tcp_server,tcp_server->clientSocket[clientNumber].socket,tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
 #if __DEBUG__
 						printf("gestMessage:Erasing client %i (gestMessage)\n",clientNumber);
 #endif

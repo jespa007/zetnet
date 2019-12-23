@@ -14,6 +14,10 @@ typedef  struct  {
 
 typedef struct TcpServer TcpServer;
 
+typedef struct {
+	bool 		(* callback_function)(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len, void *user_data);
+	void 		*user_data;
+}TcpServerOnGestMessage;
 
 struct  TcpServer
 {
@@ -39,7 +43,7 @@ struct  TcpServer
 
 	unsigned  initialized;
 
-	bool 		(* TcpServer_GestMessage)(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len);
+	TcpServerOnGestMessage tcp_server_on_gest_message;
 
 /*	void TcpServer_SetTimeDelay(unsigned long delay);
 

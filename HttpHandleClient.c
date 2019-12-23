@@ -26,7 +26,8 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data );
 
 	if(strcmp(req->type,"POST")==0){
-		http_handle_client->http_server->OnGetUserRequest(http_handle_client->http_server,http_handle_client->socket_client,(HttpParamValue *)req->param->items,req->param->count);
+		HttpServerOnGetUserRequest cf=http_handle_client->http_server->http_server_on_get_user_request;
+		cf.callback_function(http_handle_client->http_server,http_handle_client->socket_client,(HttpParamValue *)req->param->items,req->param->count,cf.user_data);
 	}
 	else{
 

@@ -51,7 +51,6 @@ BufferData  HttpResponse_GenerateError(int error_id, HttpServer * http_server)
 		error.description="not implemented";
 	}
 
-
 	sprintf(str,
 			"<html>"
 				"<body>"
