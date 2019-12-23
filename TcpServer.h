@@ -28,7 +28,7 @@ struct  TcpServer
 	pthread_t 		thread;
 	bool configured;
 	char  *message;
-	const char *host;
+
 	uint32_t  ipaddr;
 	uint8_t  buffer[MAX_LENGTH_MESSAGE];
 	int	      src_port,dst_port;
@@ -44,27 +44,6 @@ struct  TcpServer
 	unsigned  initialized;
 
 	TcpServerOnGestMessage tcp_server_on_gest_message;
-
-/*	void TcpServer_SetTimeDelay(unsigned long delay);
-
-	void  TcpServer_InternalDisconnect(TcpServer * tcp_server);
-	bool  TcpServer_InternalConnect(TcpServer * tcp_server);
-	void  TcpServer_GetMessage(TcpServer * tcp_server);
-	void  TcpServer_GestClient(TcpServer * tcp_server);
-
-	bool TcpServer_GestServerBase(TcpServer * tcp_server);
-	void  TcpServer_GestServer(TcpServer * tcp_server);
-
-	ClientSocket 		*TcpServer_GetFreeSlot(TcpServer * tcp_server); // adds client
-	bool 				TcpServer_FreeSlot(TcpServer * tcp_server,ClientSocket * sockClient); // removes client...
-
-
-
-
-	void TcpServer_closeSocket(TcpServer * tcp_server,SOCKET sock);
-	SOCKET TcpServer_socketAccept(TcpServer * tcp_server);
-	bool TcpServer_socketReady(TcpServer * tcp_server,SOCKET sock);
-	void  TcpServer_Update(TcpServer * tcp_server);  //  Receive  messages,  gest  &  send...*/
 
 	 //set of socket descriptors
 	  fd_set readfds;
@@ -92,7 +71,7 @@ int  TcpServer_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len);
 TcpServer * TcpServer_New();
 
 
-bool  TcpServer_Setup(TcpServer *tcp_server,int  port, const char *name_client);  //  Reads  configuration  of  machine  &  init  sdl_net...
+bool  TcpServer_Setup(TcpServer *tcp_server,int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
 void  TcpServer_SetTimeout(TcpServer *tcp_server, int seconds);
 
 bool  TcpServer_isConnected(TcpServer *tcp_server);

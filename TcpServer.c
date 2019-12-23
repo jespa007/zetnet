@@ -203,7 +203,6 @@ TcpServer * TcpServer_New()
 	tcp_server->src_port=0;
 	tcp_server->dst_port=0;
 	tcp_server->ipaddr=0;
-	tcp_server->host=NULL;//"127.0.0.1";
 	tcp_server->disconnect_request=false;
 
 
@@ -264,15 +263,8 @@ const char * TcpServer_GetErrorSockOpt(){
 	return "unknow";
 }
 //---------------------------------------------------------------------------------------------------------------------------
-bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_name)  //  Reads  configuration  of  machine  &  init  sdl_net...
+bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
-	//int opt = 1;
-	//bool error=false;
-	// kill thread if is active...
-	tcp_server->host = server_name;
-
-	//TcpServer_Unload(tcp_server);
-
 
 	tcp_server->end_loop_mdb=false;
 	bzero((char *) &tcp_server->serv_addr, sizeof(tcp_server->serv_addr));
@@ -369,8 +361,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno, const char *server_n
 
 
 
-	printf("Setup server  %s (%d.%d.%d.%d:%i)\n",
-			tcp_server->host,
+	printf("Setup server  (%d.%d.%d.%d:%i)\n",
 			tcp_server->ipaddr>>24,
 			(tcp_server->ipaddr>>16)&0xff,
 			(tcp_server->ipaddr>>8)&0xff,

@@ -12,30 +12,41 @@ bool TcpServer_HttpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET socke
 
 
 HttpServer * HttpServer_New(
-		int _port
-		,const char * web_dir
-		,const char * instance_name){
+
+		const char * web_dir
+		,const char * instance_name
+		){
 	HttpServer * http_server=malloc(sizeof(HttpServer));
 
-	http_server->NAME = instance_name;
+	//http_server->NAME = instance_name;
 	http_server->WEB_DIR = web_dir;
 	http_server->web_client = NULL;
-
+	http_server->tcp_server=NULL;
 	// init tcp server...
-	http_server->tcp_server=TcpServer_New();
-	http_server->tcp_server->tcp_server_on_gest_message=(TcpServerOnGestMessage){
-		.callback_function=TcpServer_HttpServer_GestMessageDefault
-		,.user_data=http_server
-	};
-	TcpServer_Setup(http_server->tcp_server,_port,http_server->NAME);
 
 	return http_server;
 }
 
 
 
-void HttpServer_Connect(HttpServer *http_server){
-	TcpServer_Connect(http_server->tcp_server);
+void HttpServer_Start(HttpServer *http_server,int _port){
+	if(http_server->tcp_server==NULL){
+		http_server->tcp_server=TcpServer_New();
+		http_server->tcp_server->tcp_server_on_gest_message=(TcpServerOnGestMessage){
+				.callback_function=TcpServer_HttpServer_GestMessageDefault
+				,.user_data=http_server
+		};
+
+		TcpServer_Setup(http_server->tcp_server,_port);
+		TcpServer_Connect(http_server->tcp_server);
+	}
+}
+
+void HttpServer_Stop(HttpServer *http_server){
+	if(http_server->tcp_server!=NULL){
+		TcpServer_Delete(http_server->tcp_server);
+		http_server->tcp_server=NULL;
+	}
 }
 
 
