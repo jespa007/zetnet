@@ -31,7 +31,7 @@ HttpResponse *HttpResponse_New(
 		);
 
 HttpResponse *  HttpResponse_MakeFromString(const char * si, const char * mime);
-HttpResponse *	HttpResponse_From(HttpRequest * request, HttpServer * webserver);
+HttpResponse *	HttpResponse_From(HttpRequest * request, HttpServer * http_server);
 void 			HttpResponse_Post(HttpResponse * http_response,SOCKET dst_socket, HttpServer * http_server);
 void 			HttpResponse_Delete(HttpResponse * http_response);
 

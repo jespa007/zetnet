@@ -14,7 +14,7 @@ bool TcpServer_HttpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET socke
 HttpServer * HttpServer_New(
 
 		const char * web_dir
-		,const char * instance_name
+		,const char * server_name
 		){
 	HttpServer * http_server=malloc(sizeof(HttpServer));
 
@@ -22,6 +22,7 @@ HttpServer * HttpServer_New(
 	http_server->WEB_DIR = web_dir;
 	http_server->web_client = NULL;
 	http_server->tcp_server=NULL;
+	http_server->NAME=server_name;
 	// init tcp server...
 
 	return http_server;

@@ -75,7 +75,7 @@ void ZNList_Add(ZNList *v, void *e){
 	}
 }
 
-void ZNList_AddList(ZNList *this, ZNList *list){
+void ZNList_Concat(ZNList *this, ZNList *list){
 	if(this != NULL && list) {
 		for(unsigned i=0; i <  list->count; i++){
 			ZNList_Add(this, list->items[i]);
@@ -115,9 +115,11 @@ void ZNList_Delete(ZNList *this){
 }
 
 void ZNList_DeleteAndFreeAllItems(ZNList *v){
-	for(unsigned i=0; i < v->count; i++){
-		free(v->items[i]);
+	if(v!=NULL){
+		for(unsigned i=0; i < v->count; i++){
+			free(v->items[i]);
+		}
+		ZNList_Delete(v);
 	}
-	ZNList_Delete(v);
 }
 

@@ -4,8 +4,6 @@
 #define MAX_PATH		4096
 #endif
 
-
-
 bool ZNIO_FileExists(const char * filename) {
 
 	if(filename == NULL) return false;
@@ -146,21 +144,8 @@ bool ZNIO_IsDirectory(const char * filename){
 	return S_ISDIR (st_buf.st_mode) != 0;
 }
 
-ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
-
-	ZNList *list_file=NULL;
-	ZNList *list_attribs = ZNString_Split(filter, '|');
-
-	for(unsigned i = 0; i < list_attribs->count; i++){
-		ZNString_Remove((char *)list_attribs->items[i],' ');
-		if(strcmp((char *)list_attribs->items[i],"*")!=0){
-			ZNString_Remove((char *)list_attribs->items[i],'*');
-		}
-	}
-
-
-	ZNIO_IsDirectory("/tmp");
-
+ZNList * ZNIO_GetFilesBuiltIn(const char * folder, ZNList *list_attribs, bool recursive){
+	ZNList *list_file=ZNList_New();
 	bool ok=false;
 	DIR *dir;
 	struct dirent *ent;
@@ -169,19 +154,18 @@ ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive)
 
 		  if((strcmp(ent->d_name,".")!=0) && (strcmp(ent->d_name,"..")!=0)){ // invalid dirs...
 
-
-				  char data[1024]={0};
+				  char data[MAX_PATH]={0};
 				  sprintf(data,"%s/%s",folder,ent->d_name);
 				  if(ZNIO_IsDirectory(data)){
 
-						  if(recursive){
-							  ZNList * r = ZNIO_GetFiles(data,filter,true);
-							  // add all resulting item elements to current list...
-							  ZNList_AddList(list_file,r);
+					  if(recursive){
+						  ZNList * r = ZNIO_GetFilesBuiltIn(data,list_attribs,true);
+						  // add all resulting item elements to current list...
+						  ZNList_Concat(list_file,r);
 
-							  // r is not used any more, so delete it...
-							  ZNList_Delete(r);
-						  }
+						  // r is not used any more, so delete it...
+						  ZNList_Delete(r);
+					  }
 				  }
 				  else{
 					  ok=false;
@@ -189,7 +173,9 @@ ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive)
 					  for(unsigned i = 0; i < list_attribs->count && !ok; i++){
 
 						  if((strcmp((char *)list_attribs->items[i],"*")==0) || ZNString_EndsWith(ent->d_name,(char *)list_attribs->items[i])) {
-							  ZNList_Add(list_file,data);
+							  char *filename=malloc(strlen(data));
+							  strcpy(filename,data);
+							  ZNList_Add(list_file,filename);
 							  ok=true;
 						  }
 					  }
@@ -202,5 +188,25 @@ ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive)
 	}
 
 	return list_file;
+}
+
+ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
+	ZNList * list_file=NULL;
+	ZNList * list_attribs = ZNString_Split(filter==NULL?"*":filter, '|');
+
+	for(unsigned i = 0; i < list_attribs->count; i++){
+		ZNString_Remove((char *)list_attribs->items[i],' ');
+		if(strcmp((char *)list_attribs->items[i],"*")!=0){
+			ZNString_Remove((char *)list_attribs->items[i],'*');
+		}
+	}
+
+	list_file=ZNIO_GetFilesBuiltIn(folder,list_attribs,recursive);
+
+	return list_file;
+
+//	ZNIO_IsDirectory("/tmp");
+
+
 }
 

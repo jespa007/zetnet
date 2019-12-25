@@ -2,9 +2,9 @@
 #define __ZNPATH_H__
 
 
-const char *  ZNPath_GetDirectory(const char * _absolute_filename);
-const char *  ZNPath_GetFilename(const char * _absolute_filename);
-const char *  ZNPath_GetFilenameWithoutExtension(const char * _absolute_filename);
+bool  ZNPath_GetDirectory(char *dst,const char * _absolute_filename);
+bool  ZNPath_GetFilename(char *dst,const char * _absolute_filename);
+bool  ZNPath_GetFilenameWithoutExtension(char *dst,const char * _absolute_filename);
 
 
 #endif

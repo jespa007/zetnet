@@ -3,20 +3,23 @@
 
 
 void ZNString_SplitBuiltin(const char *s, char delim, ZNList  * elems) {
-	char * token = strtok((char *)s, " ");
+	char delim_str[2]={delim,0};
+	char * token = strtok((char *)s, delim_str);
    // loop through the string to extract all other tokens
    while( token != NULL ) {
 	   size_t len=strlen(token)+1;
 	   char *text=malloc(len+1);
 	   strcpy(text,token);
 	   ZNList_Add(elems,text);
-	   token = strtok(NULL, " ");
+	   token = strtok(NULL, delim_str);
    }
 }
 
 ZNList * ZNString_Split(const char * s, char delim) {
 	ZNList *elems=ZNList_New();
-	ZNString_SplitBuiltin(s, delim, elems);
+	if(s!=0 && strcmp(s,"")!=0){
+		ZNString_SplitBuiltin(s, delim, elems);
+	}
 	return elems;
 }
 

@@ -2,13 +2,13 @@
 
 
 
-HttpRequest * HttpRequest_New(const char *  _type
-		, const char * _url
-		, const char * _host
-		, const char * _referer
+HttpRequest * HttpRequest_New(char *  _type
+		, char * _url
+		, char * _host
+		, char * _referer
 		, const char * _mime
 		, bool _is_binary
-		, const char * _content_type
+		, char * _content_type
 		, ZNList * _param
 		)
 {
@@ -17,7 +17,7 @@ HttpRequest * HttpRequest_New(const char *  _type
 	strcpy(http_request->URL ,_url);
 	strcpy(http_request->host, _host);
 	strcpy(http_request->referer, _referer);
-	strcpy(http_request->mime, _mime);
+	http_request->mime=_mime;
 	http_request->is_binary 	= _is_binary;
 	strcpy(http_request->content_type, _content_type);
 	http_request->param 		= _param;
@@ -27,24 +27,33 @@ HttpRequest * HttpRequest_New(const char *  _type
 }
 
 HttpRequest *HttpRequest_GetRequest(const char * str_request) {
-	char url[4096]="";
-	char *request=malloc(strlen(str_request));
+	 HttpRequest *http_request=NULL;
+	char content_type[MAX_CONTENT_LEN]={0};
+	const char *mime = "text/html"; //default plain text
+	char url[MAX_URL_LEN]="";
 	char file_extension[10] = "";
 	char * find_extension=NULL;
-	ZNList * param=NULL;
-	char * content_type="";
-	const char *mime = "text/html";
 	bool is_header = true;
-	ZNList * sub_token=NULL;
+	char  host[MAX_HOST_LEN];
+	char referer[MAX_REFERER_LEN];
+
+	ZNList * params=NULL;
 	ZNList * lst=NULL;
-	bool is_binary;
 	ZNList * tokens = NULL;
-	ZNList * url_token = NULL;
+	ZNList * url_tokens = NULL;
+
+	bool is_binary=false;
 	char *type = 0; // GET/POST/etc...
+	char *request=NULL;
+	char *request_aux=NULL;
+
+	request=malloc(strlen(str_request));
 
 	if(request==NULL){
 		return NULL;
 	}
+
+	strcpy(request,str_request);
 
 	if (strcmp(request,"")==0)//String.IsNullOrEmpty(request))
 	{
@@ -54,28 +63,30 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	ZNString_ReplaceString(request,"\r", "");
 
 	is_binary= false;
-	request=ZNUrl_Unescape(request);
+
+	request_aux=request; // save old pointer...
+	request=ZNUrl_Unescape(request); // unescape request...
+	free(request_aux);
+
 	tokens = ZNString_Split(request,'\n');
-	url_token = ZNString_Split(tokens->items[0],' ');
-	type = url_token->items[0]; // GET/POST/etc...
+	url_tokens = ZNString_Split(tokens->items[0],' ');
+	type = url_tokens->items[0]; // GET/POST/etc...
 
 
-	if(url_token->count >= 2){
-		char *p=strrchr(url_token->items[1], ' ');
-		if(p!=NULL){
-			strncpy(url,url_token->items[1],p-(char *)url_token->items[1]+1);
-		}
-		//url = url_token->items[1].substr(0,url_token[1].find_last_of(' '));
+	if(url_tokens->count >= 2){
+		strcpy(url,url_tokens->items[1]);
 	}
-
-
 
 	find_extension=strrchr(url,'.');
 
-
 	if(find_extension != NULL){
 
-			strncpy(file_extension,find_extension,find_extension-url+1);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
+		size_t pos = find_extension-url+1;
+		if(strlen(url)-pos > 5){
+			fprintf(stderr,"Error max extension");
+		}
+		else{
+			strcpy(file_extension,find_extension);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
 
 	#ifdef __DEBUG__
 			printf("file extension: %s\n",file_extension);
@@ -106,6 +117,8 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 				is_binary=true;
 			}
 
+		}
+
 	}
 
 
@@ -114,9 +127,6 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	{
 		strcpy(url,lst->items[0]);
 	}
-
-	char *host = "";// tokens[2];
-	char *referer = "";
 
 	for (unsigned i = 0; i < tokens->count; i++)
 	{
@@ -131,60 +141,78 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		if (is_header)
 		{
 
-			sub_token = ZNString_Split(tokens->items[i],':'); // split only the first : occurrence ...
+			ZNList * sub_tokens = ZNString_Split(tokens->items[i],':'); // split only the first : occurrence ...
 
-			if (sub_token->count > 1) // it has header value ...
+			if (sub_tokens->count > 1) // it has header value ...
 			{
-				strcpy(variable,sub_token->items[0]);
-				strcpy(value,sub_token->items[1]);
+				strcpy(variable,sub_tokens->items[0]);
+				strcpy(value,sub_tokens->items[1]);
 
 				if (strcmp(variable,"Referer")==0){
-					referer = value;
+					strcpy(referer,value);
 				}else if(strcmp(variable , "Host")==0){
-					host = value;
+					strcpy(host,value);
 				}else if(strcmp(variable ,  "Accept")==0){
 
 				}else if(strcmp(variable ,  "Content-Type")==0){
 					ZNList *tl=ZNString_Split(value,';')->items[0];
 					if(tl->count > 0){
-						content_type =tl->items[0];
+						strcpy(content_type,tl->items[0]);
 					}
 					ZNString_ReplaceString(content_type," ","");
+					ZNList_DeleteAndFreeAllItems(tl);
 				}
 			}
+
+			ZNList_DeleteAndFreeAllItems(sub_tokens);
+
+
 		}
 		else // check parameters...
 		{
-			ZNList * pre_check_param = ZNString_Split(tokens->items[i],'&');
+			ZNList * pre_check_params = ZNString_Split(tokens->items[i],'&');
 
-			if (pre_check_param->count >= 1)
+			if (pre_check_params->count >= 1)
 			{
-				for (unsigned j = 0; j < pre_check_param->count; j++)
+				for (unsigned j = 0; j < pre_check_params->count; j++)
 				{
-					sub_token = ZNString_Split(pre_check_param->items[j], '=' ); // split only the first = occurrence ...
+					ZNList *sub_tokens = ZNString_Split(pre_check_params->items[j], '=' ); // split only the first = occurrence ...
 
-					if (sub_token->count == 2)
+					if (sub_tokens->count == 2)
 					{
-						ZNList_Add(param,
+						ZNList_Add(params,
 							 HttpParamValue_New(
-								sub_token->items[0],
-								sub_token->items[1]
+								sub_tokens->items[0],
+								sub_tokens->items[1]
 							)
 						);
 					}
+
+					ZNList_DeleteAndFreeAllItems(sub_tokens);
 				}
 
 			}
+
+			ZNList_DeleteAndFreeAllItems(pre_check_params);
 		}
 	}
 
-	return HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, param);
 
+
+	http_request=HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, params);
+
+	// finally free all depending resources...
+	ZNList_DeleteAndFreeAllItems(tokens);
+	ZNList_DeleteAndFreeAllItems(url_tokens);
+	ZNList_DeleteAndFreeAllItems(lst);
+	free(request);
+
+	return http_request;
 }
 
 
 void		  HttpRequest_Delete(HttpRequest *http_request){
 	if(http_request!=NULL){
-		ZNList_Delete(http_request->param);
+		ZNList_DeleteAndFreeAllItems(http_request->param);
 	}
 }

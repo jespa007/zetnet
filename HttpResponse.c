@@ -18,29 +18,29 @@ HtmlError html_error [MAX_ERROR_TYPES]={
 	,{"405 - Method not allowed","The method specified in the Request Line is not allowed for the resource identified by the request. Please ensure that you have the proper MIME type set up for the resource you are requesting<br><br>. Please contact the server's administrator if this problem persists."}
 };
 
-// STATIC
-HttpResponse * HttpResponse_MakeFromFile(const char * file, const char * mime){
-	return NULL;
-}
-
-HttpResponse * HttpResponse_MakeMethodNotAllowed(HttpServer * webserver){
-	return NULL;
-}
-
-
-HttpResponse * HttpResponse_MakeFromString(const char * si, const char * mime){
-	return NULL;
-}
-
-
-
-BufferData  HttpResponse_GenerateError(int error_id, HttpServer * http_server)
+BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 {
 
 	HtmlError error;
 	char int_error[100];
 	BufferData data;
-	char str[2096];
+	const char * template="<html>"
+		"<body>"
+			"<center>"
+				"<div>"
+					"<div style=\"float:left;width:50%%;text-align:right;margin-top:30\">"
+						"<img  src=\"%s\"/>"
+					"</div>"
+					"<div style=\"float:right;width:48%%;text-align:left;font-family:Arial\">"
+						"<h1>%s</h1>"
+						"<h3>%s</h3>"
+					"</div>"
+				"</div>"
+			"</center>"
+		"</body>"
+	"</html>";
+
+
 
 	sprintf(int_error,"%i",error_id);
 
@@ -51,37 +51,23 @@ BufferData  HttpResponse_GenerateError(int error_id, HttpServer * http_server)
 		error.description="not implemented";
 	}
 
-	sprintf(str,
-			"<html>"
-				"<body>"
-					"<center>"
-						"<div>"
-							"<div style=\"float:left;width:50%%;text-align:right;margin-top:30\">"
-								"<img  src=\"%s\"/>"
-							"</div>"
-							"<div style=\"float:right;width:48%%;text-align:left;font-family:Arial\">"
-								"<h1>%s</h1>"
-								"<h3>%s</h3>"
-							"</div>"
-						"</div>"
-					"</center>"
-				"</body>"
-			"</html>"
-	,http_server->LOGO_BASE64
-	,error.title
-	,error.description
-	);
-
-
-	data.size = strlen(str);//.size();
+	data.size=strlen(template)+strlen(http_server->LOGO_BASE64)+strlen(error.description)+strlen(error.title);
 	data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
 	memset(data.buffer,0,data.size);
-	strcpy((char *)data.buffer,(char *)str);
+
+	sprintf((char *)data.buffer,
+			template
+		,http_server->LOGO_BASE64
+		,error.title
+		,error.description
+	);
+	//strcpy((char *)data.buffer,(char *)str);
 
 
 	return data;
 
 }
+
 
 HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_binary, BufferData data) {
 	HttpResponse * http_response = malloc(sizeof(HttpResponse));
@@ -94,7 +80,7 @@ HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_b
 }
 
 
-HttpResponse * HttpResponse_makeFromString(const char * str, const char * mime)
+HttpResponse * HttpResponse_MakeFromString(const char * str, const char * mime)
 {
 	BufferData data;
 	data.size=strlen(str);
@@ -106,7 +92,7 @@ HttpResponse * HttpResponse_makeFromString(const char * str, const char * mime)
 	return HttpResponse_New("200 OK", mime, false, data);
 }
 
-HttpResponse * HttpResponse_makeMethodNotAllowed(HttpServer * webserver)
+HttpResponse * HttpResponse_MakeMethodNotAllowed(HttpServer * webserver)
 {
 	return HttpResponse_New("405 Method not allowed", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_405, webserver));
 }
@@ -122,11 +108,11 @@ HttpResponse * HttpResponse_MakePageNotFound(HttpServer * webserver)
 }
 
 HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
-	char filename_with_path[4096]={0};
-	char path_url[4096]={0};
-	const char *file="";
-	const char *path="";
-	ZNList * list_file=NULL;
+	char filename_with_path[MAX_PATH]={0};
+	char path_url[MAX_PATH]={0};
+	char file[MAX_PATH]="";
+	char path[MAX_PATH]="";
+
 	bool ok = false;
 
 	if (request == NULL){
@@ -147,23 +133,29 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 		ok = false;
 
-		file = ZNPath_GetFilename(filename_with_path);
-		path = ZNPath_GetDirectory(filename_with_path);
+
 
 #ifdef __DEBUG__
 		printf("try_file:%s request:%s\n",filename_with_path,request->URL);
 #endif
 
+		ZNPath_GetDirectory(path,filename_with_path);
 
 		if (ZNIO_FileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
 		{
+			ZNPath_GetFilename(file,filename_with_path);
+
 #ifdef __DEBUG__
-			printf("file exists!!!\n");
+			printf("file \"%s\" filename with ok!\n",filename_with_path);
 #endif
 			ok = true;
 		}
-		else
+		else // file not exist try to solve automatically...
 		{
+			ZNList * list_file=NULL;
+
+			printf("file \"%s\" not exist ...\n",filename_with_path);
+
 			if (!ZNIO_IsDirectory(path)){
 				return HttpResponse_MakePageNotFound(webserver);
 			}
@@ -172,17 +164,22 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
-				const char * n = ZNPath_GetFilename(list_file->items[f]);
+				char n[MAX_PATH]="";
 
-#ifdef __DEBUG__
-				printf("try_file2:%s\n",n);
-#endif
+				if(ZNPath_GetFilename(n,list_file->items[f])){
 
-				if(strcmp(n,"index.html")==0){
-					file=n;
-					ok = true;
+	#ifdef __DEBUG__
+					printf("try_file2:%s\n",n);
+	#endif
+
+					if(strcmp(n,"index.html")==0){
+						strcpy(file,n);
+						ok = true;
+					}
 				}
 			}
+
+			ZNList_DeleteAndFreeAllItems(list_file);
 		}
 
 		if (ok)
@@ -193,7 +190,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 #define SEPARATOR_DIR "/"
 #endif
 
-			char filename_to_load[4096];
+			char filename_to_load[MAX_PATH];
 			sprintf(filename_to_load,"%s%s%s",path,SEPARATOR_DIR,file);
 
 			BufferData data;
@@ -213,68 +210,69 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer * http_server) //, const string & response_action)
 {
-	char send_message[4096]={0};
-	size_t send_message_len=0;
+	char header_str[4096]={0};
+	size_t header_str_len=0;
+	size_t data_len=0;
 	char *buffer;
 	int total_size=0;
 
-	strcat(send_message,"HTTP/1.1 ");
-	strcat(send_message,http_response->status);
-	strcat(send_message,"\n");
-	strcat(send_message,"Server: ");
-	strcat(send_message,http_server->NAME);
-	strcat(send_message,"\n");
+	strcat(header_str,"HTTP/1.1 ");
+	strcat(header_str,http_response->status);
+	strcat(header_str,"\n");
+	strcat(header_str,"Server: ");
+	strcat(header_str,http_server->NAME);
+	strcat(header_str,"\n");
 
 	if (strcmp(http_response->status,"200 OK")==0) // send response content
 	{
-		strcat(send_message,"Content-Type: ");
-		strcat(send_message, http_response->mime);
-		strcat(send_message,"\n");
-		strcat(send_message,"Accept-Ranges: bytes\n");
-		strcat(send_message,"Connection: Keep-Alive\n");
-		strcat(send_message,"Content-Length: ");
-		strcat(send_message,ZNString_IntToString(http_response->data.size));
+		data_len=http_response->data.size;
+		if(!http_response->is_binary){
+			data_len=strlen((char *)http_response->data.buffer);
+		}
+		strcat(header_str,"Content-Type: ");
+		strcat(header_str, http_response->mime);
+		strcat(header_str,"\n");
+		strcat(header_str,"Accept-Ranges: bytes\n");
+		strcat(header_str,"Connection: Keep-Alive\n");
+		strcat(header_str,"Content-Length: ");
+		strcat(header_str,ZNString_IntToString(data_len));
 
 		if(http_response->is_binary){
-			strcat(send_message,"Content-Transfer-Encoding: binary");
+			strcat(header_str,"Content-Transfer-Encoding: binary");
 		}
 
-		strcat(send_message,"\n\n");
+		strcat(header_str,"\n\n");
 
 #ifdef __DEBUG__
-		printf("POST:\n%s\n",send_message);
+		printf("POST:\n%s\n",header_str);
 #endif
 
-		send_message_len=strlen(send_message);
-		total_size = strlen(send_message)+http_response->data.size+2;
 
-		buffer=(char *)malloc(total_size);
-		memset(buffer,0,total_size);
-		memcpy(buffer										,send_message,send_message_len);
-		memcpy(buffer+send_message_len				    ,http_response->data.buffer,http_response->data.size);
-		memcpy(buffer+send_message_len+http_response->data.size,"\n",2);
-
-		TcpServer_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
-
-		free(buffer);
 	}
-	else // send error message
+	else // only basic html error information
 	{
 
-		char error[4096]={0};
-		sprintf("%s\n"
-				"Content-Length: %s"
-				"\n"
-				"\n"
-				,(char *)http_response->data.buffer
-				,ZNString_IntToString(strlen(error))
-		);
-
-
-		TcpServer_SendBytes(dst_socket,(uint8_t *)send_message,strlen(send_message));
-		TcpServer_SendBytes(dst_socket,(uint8_t *)error,strlen(error));
+		strcat(header_str,"Content-Type: ");
+		strcat(header_str, http_response->mime);
+		strcat(header_str,"\n");
+		strcat(header_str,"Content-Length: ");
+		strcat(header_str,ZNString_IntToString(http_response->data.size));
+		strcat(header_str,"\n\n");
 
 	}
+
+	header_str_len=strlen(header_str);
+	total_size = header_str_len+data_len+1+1; // +2 header + body + \n\n + 0
+
+	buffer=(char *)malloc(total_size);
+	memset(buffer,0,total_size);
+	memcpy(buffer										 ,header_str,header_str_len);
+	memcpy(buffer+header_str_len				         ,http_response->data.buffer,data_len);
+	buffer[header_str_len+data_len]=10;
+
+	TcpServer_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
+
+	free(buffer);
 
 }
 
