@@ -45,14 +45,17 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	bool is_binary=false;
 	char *type = 0; // GET/POST/etc...
 	char *request=NULL;
+	size_t request_len=strlen(str_request)+1;
 	char *request_aux=NULL;
 
-	request=malloc(strlen(str_request));
+	request=malloc(request_len);
+
 
 	if(request==NULL){
 		return NULL;
 	}
 
+	memset(request,0,request_len);
 	strcpy(request,str_request);
 
 	if (strcmp(request,"")==0)//String.IsNullOrEmpty(request))
@@ -65,8 +68,8 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	is_binary= false;
 
 	request_aux=request; // save old pointer...
-	request=ZNUrl_Unescape(request); // unescape request...
-	free(request_aux);
+	request=ZNUrl_Unescape(request_aux); // unescape request...
+
 
 	tokens = ZNString_Split(request,'\n');
 	url_tokens = ZNString_Split(tokens->items[0],' ');
@@ -206,6 +209,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	ZNList_DeleteAndFreeAllItems(url_tokens);
 	ZNList_DeleteAndFreeAllItems(lst);
 	free(request);
+	free(request_aux);
 
 	return http_request;
 }

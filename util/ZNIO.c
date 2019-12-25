@@ -173,7 +173,8 @@ ZNList * ZNIO_GetFilesBuiltIn(const char * folder, ZNList *list_attribs, bool re
 					  for(unsigned i = 0; i < list_attribs->count && !ok; i++){
 
 						  if((strcmp((char *)list_attribs->items[i],"*")==0) || ZNString_EndsWith(ent->d_name,(char *)list_attribs->items[i])) {
-							  char *filename=malloc(strlen(data));
+							  char *filename=malloc(strlen(data)+1); // 1 end string
+							  memset(filename,0,strlen(data)+1);
 							  strcpy(filename,data);
 							  ZNList_Add(list_file,filename);
 							  ok=true;
