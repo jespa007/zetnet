@@ -108,6 +108,19 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 		set(TARGET_FLAGS " -O0 ")
 		set(TARGET_FLAGS " ${TARGET_FLAGS} -g -fomit-frame-pointer ")
 	ENDIF ()
+	
+	if ( "${MEMMGR}" STREQUAL "ON")
+		message("-- Memmanager: ON (Warning execution time could be slow)")
+		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMGR__")
+		include_directories (
+			../memmgr
+		)
+		
+	   	set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ../memmgr/memmgr.c)
+	   		
+	else()
+		MESSAGE ("-- Memmanager: OFF " )
+	endif()	
 
 endif()
 

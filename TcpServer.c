@@ -161,7 +161,7 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 #ifdef _WIN32
 	newsockfd = accept(tcp_server->sockfd, NULL, NULL);
 		if (newsockfd == INVALID_SOCKET) {
-			fprintf(stderr,"accept failed with error: %d\n", WSAGetLastError());
+			fprintf(stderr,"\naccept failed with error: %d", WSAGetLastError());
 			//socketClose(newsockfd);
 			//WSACleanup();
 		   // return INVALID_SOCKET;
@@ -277,7 +277,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 		struct addrinfo *result = NULL;
 		int iResult = WSAStartup(MAKEWORD(2,2), &tcp_server->wsaData);
 		if (iResult != 0) {
-			fprintf(stderr,"WSAStartup failed with error: %d\n", iResult);
+			fprintf(stderr,"\nWSAStartup failed with error: %d", iResult);
 			return false;
 		}
 
@@ -289,7 +289,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 		// Resolve the server address and port
 	   iResult = getaddrinfo(NULL, (const char *)ZNString_IntToString(_portno), &tcp_server->serv_addr, &result);
 	   if ( iResult != 0 ) {
-		   fprintf(stderr,"getaddrinfo failed with error: %d\n", iResult);
+		   fprintf(stderr,"\ngetaddrinfo failed with error: %d", iResult);
 		   WSACleanup();
 		   return false;
 	   }
@@ -297,7 +297,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 	   // Create a SOCKET for connecting to server
 	   tcp_server->sockfd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 		  if (tcp_server->sockfd == INVALID_SOCKET) {
-			  fprintf(stderr,"socket failed with error: %i\n", WSAGetLastError());
+			  fprintf(stderr,"\nsocket failed with error: %i", WSAGetLastError());
 			  freeaddrinfo(result);
 			  WSACleanup();
 			  return false;
@@ -306,7 +306,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 		  // Setup the TCP listening socket
 		   iResult = bind( tcp_server->sockfd, result->ai_addr, (int)result->ai_addrlen);
 		   if (iResult == SOCKET_ERROR) {
-			   fprintf(stderr,"bind failed with error: %i\n", WSAGetLastError());
+			   fprintf(stderr,"\nbind failed with error: %i", WSAGetLastError());
 			   freeaddrinfo(result);
 			   closesocket(tcp_server->sockfd);
 			   WSACleanup();
@@ -318,7 +318,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 	 iResult = listen(tcp_server->sockfd, MAX_SOCKETS);
 		if (iResult == SOCKET_ERROR) {
-		   fprintf(stderr,"listen failed with error: %d\n", WSAGetLastError());
+		   fprintf(stderr,"\nlisten failed with error: %d", WSAGetLastError());
 		   closesocket(tcp_server->sockfd);
 		   WSACleanup();
 
@@ -334,14 +334,14 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 		 // create socket for server...
 		tcp_server->sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		 if (sockfd < 0){
-			fprintf(stderr,"ERROR opening socket");
+			fprintf(stderr,"\nERROR opening socket");
 			return false;
 		 }
 
 		 //set server socket to allow multiple connections , this is just a good habit, it will work without this
 		 if(( setsockopt(tcp_server->sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&tcp_server->opt, sizeof(tcp_server->opt))) < 0 )
 		 {
-			 fprintf(stderr,"setsockopt:%s",getErrorSockOpt());
+			 fprintf(stderr,"\nsetsockopt:%s",getErrorSockOpt());
 			 return false;
 		 }
 
@@ -352,7 +352,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 		if (bind(tcp_server->sockfd, (struct sockaddr *) &tcp_server->serv_addr,
 					  sizeof(tcp_server->serv_addr)) < 0){
-					  fprintf(stderr,"ERROR on binding");
+					  fprintf(stderr,"\nERROR on binding");
 					  return false;
 		}
 
@@ -361,7 +361,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 
 
-	printf("Setup server  (%d.%d.%d.%d:%i)\n",
+	printf("\nSetup server  (%d.%d.%d.%d:%i)",
 			tcp_server->ipaddr>>24,
 			(tcp_server->ipaddr>>16)&0xff,
 			(tcp_server->ipaddr>>8)&0xff,
@@ -370,7 +370,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 
 	 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
-		 fprintf(stderr,"error creating thread\n");
+		 fprintf(stderr,"\nerror creating thread");
 		 tcp_server->thread=-1;
 		 return false;
 	 }
@@ -399,7 +399,7 @@ void TcpServer_CloseSocket(TcpServer * tcp_server,SOCKET sock){
 		if(tcp_server->sockfd != sock){ // is not my self (it could be, i.e server)...
 			int iResult = shutdown(sock, SD_SEND);
 			if (iResult == SOCKET_ERROR) {
-				fprintf(stderr,"shutdown failed with error: %d\n", WSAGetLastError());
+				fprintf(stderr,"\nshutdown failed with error: %d", WSAGetLastError());
 			}
 		}
 
@@ -423,12 +423,12 @@ ClientSocket * TcpServer_GetFreeSlot(TcpServer * tcp_server){
 			tcp_server->freeSocket[tcp_server->n_freeSockets-1]=SOCKET_CLIENT_NOT_AVAILABLE;
 			tcp_server->n_freeSockets--;
 		}else{
-			fprintf(stderr,"internal error!\n");
+			fprintf(stderr,"\ninternal error!");
 			return NULL;
 		}
 	}
 	else{
-		fprintf(stderr,"no space left!!\n");
+		fprintf(stderr,"\nno space left!!");
 	}
 	return cs;
 }
@@ -452,11 +452,11 @@ bool TcpServer_FreeSlot(TcpServer * tcp_server,ClientSocket *clientSock){
 			return true;
 		}
 		else{
-			fprintf(stderr,"Cannot free because -SOCKET IS NOT AVAILABLE-\n");
+			fprintf(stderr,"\nCannot free because -SOCKET IS NOT AVAILABLE-");
 		}
 	}
 	else{
-		fprintf(stderr,"Cannot free because -MAX_SOCKETS REACHED-\n");
+		fprintf(stderr,"\nCannot free because -MAX_SOCKETS REACHED-");
 	}
 	return false;
 }
@@ -485,12 +485,12 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 		ClientSocket *c = TcpServer_GetFreeSlot(tcp_server);
 
 		if(c==NULL){ // no space left ... reject client ...
-			fprintf(stderr,"*** Maximum client count reached - rejecting client connection ***\n");
+			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***");
 			TcpServer_CloseSocket(tcp_server,new_socket);
 		}else{
 
 #if __DEBUG__
-	printf("Adding new client %i\n",new_socket);
+	printf("\nAdding new client %i",new_socket);
 #endif
 
 			c->socket=new_socket;
@@ -519,13 +519,13 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 					TcpServerOnGestMessage cf=tcp_server->tcp_server_on_gest_message;
 					if(!cf.callback_function(tcp_server,tcp_server->clientSocket[clientNumber].socket,tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
 #if __DEBUG__
-						printf("gestMessage:Erasing client %i (gestMessage)\n",clientNumber);
+						printf("\ngestMessage:Erasing client %i (gestMessage)",clientNumber);
 #endif
 						TcpServer_FreeSlot(tcp_server,&tcp_server->clientSocket[clientNumber]);
 					}
 				}else{ // remove that socket because client closed the connection ...
 #if __DEBUG__
-					printf("gestMessage:Erasing client %i (getMessage)\n",clientNumber);
+					printf("\ngestMessage:Erasing client %i (getMessage)",clientNumber);
 #endif
 					TcpServer_FreeSlot(tcp_server,&tcp_server->clientSocket[clientNumber]);
 				}
@@ -562,7 +562,7 @@ void  TcpServer_InternalDisconnect(TcpServer * tcp_server)
 		}
 
 		tcp_server->sockfd = 0;
-		printf("Disconnect server!\n");
+		printf("\nDisconnect server!");
 
 	}
 }

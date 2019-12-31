@@ -121,7 +121,9 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 	if(strcmp(request->type,"GET")==0){
 
-		sprintf(path_url,"%s",ZNUrl_Unescape(request->URL));
+		char *unescaped_url=ZNUrl_Unescape(request->URL);
+		sprintf(path_url,"%s",unescaped_url);
+		free(unescaped_url);
 #ifdef WIN32
 		ZNString_ReplaceChar(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
@@ -136,7 +138,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 
 #ifdef __DEBUG__
-		printf("try_file:%s request:%s\n",filename_with_path,request->URL);
+		printf("\ntry_file:%s request:%s",filename_with_path,request->URL);
 #endif
 
 		ZNPath_GetDirectory(path,filename_with_path);
@@ -146,7 +148,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 			ZNPath_GetFilename(file,filename_with_path);
 
 #ifdef __DEBUG__
-			printf("file \"%s\" filename with ok!\n",filename_with_path);
+			printf("\nfile \"%s\" filename with ok!",filename_with_path);
 #endif
 			ok = true;
 		}
@@ -154,7 +156,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 		{
 			ZNList * list_file=NULL;
 
-			printf("file \"%s\" not exist ...\n",filename_with_path);
+			printf("\nfile \"%s\" not exist ...",filename_with_path);
 
 			if (!ZNIO_IsDirectory(path)){
 				return HttpResponse_MakePageNotFound(webserver);
@@ -169,7 +171,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				if(ZNPath_GetFilename(n,list_file->items[f])){
 
 	#ifdef __DEBUG__
-					printf("try_file2:%s\n",n);
+					printf("\ntry_file2:%s",n);
 	#endif
 
 					if(strcmp(n,"index.html")==0){

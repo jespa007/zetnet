@@ -45,11 +45,13 @@ int ZNString_MyStrStr(char *txt1,const char *txt2)
 }
 
 void  ZNString_ReplaceString(char * str, const char * match_str, const char * replace_str){
-	char *tmp;
-	char *nextStr;
-	int pos;
+	char *tmp=NULL;
+	char *nextStr=NULL;
+	int pos=0;
 
 	tmp=strdup(str);
+
+	if(tmp == NULL) return;
 
 	pos=ZNString_MyStrStr(tmp,match_str);
 	if(pos!=-1)
@@ -79,7 +81,11 @@ void  ZNString_ReplaceString(char * str, const char * match_str, const char * re
 		}
 	}
 
+#ifdef __MEMMGR__
+	MEMMGR_free_c_pointer(tmp); // because strdup is not using MEMMGR
+#else
 	free(tmp);
+#endif
 
 }
 

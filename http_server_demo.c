@@ -45,13 +45,13 @@ int main(int argc, char *argv[])
 	};
 	HttpServer_Start(http_server,HTTP_SERVER_DEMO_PORT);
 
-	printf("press any key to stop http_server...\n");
-	//getchar();
-	while(true){
+	printf("\npress any key to stop http_server...");
+	getchar();
+	/*while(true){
 		Sleep(100);
-	}
+	}*/
 	
-	printf("shutdown...\n");
+	printf("\nshutdown...");
 
 	HttpServer_Delete(http_server);
 

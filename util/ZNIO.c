@@ -204,6 +204,8 @@ ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive)
 
 	list_file=ZNIO_GetFilesBuiltIn(folder,list_attribs,recursive);
 
+	ZNList_DeleteAndFreeAllItems(list_attribs);
+
 	return list_file;
 
 //	ZNIO_IsDirectory("/tmp");

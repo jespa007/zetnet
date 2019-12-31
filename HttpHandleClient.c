@@ -20,14 +20,24 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	HttpRequest *req = NULL;
 
 #ifdef __DEBUG__
-	printf("received:%s",http_handle_client->rcv_buffer_data );
+	printf("\nreceived:%s",http_handle_client->rcv_buffer_data );
 #endif
 
 	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data );
 
 	if(strcmp(req->type,"POST")==0){
+		void *param=NULL;
+		size_t param_len=0;
 		HttpServerOnGetUserRequest cf=http_handle_client->http_server->http_server_on_get_user_request;
-		cf.callback_function(http_handle_client->http_server,http_handle_client->socket_client,(HttpParamValue *)req->param->items,req->param->count,cf.user_data);
+
+		if(req->param!=NULL){
+			param=req->param->items;
+			param_len=req->param->count;
+
+		}
+
+
+		cf.callback_function(http_handle_client->http_server,http_handle_client->socket_client,(HttpParamValue *)param,param_len,cf.user_data);
 	}
 	else{
 
@@ -35,7 +45,10 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 		HttpResponse_Post(resp,http_handle_client->socket_client, http_handle_client->http_server);
 		HttpResponse_Delete(resp);
 	}
+
+
 	HttpRequest_Delete(req);
+	HttpHandleClient_Delete(http_handle_client);
 
 }
 

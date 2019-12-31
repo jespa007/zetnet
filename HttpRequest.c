@@ -92,7 +92,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 			strcpy(file_extension,find_extension);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
 
 	#ifdef __DEBUG__
-			printf("file extension: %s\n",file_extension);
+			printf("\nfile extension: %s\n",file_extension);
 	#endif
 
 			if(strcmp(file_extension,".png")==0){
@@ -158,7 +158,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 				}else if(strcmp(variable ,  "Accept")==0){
 
 				}else if(strcmp(variable ,  "Content-Type")==0){
-					ZNList *tl=ZNString_Split(value,';')->items[0];
+					ZNList *tl=ZNString_Split(value,';');
 					if(tl->count > 0){
 						strcpy(content_type,tl->items[0]);
 					}
@@ -218,5 +218,6 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 void		  HttpRequest_Delete(HttpRequest *http_request){
 	if(http_request!=NULL){
 		ZNList_DeleteAndFreeAllItems(http_request->param);
+		free(http_request);
 	}
 }
