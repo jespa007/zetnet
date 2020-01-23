@@ -144,7 +144,7 @@ bool ZNIO_IsDirectory(const char * filename){
 	return S_ISDIR (st_buf.st_mode) != 0;
 }
 
-ZNList * ZNIO_GetFilesBuiltIn(const char * folder, ZNList *list_attribs, bool recursive){
+ZNList * ZNIO_ListFilesBuiltIn(const char * folder, ZNList *list_attribs, bool recursive){
 	ZNList *list_file=ZNList_New();
 	bool ok=false;
 	DIR *dir;
@@ -159,7 +159,7 @@ ZNList * ZNIO_GetFilesBuiltIn(const char * folder, ZNList *list_attribs, bool re
 				  if(ZNIO_IsDirectory(data)){
 
 					  if(recursive){
-						  ZNList * r = ZNIO_GetFilesBuiltIn(data,list_attribs,true);
+						  ZNList * r = ZNIO_ListFilesBuiltIn(data,list_attribs,true);
 						  // add all resulting item elements to current list...
 						  ZNList_Concat(list_file,r);
 
@@ -191,7 +191,7 @@ ZNList * ZNIO_GetFilesBuiltIn(const char * folder, ZNList *list_attribs, bool re
 	return list_file;
 }
 
-ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive){
+ZNList * ZNIO_ListFiles(const char * folder, const char * filter, bool recursive){
 	ZNList * list_file=NULL;
 	ZNList * list_attribs = ZNString_Split(filter==NULL?"*":filter, '|');
 
@@ -202,7 +202,7 @@ ZNList * ZNIO_GetFiles(const char * folder, const char * filter, bool recursive)
 		}
 	}
 
-	list_file=ZNIO_GetFilesBuiltIn(folder,list_attribs,recursive);
+	list_file=ZNIO_ListFilesBuiltIn(folder,list_attribs,recursive);
 
 	ZNList_DeleteAndFreeAllItems(list_attribs);
 

@@ -162,7 +162,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				return HttpResponse_MakePageNotFound(webserver);
 			}
 
-			list_file = ZNIO_GetFiles(path,NULL,NULL);//,"*.html",false);
+			list_file = ZNIO_ListFiles(path,NULL);//,"*.html",false);
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;

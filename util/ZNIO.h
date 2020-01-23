@@ -8,7 +8,7 @@ int  		ZNIO_GetFileLength(const char * filename);
 bool 		ZNIO_SetWorkPath(const char * path);
 char 	* 	ZNIO_GetCwd();
 bool	 	ZNIO_IsDirectory(const char * filename);
-ZNList 	*	ZNIO_GetFiles(const char * folder, const char * filter, bool recursive);
+ZNList 	*	ZNIO_GetFiles(const char * folder, const char * filter);
 
 
 #endif
