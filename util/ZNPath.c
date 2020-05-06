@@ -26,7 +26,7 @@ bool ZNPath_GetDirectory(char *ss, const char * _absolute_filename) {
 			return true;
 		}
 		else{
-			fprintf(stderr,"Reached MAX_ABSOLUTE_FILENAME_LENGTH or 0 ('%s':%i)",_absolute_filename,len);
+			fprintf(stderr,"Reached MAX_ABSOLUTE_FILENAME_LENGTH or 0 ('%s':%lu)",_absolute_filename,(unsigned long)len);
 		}
 	}
 	else{
@@ -82,7 +82,7 @@ bool  ZNPath_GetFilenameWithoutExtension(char *ss,const char * _absolute_filenam
 			memcpy(ss,filename_aux,len);
 			return true;
 		}else{
-			fprintf(stderr,"Reached MAX_FILENAME_LENGTH or 0 ('%s':%i)",filename_aux,len);
+			fprintf(stderr,"Reached MAX_FILENAME_LENGTH or 0 ('%s':%lu)",filename_aux,(unsigned long)len);
 		}
 	}
 	return false;

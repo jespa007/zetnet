@@ -5,8 +5,7 @@
 bool	ZNList_AddSlot(ZNList *v){
 	if (v->_size == 0) {
 		v->_size = 10;
-		v->items = malloc(sizeof(void*) * v->_size);
-		memset(v->items, '\0', sizeof(void) * v->_size);
+		v->items = ZN_MALLOC(sizeof(void*) * v->_size);
 	}
 
 	// condition to increase v->items:
@@ -25,8 +24,7 @@ bool	ZNList_AddSlot(ZNList *v){
 }
 
 ZNList * ZNList_New(){
-	ZNList *v=malloc(sizeof(ZNList));
-	memset(v,0,sizeof(ZNList));
+	ZNList *v=ZN_MALLOC(sizeof(ZNList));
 	return v;
 }
 
@@ -53,20 +51,20 @@ void *ZNList_Get(ZNList *v, uint16_t idx){
 	return v->items[idx];
 }
 
-void ZNList_Erase(ZNList *this, uint16_t idx){
-	if (idx >= this->count) {
+void ZNList_Erase(ZNList *_this, uint16_t idx){
+	if (idx >= _this->count) {
 		fprintf(stderr,"idx out of bounds");
 		return;
 	}
 
-	this->items[idx] = NULL;
+	_this->items[idx] = NULL;
 
-	for (unsigned i = idx; i < (this->count-1); i++) {
-		this->items[i] = this->items[i+1];
+	for (unsigned i = idx; i < (_this->count-1); i++) {
+		_this->items[i] = _this->items[i+1];
 	}
 
-	this->items[this->count-1] = NULL;
-	this->count--;
+	_this->items[_this->count-1] = NULL;
+	_this->count--;
 }
 
 void ZNList_Add(ZNList *v, void *e){
@@ -75,10 +73,10 @@ void ZNList_Add(ZNList *v, void *e){
 	}
 }
 
-void ZNList_Concat(ZNList *this, ZNList *list){
-	if(this != NULL && list) {
+void ZNList_Concat(ZNList *_this, ZNList *list){
+	if(_this != NULL && list) {
 		for(unsigned i=0; i <  list->count; i++){
-			ZNList_Add(this, list->items[i]);
+			ZNList_Add(_this, list->items[i]);
 		}
 	}
 
@@ -100,26 +98,26 @@ void 		ZNList_Insert(ZNList *v, uint16_t idx, void *e){
 	}
 }
 
-void 		ZNList_Clear(ZNList *this){
-	if(this->items!=NULL){
-		free(this->items);
+void 		ZNList_Clear(ZNList *_this){
+	if(_this->items!=NULL){
+		ZN_FREE(_this->items);
 	}
-	memset(this,0,sizeof(ZNList));
+	memset(_this,0,sizeof(ZNList));
 }
 
-void ZNList_Delete(ZNList *this){
-	if(this->items!=NULL){
-		free(this->items);
+void ZNList_Delete(ZNList *_this){
+	if(_this->items!=NULL){
+		ZN_FREE(_this->items);
 	}
-	free(this);
+	ZN_FREE(_this);
 }
 
-void ZNList_DeleteAndFreeAllItems(ZNList *v){
-	if(v!=NULL){
-		for(unsigned i=0; i < v->count; i++){
-			free(v->items[i]);
+void ZNList_DeleteAndFreeAllItems(ZNList *_this){
+	if(_this!=NULL){
+		for(unsigned i=0; i < _this->count; i++){
+			ZN_FREE(_this->items[i]);
 		}
-		ZNList_Delete(v);
+		ZNList_Delete(_this);
 	}
 }
 

@@ -1,10 +1,9 @@
 #include "zetnet.h"
 
 
-
-HttpHandleClient * HttpHandleClient_New(SOCKET _socket_client, HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
+HttpHandleClient * HttpHandleClient_New(SocketClient * _socket_client, HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
 {
-	HttpHandleClient * http_handle_client = malloc(sizeof(HttpHandleClient));
+	HttpHandleClient * http_handle_client = ZN_MALLOC(sizeof(HttpHandleClient));
 	http_handle_client->socket_client = _socket_client;
 	http_handle_client->http_server = _http_server;
 
@@ -28,7 +27,7 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	if(strcmp(req->type,"POST")==0){
 		void *param=NULL;
 		size_t param_len=0;
-		HttpServerOnGetUserRequest cf=http_handle_client->http_server->http_server_on_get_user_request;
+		HttpServerOnGetUserRequest cf=http_handle_client->http_server->on_get_user_request;
 
 		if(req->param!=NULL){
 			param=req->param->items;
@@ -42,7 +41,7 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	else{
 
 		HttpResponse *resp = HttpResponse_From(req, http_handle_client->http_server);
-		HttpResponse_Post(resp,http_handle_client->socket_client, http_handle_client->http_server);
+		HttpResponse_Post(resp,http_handle_client->socket_client->socket, http_handle_client->http_server);
 		HttpResponse_Delete(resp);
 	}
 
@@ -55,7 +54,7 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 
 void HttpHandleClient_Delete(HttpHandleClient *http_handle_client){
 	if(http_handle_client!=NULL){
-		free(http_handle_client);
+		ZN_FREE(http_handle_client);
 	}
 
 }

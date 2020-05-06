@@ -2,35 +2,35 @@
 #define __TCP_SERVER__
 
 
-#define  MAX_LENGTH_MESSAGE 16384
-#define  MAX_SOCKETS					100
+
+#define  MAX_SOCKETS			100
 
 typedef  struct  {
 	SOCKET socket;
-	int    idxClient;
-	bool    header_sent; // for streaming purposes!
+	int    idx_client;
+	bool   streaming_header_sent; // for streaming purposes!
 
-}  ClientSocket;
+}  SocketClient;
 
 typedef struct TcpServer TcpServer;
 
 typedef struct {
-	bool 		(* callback_function)(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len, void *user_data);
+	bool 		(* callback_function)(TcpServer * tcp_server,SocketClient * client_socket, uint8_t *buffer, size_t len, void *user_data);
 	void 		*user_data;
 }TcpServerOnGestMessage;
 
 struct  TcpServer
 {
 
-	ClientSocket  	clientSocket[MAX_SOCKETS];
-	int 			freeSocket[MAX_SOCKETS];
-	int        		n_freeSockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!
+	SocketClient  	socket_client[MAX_SOCKETS];
+	int 			free_socket[MAX_SOCKETS];
+	int        		n_free_sockets; // 1-n_freeSlot => TOTAL ACTIVE CLIENTS!!!
 	pthread_t 		thread;
 	bool configured;
 	char  *message;
 
-	uint32_t  ipaddr;
-	uint8_t  buffer[MAX_LENGTH_MESSAGE];
+
+	uint8_t  buffer[ZETNET_TCP_MESSAGE_LENGTH];
 	int	      src_port,dst_port;
 
 	bool  	connected
@@ -43,15 +43,11 @@ struct  TcpServer
 
 	unsigned  initialized;
 
-	TcpServerOnGestMessage tcp_server_on_gest_message;
+	TcpServerOnGestMessage on_gest_message;
 
 	 //set of socket descriptors
 	  fd_set readfds;
 
-#ifdef _WIN32
-	WSADATA wsaData;
-
-#endif
 
 	struct timeval timeout;
 	bool end_loop_mdb;
@@ -59,28 +55,24 @@ struct  TcpServer
 
 	// only linux ...
 
-	struct addrinfo  serv_addr, cli_addr;
+
 	SOCKET sockfd;
 	int portno;
 
 };
 // static
-int  TcpServer_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len);
+
+TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message);
 
 
-TcpServer * TcpServer_New();
+bool  TcpServer_Start(TcpServer *tcp_server,int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
+void  TcpServer_Stop(TcpServer *tcp_server);
 
-
-bool  TcpServer_Setup(TcpServer *tcp_server,int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
 void  TcpServer_SetTimeout(TcpServer *tcp_server, int seconds);
+bool  TcpServer_IsConnected(TcpServer *tcp_server);
 
-bool  TcpServer_isConnected(TcpServer *tcp_server);
-void  TcpServer_Connect(TcpServer *tcp_server);
-void  TcpServer_Disconnect(TcpServer *tcp_server);
-void  TcpServer_Reconnection(TcpServer *tcp_server);
+bool  TcpServer_CloseSocketClient(TcpServer * tcp_server,SocketClient *socket_client);
 
-void TcpServer_Resume(TcpServer *tcp_server);
-void TcpServer_Pause(TcpServer *tcp_server);
 
 void  TcpServer_Unload(TcpServer *tcp_server);
 void  TcpServer_Delete(TcpServer *tcp_server);

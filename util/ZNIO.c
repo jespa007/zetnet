@@ -39,14 +39,13 @@ uint8_t * ZNIO_ReadFile(const char * filename,size_t * buffer_size){
 
 			*buffer_size = file_length+1; // +1 is for string end
 
-			uint8_t *buffer = (uint8_t *)malloc(*buffer_size);
-			memset(buffer,0,*buffer_size );
+			uint8_t *buffer = (uint8_t *)ZN_MALLOC(*buffer_size);
 
 			readed_elements = fread(buffer, 1, file_length, fp);
 
 			if(readed_elements != file_length) {
 				fprintf(stderr,"number elements doesn't match with length file (%s)\n",filename);
-				free(buffer);
+				ZN_FREE(buffer);
 				return NULL;
 			}
 
@@ -173,8 +172,8 @@ ZNList * ZNIO_ListFilesBuiltIn(const char * folder, ZNList *list_attribs, bool r
 					  for(unsigned i = 0; i < list_attribs->count && !ok; i++){
 
 						  if((strcmp((char *)list_attribs->items[i],"*")==0) || ZNString_EndsWith(ent->d_name,(char *)list_attribs->items[i])) {
-							  char *filename=malloc(strlen(data)+1); // 1 end string
-							  memset(filename,0,strlen(data)+1);
+							  char *filename=ZN_MALLOC(strlen(data)+1); // 1 end string
+
 							  strcpy(filename,data);
 							  ZNList_Add(list_file,filename);
 							  ok=true;

@@ -41,6 +41,25 @@
 	#endif
 #endif
 
+
+
+#ifdef __MEMMANAGER__
+#include "memmgr.h"
+#endif
+
+//----------------------------
+// START ZETNET PROTOTYPES
+
+#define ZETNET_MAJOR_VERSION 1
+#define ZETNET_MINOR_VERSION 0
+#define ZETNET_PATCH_VERSION 0
+
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+#include "util/ZNMem.h"
 #include "util/ZNList.h"
 #include "util/ZNString.h"
 #include "util/ZNIO.h"
@@ -48,17 +67,22 @@
 #include "util/ZNUrl.h"
 
 
+#include "TcpUtils.h"
 #include "TcpServer.h"
 #include "HttpParamValue.h"
+#include "HttpServerMPS.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 #include "HttpHandleClient.h"
 #include "HttpServer.h"
-#ifdef __MEMMGR__
-#include "memmgr.h"
+
+
+bool ZetNet_Init(void);
+void ZetNet_DeInit(void);
+
+
+#ifdef  __cplusplus
+}
 #endif
 
 
-#define ZETNET_MAJOR_VERSION 1
-#define ZETNET_MINOR_VERSION 0
-#define ZETNET_PATCH_VERSION 0

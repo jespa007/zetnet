@@ -5,8 +5,8 @@
 
 
 typedef struct{
-	uint8_t * buffer;
-	uint32_t size;
+	uint8_t * 	buffer;
+	size_t 		size;
 }BufferData;
 
 

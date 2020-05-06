@@ -20,7 +20,6 @@ HtmlError html_error [MAX_ERROR_TYPES]={
 
 BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 {
-
 	HtmlError error;
 	char int_error[100];
 	BufferData data;
@@ -40,8 +39,6 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 		"</body>"
 	"</html>";
 
-
-
 	sprintf(int_error,"%i",error_id);
 
 	if(error_id < MAX_ERROR_TYPES){
@@ -51,13 +48,12 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 		error.description="not implemented";
 	}
 
-	data.size=strlen(template)+strlen(http_server->LOGO_BASE64)+strlen(error.description)+strlen(error.title);
-	data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
-	memset(data.buffer,0,data.size);
+	data.size=strlen(template)+strlen(http_server->logo_base64)+strlen(error.description)+strlen(error.title);
+	data.buffer = (uint8_t *)ZN_MALLOC(data.size+1); // +1 for end str
 
 	sprintf((char *)data.buffer,
 			template
-		,http_server->LOGO_BASE64
+		,http_server->logo_base64
 		,error.title
 		,error.description
 	);
@@ -70,7 +66,7 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 
 
 HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_binary, BufferData data) {
-	HttpResponse * http_response = malloc(sizeof(HttpResponse));
+	HttpResponse * http_response = ZN_MALLOC(sizeof(HttpResponse));
 	http_response->data = data;
 	http_response->status = status;
 	http_response->mime = mime;
@@ -84,8 +80,8 @@ HttpResponse * HttpResponse_MakeFromString(const char * str, const char * mime)
 {
 	BufferData data;
 	data.size=strlen(str);
-	data.buffer=(uint8_t *)malloc(data.size+1);
-	memset(data.buffer,0,data.size);
+	data.buffer=(uint8_t *)ZN_MALLOC(data.size+1);
+
 	strcpy((char *)data.buffer,(char *)str);
 
 
@@ -123,14 +119,14 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 		char *unescaped_url=ZNUrl_Unescape(request->URL);
 		sprintf(path_url,"%s",unescaped_url);
-		free(unescaped_url);
+		ZN_FREE(unescaped_url);
 #ifdef WIN32
 		ZNString_ReplaceChar(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
 		sprintf(filename_with_path,
 				"%s%s",
-			  webserver->WEB_DIR,
+			  webserver->web_dir,
 			path_url);
 
 		ok = false;
@@ -162,7 +158,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				return HttpResponse_MakePageNotFound(webserver);
 			}
 
-			list_file = ZNIO_ListFiles(path,NULL);//,"*.html",false);
+			list_file = ZNIO_ListFiles(path,NULL,false);//,"*.html",false);
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
@@ -222,7 +218,7 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 	strcat(header_str,http_response->status);
 	strcat(header_str,"\n");
 	strcat(header_str,"Server: ");
-	strcat(header_str,http_server->NAME);
+	strcat(header_str,http_server->name);
 	strcat(header_str,"\n");
 
 	if (strcmp(http_response->status,"200 OK")==0) // send response content
@@ -266,25 +262,25 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 	header_str_len=strlen(header_str);
 	total_size = header_str_len+data_len+1+1; // +2 header + body + \n\n + 0
 
-	buffer=(char *)malloc(total_size);
-	memset(buffer,0,total_size);
+	buffer=(char *)ZN_MALLOC(total_size);
+
 	memcpy(buffer										 ,header_str,header_str_len);
 	memcpy(buffer+header_str_len				         ,http_response->data.buffer,data_len);
 	buffer[header_str_len+data_len]=10;
 
-	TcpServer_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
+	TcpUtils_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
 
-	free(buffer);
+	ZN_FREE(buffer);
 
 }
 
 void HttpResponse_Delete(HttpResponse * http_response){
 	if(http_response != NULL){
 		if(http_response->data.buffer!=NULL){
-			free(http_response->data.buffer);
+			ZN_FREE(http_response->data.buffer);
 		}
 
-		free(http_response);
+		ZN_FREE(http_response);
 	}
 }
 

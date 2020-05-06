@@ -60,7 +60,7 @@ if(MSVC)
 	add_definitions(/wd4244)
 
 else()  # g++ / gcc
-	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -std=c99 -pipe -Wall ")
+	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -std=c99 -pipe -Wall -Wstrict-prototypes ")
 	  
 	if (MINGW)
 		MESSAGE ("Target: MinGW" )
@@ -109,9 +109,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 		set(TARGET_FLAGS " ${TARGET_FLAGS} -g -fomit-frame-pointer ")
 	ENDIF ()
 	
-	if ( "${MEMMGR}" STREQUAL "ON")
+	if ( "${MEMMANAGER}" STREQUAL "ON")
 		message("-- Memmanager: ON (Warning execution time could be slow)")
-		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMGR__")
+		SET( COMMON_PARAMS " ${COMMON_PARAMS} -D__MEMMANAGER__")
 		include_directories (
 			../memmgr
 		)
@@ -143,6 +143,7 @@ LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
+	util/ZNMem.c
 	util/ZNUrl.c
 	util/ZNString.c
 	util/ZNList.c
@@ -154,6 +155,9 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 	HttpRequest.c
 	HttpResponse.c
 	HttpServer.c
+	HttpServerMPS.c
+	TcpUtils.c
+	zetnet.c
 )
 
 #HTTPSERVER TEST executable

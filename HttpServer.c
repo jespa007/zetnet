@@ -1,29 +1,34 @@
 #include "zetnet.h"
 
+typedef struct{
+	TcpServer * tcp_server;
 
+}HttpServerData;
 
-bool TcpServer_HttpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET socket, uint8_t *buffer, uint32_t buffer_len, void * user_data){
+bool HttpServer_GestMessageDefault(TcpServer * tcp_server,SocketClient * socket_client, uint8_t *data, size_t data_len, void * user_data){
 	HttpServer * http_server = (HttpServer *)user_data;
 
-	HttpHandleClient * hc = HttpHandleClient_New(socket, http_server,buffer, buffer_len);
+	HttpHandleClient * hc = HttpHandleClient_New(socket_client, http_server,data, data_len);
 	HttpHandleClient_DoHandle(hc);
 	return true;
 }
 
-
 HttpServer * HttpServer_New(
-
-		const char * web_dir
-		,const char * server_name
-		){
-	HttpServer * http_server=malloc(sizeof(HttpServer));
+	const char * web_dir
+	,const char * server_name
+	){
+	HttpServer 		* http_server=ZN_MALLOC(sizeof(HttpServer));
+	HttpServerData  * data=ZN_MALLOC(sizeof(HttpServerData));
+	data->tcp_server=NULL;
+	http_server->data=data;
 
 	//http_server->NAME = instance_name;
-	http_server->WEB_DIR = web_dir;
-	http_server->web_client = NULL;
-	http_server->tcp_server=NULL;
-	http_server->NAME=server_name;
-	// init tcp server...
+	http_server->web_dir = web_dir;
+	http_server->name=server_name;
+
+
+
+
 
 	return http_server;
 }
@@ -31,22 +36,24 @@ HttpServer * HttpServer_New(
 
 
 void HttpServer_Start(HttpServer *http_server,int _port){
-	if(http_server->tcp_server==NULL){
-		http_server->tcp_server=TcpServer_New();
-		http_server->tcp_server->tcp_server_on_gest_message=(TcpServerOnGestMessage){
-				.callback_function=TcpServer_HttpServer_GestMessageDefault
-				,.user_data=http_server
+	HttpServerData *data = http_server->data;
+	if(data->tcp_server==NULL){
+		TcpServerOnGestMessage on_gest_message=(TcpServerOnGestMessage){
+					.callback_function=HttpServer_GestMessageDefault
+					,.user_data=http_server
 		};
 
-		TcpServer_Setup(http_server->tcp_server,_port);
-		TcpServer_Connect(http_server->tcp_server);
+		data->tcp_server=TcpServer_New(on_gest_message);
+
+		TcpServer_Start(data->tcp_server,_port);
 	}
 }
 
 void HttpServer_Stop(HttpServer *http_server){
-	if(http_server->tcp_server!=NULL){
-		TcpServer_Delete(http_server->tcp_server);
-		http_server->tcp_server=NULL;
+	HttpServerData *data = http_server->data;
+	if(data->tcp_server!=NULL){
+		TcpServer_Delete(data->tcp_server);
+		data->tcp_server=NULL;
 	}
 }
 
@@ -65,8 +72,10 @@ void HttpServer_OnGetUserRequest(TcpServer * tcp_server,SOCKET  _socket_client, 
 
 void HttpServer_Delete(HttpServer *http_server){
 	if(http_server!=NULL){
-		TcpServer_Delete(http_server->tcp_server);
-		free(http_server);
+		HttpServerData *data = http_server->data;
+		TcpServer_Delete(data->tcp_server);
+		ZN_FREE(http_server->data);
+		ZN_FREE(http_server);
 	}
 }
 

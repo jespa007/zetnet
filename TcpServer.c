@@ -1,75 +1,22 @@
 #include "zetnet.h"
 
 
-#define  MAX_BYTES_TO_SEND	512
+#define  	MAX_BYTES_TO_SEND	512
 
+#define  	MAX_TRIES_BAD_MESSAGE	3
+#define  	TIME_WAIT_ACK		3000	//  ms
 
-#define  TIME_TO_RECONNECT	3000	//  ms
-
-#define  MAX_TRIES_BAD_MESSAGE	3
-//#define  TIME_POLLIGN		1000
-#define  TIME_WAIT_ACK		3000	//  ms
-
-
-//#define  MAX_CLIENTS					MAX_SOCKETS-1  // -1 because socket server is included.
-
-#define DEFAULT_TIMEOUT_SECONDS 0
-#define SOCKET_CLIENT_NOT_AVAILABLE -1
+#define 	DEFAULT_TIMEOUT_SECONDS 0
+#define 	SOCKET_CLIENT_NOT_AVAILABLE -1
 
 
 void  * TcpServer_Update(void * varg);
 
+void   TcpServer_Connect(TcpServer *tcp_server);
+void   TcpServer_Disconnect(TcpServer *tcp_server);
+
 const char * SERVER_FULL     = "FULL";
 
-//  receive  a  buffer  from  a  TCP  socket  with  error  checking
-//  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
-//  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  TcpServer_ReceiveBytes(SOCKET  sock,  uint8_t  *buf)
-{
-//#define MAXLEN 1024
-	int result;
-	//char msg[MAXLEN];
-
-	result = recv(sock,(char *)buf,MAX_LENGTH_MESSAGE,0);
-
-	if(result <= 0) {
-		// TCP Connection is broken. (because of error or closure)
-		return 0;
-	}
-	else {
-		if(result < (MAX_LENGTH_MESSAGE-1)){
-			buf[result] = 0;
-
-		}
-		else {
-			fprintf(stderr,"Max message reached %i<%i!\n",result,MAX_LENGTH_MESSAGE);
-			return 0;
-		}
-	}
-
-
-	return  result;
-}
-
-//  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
-//  returns  0  on  any  errors,  length  sent  on  success
-int  TcpServer_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
-	uint32_t  result=0;
-
-	if(!len) {
-		fprintf(stderr,"0 bytes to send or buffer is NULL!\n");
-		return 0;
-	}
-
-	//  send  the  buffer,  with  the  NULL  as  well
-	result=send(sock,(const char *)buf,len,0);
-
-	if(result<len) {
-		fprintf(stderr,"TCP_putMsg (%i<%i)\n",result,len);
-		return(0);
-	}
-	return(result);
-}
 
 
 void TcpServer_SetTimeout(TcpServer * tcp_server,int seconds){
@@ -78,9 +25,6 @@ void TcpServer_SetTimeout(TcpServer * tcp_server,int seconds){
 		,.tv_usec=0};   // sleep for ten minutes!
 }
 
-bool TcpServer_GestMessageDefault(TcpServer * tcp_server,SOCKET in_socket, uint8_t *buffer, uint32_t len, void *user_data){
-	return false;
-}
 
 SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 
@@ -97,9 +41,9 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 	//add child sockets to set
 	for (int i = 0 ; i < MAX_SOCKETS ; i++)
 	{
-		if(tcp_server->clientSocket[i].socket!=INVALID_SOCKET){
+		if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
 			//socket descriptor
-			SOCKET sd = tcp_server->clientSocket[i].socket;
+			SOCKET sd = tcp_server->socket_client[i].socket;
 
 			//if valid socket descriptor then add to read list
 			if(sd > 0){
@@ -196,27 +140,27 @@ bool TcpServer_SocketReady(TcpServer * tcp_server,SOCKET sock){
 
 //--------------------------------------------------------------------
 //  PUBLIC
-TcpServer * TcpServer_New()
+TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message)
 {
-	TcpServer * tcp_server = malloc(sizeof(TcpServer));
-	memset(tcp_server,0,sizeof(TcpServer));
+	TcpServer * tcp_server = ZN_MALLOC(sizeof(TcpServer));
+
 	tcp_server->src_port=0;
 	tcp_server->dst_port=0;
-	tcp_server->ipaddr=0;
 	tcp_server->disconnect_request=false;
+	tcp_server->on_gest_message=on_gest_message;
 
 
 	tcp_server->initialized  =  false;
 
 
 	for(int i=0; i < MAX_SOCKETS; i++){
-		tcp_server->clientSocket[i].idxClient=i;
-		tcp_server->clientSocket[i].socket=INVALID_SOCKET;
-		tcp_server->clientSocket[i].header_sent=false;
-		tcp_server->freeSocket[i]=i;
+		tcp_server->socket_client[i].idx_client=i;
+		tcp_server->socket_client[i].socket=INVALID_SOCKET;
+		tcp_server->socket_client[i].streaming_header_sent=false;
+		tcp_server->free_socket[i]=i;
 	}
 
-	tcp_server->n_freeSockets=MAX_SOCKETS;
+	tcp_server->n_free_sockets=MAX_SOCKETS;
 
 	tcp_server->message=NULL;
 
@@ -233,10 +177,7 @@ TcpServer * TcpServer_New()
 
 	tcp_server->is_streaming_server=false;
 
-	tcp_server->tcp_server_on_gest_message=(TcpServerOnGestMessage){
-		.callback_function=TcpServer_GestMessageDefault
-		,.user_data=NULL
-	};
+
 
 	return tcp_server;
 }
@@ -246,7 +187,7 @@ void TcpServer_SetTimeDelay(TcpServer * tcp_server,unsigned long delay){
 	tcp_server->time_delay_ms = delay;
 }
 
-const char * TcpServer_GetErrorSockOpt(){
+const char * TcpServer_GetErrorSockOpt(void){
 	switch(errno){
 	case EBADF:
 		return "The argument sockfd is not a valid descriptor.";
@@ -267,116 +208,30 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 {
 
 	tcp_server->end_loop_mdb=false;
-	bzero((char *) &tcp_server->serv_addr, sizeof(tcp_server->serv_addr));
+
 	tcp_server->portno = _portno;
 
 	TcpServer_SetTimeout(tcp_server,DEFAULT_TIMEOUT_SECONDS);
 
-#ifdef _WIN32
-		// Initialize Winsock
-		struct addrinfo *result = NULL;
-		int iResult = WSAStartup(MAKEWORD(2,2), &tcp_server->wsaData);
-		if (iResult != 0) {
-			fprintf(stderr,"\nWSAStartup failed with error: %d", iResult);
-			return false;
-		}
-
-		tcp_server->serv_addr.ai_family = AF_INET;
-		tcp_server->serv_addr.ai_socktype = SOCK_STREAM;
-		tcp_server->serv_addr.ai_protocol = IPPROTO_TCP;
-		tcp_server->serv_addr.ai_flags = AI_PASSIVE;
-
-		// Resolve the server address and port
-	   iResult = getaddrinfo(NULL, (const char *)ZNString_IntToString(_portno), &tcp_server->serv_addr, &result);
-	   if ( iResult != 0 ) {
-		   fprintf(stderr,"\ngetaddrinfo failed with error: %d", iResult);
-		   WSACleanup();
-		   return false;
-	   }
-
-	   // Create a SOCKET for connecting to server
-	   tcp_server->sockfd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		  if (tcp_server->sockfd == INVALID_SOCKET) {
-			  fprintf(stderr,"\nsocket failed with error: %i", WSAGetLastError());
-			  freeaddrinfo(result);
-			  WSACleanup();
-			  return false;
-		  }
-
-		  // Setup the TCP listening socket
-		   iResult = bind( tcp_server->sockfd, result->ai_addr, (int)result->ai_addrlen);
-		   if (iResult == SOCKET_ERROR) {
-			   fprintf(stderr,"\nbind failed with error: %i", WSAGetLastError());
-			   freeaddrinfo(result);
-			   closesocket(tcp_server->sockfd);
-			   WSACleanup();
-			   return false;
-		   }
-
-		  freeaddrinfo(result);
-
-
-	 iResult = listen(tcp_server->sockfd, MAX_SOCKETS);
-		if (iResult == SOCKET_ERROR) {
-		   fprintf(stderr,"\nlisten failed with error: %d", WSAGetLastError());
-		   closesocket(tcp_server->sockfd);
-		   WSACleanup();
-
-			return false;
-		}
-
-
-
-#else // GNU
-
-
-
-		 // create socket for server...
-		tcp_server->sockfd = socket(AF_INET, SOCK_STREAM, 0);
-		 if (sockfd < 0){
-			fprintf(stderr,"\nERROR opening socket");
-			return false;
-		 }
-
-		 //set server socket to allow multiple connections , this is just a good habit, it will work without this
-		 if(( setsockopt(tcp_server->sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&tcp_server->opt, sizeof(tcp_server->opt))) < 0 )
-		 {
-			 fprintf(stderr,"\nsetsockopt:%s",getErrorSockOpt());
-			 return false;
-		 }
-
-		 // setup parameters for server binding ...
-		 tcp_server->serv_addr.sin_family = AF_INET;
-		 tcp_server->serv_addr.sin_addr.s_addr = INADDR_ANY;
-		 tcp_server->serv_addr.sin_port = htons(_portno);
-
-		if (bind(tcp_server->sockfd, (struct sockaddr *) &tcp_server->serv_addr,
-					  sizeof(tcp_server->serv_addr)) < 0){
-					  fprintf(stderr,"\nERROR on binding");
-					  return false;
-		}
-
-		listen(tcp_server->sockfd,5); // block until new connection is established...
-#endif
-
-
-
-	printf("\nSetup server  (%d.%d.%d.%d:%i)",
-			tcp_server->ipaddr>>24,
-			(tcp_server->ipaddr>>16)&0xff,
-			(tcp_server->ipaddr>>8)&0xff,
-			tcp_server->ipaddr&0xff,
-			tcp_server->portno);
-
+	tcp_server->sockfd=TcpUtils_NewSocketServer(_portno);
 
 	 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
 		 fprintf(stderr,"\nerror creating thread");
-		 tcp_server->thread=-1;
+		 tcp_server->thread=0;
 		 return false;
 	 }
 
 	return true;
 }
+
+bool TcpServer_Start(TcpServer * tcp_server,  int _portno){
+	if(TcpServer_Setup(tcp_server, _portno)){
+		TcpServer_Connect(tcp_server);
+		return true;
+	}
+	return false;
+}
+
 //---------------------------------------------------------------
 bool  TcpServer_IsConnected(TcpServer * tcp_server) {
 	return  tcp_server->connected;
@@ -389,39 +244,29 @@ void TcpServer_Pause(TcpServer * tcp_server){
 	TcpServer_Disconnect(tcp_server);
 }
 
-void TcpServer_CloseSocket(TcpServer * tcp_server,SOCKET sock){
+void TcpServer_CloseSocket(TcpServer * tcp_server,SOCKET * sock){
 
-	if(sock != INVALID_SOCKET){
+	if(*sock != INVALID_SOCKET){
 
-#ifdef _WIN32
-	// shutdown the connection since we're done
-
-		if(tcp_server->sockfd != sock){ // is not my self (it could be, i.e server)...
-			int iResult = shutdown(sock, SD_SEND);
-			if (iResult == SOCKET_ERROR) {
-				fprintf(stderr,"\nshutdown failed with error: %d", WSAGetLastError());
-			}
+		if(tcp_server->sockfd != *sock){ // is not my self (it could be, i.e server)...
+			TcpUtils_CloseSocket(sock);
+		}else{
+			fprintf(stderr,"\nWarning! attempting to close server socket!");
 		}
-
-	closesocket(sock);
-#else
-	close(sock);
-#endif
-
 	}
 
 }
 //--------------------------------------------------------------------
-ClientSocket * TcpServer_GetFreeSlot(TcpServer * tcp_server){
+SocketClient * TcpServer_GetFreeSlot(TcpServer * tcp_server){
 
-	ClientSocket *cs=NULL;
+	SocketClient *cs=NULL;
 
-	if(tcp_server->n_freeSockets > 0){
+	if(tcp_server->n_free_sockets > 0){
 
-		if(tcp_server->freeSocket[tcp_server->n_freeSockets-1] != SOCKET_CLIENT_NOT_AVAILABLE){
-			cs = &tcp_server->clientSocket[tcp_server->freeSocket[tcp_server->n_freeSockets-1]];
-			tcp_server->freeSocket[tcp_server->n_freeSockets-1]=SOCKET_CLIENT_NOT_AVAILABLE;
-			tcp_server->n_freeSockets--;
+		if(tcp_server->free_socket[tcp_server->n_free_sockets-1] != SOCKET_CLIENT_NOT_AVAILABLE){
+			cs = &tcp_server->socket_client[tcp_server->free_socket[tcp_server->n_free_sockets-1]];
+			tcp_server->free_socket[tcp_server->n_free_sockets-1]=SOCKET_CLIENT_NOT_AVAILABLE;
+			tcp_server->n_free_sockets--;
 		}else{
 			fprintf(stderr,"\ninternal error!");
 			return NULL;
@@ -433,30 +278,30 @@ ClientSocket * TcpServer_GetFreeSlot(TcpServer * tcp_server){
 	return cs;
 }
 
-bool TcpServer_FreeSlot(TcpServer * tcp_server,ClientSocket *clientSock){
+bool TcpServer_CloseSocketClient(TcpServer * tcp_server,SocketClient *socket_client){
 
-	if(tcp_server->n_freeSockets < MAX_SOCKETS){
+	if(tcp_server->n_free_sockets < MAX_SOCKETS){
 
-		if(clientSock->socket != INVALID_SOCKET){
+		if(socket_client->socket != INVALID_SOCKET){
 
-			tcp_server->freeSocket[tcp_server->n_freeSockets]=clientSock->idxClient;
 
 			//socketDel(clientSock->socket);
-			TcpServer_CloseSocket(tcp_server,clientSock->socket);
-			clientSock->socket = INVALID_SOCKET;
-			clientSock->header_sent = false;
+			TcpServer_CloseSocket(tcp_server,&socket_client->socket);
 
+			socket_client->socket=INVALID_SOCKET;
+			socket_client->streaming_header_sent=false;
+			tcp_server->free_socket[tcp_server->n_free_sockets]=socket_client->idx_client;
+			tcp_server->n_free_sockets++;
 
-			tcp_server->n_freeSockets++;
 
 			return true;
 		}
 		else{
-			fprintf(stderr,"\nCannot free because -SOCKET IS NOT AVAILABLE-");
+			fprintf(stderr,"\nCannot ZN_FREE because -SOCKET IS NOT AVAILABLE-");
 		}
 	}
 	else{
-		fprintf(stderr,"\nCannot free because -MAX_SOCKETS REACHED-");
+		fprintf(stderr,"\nCannot ZN_FREE because -MAX_SOCKETS REACHED-");
 	}
 	return false;
 }
@@ -471,8 +316,6 @@ bool TcpServer_GestServerBase(TcpServer * tcp_server)
 
 void TcpServer_GestServer(TcpServer * tcp_server)
 {
-
-
 	//gestServerBase();
 
 	SOCKET new_socket = INVALID_SOCKET;
@@ -482,52 +325,50 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 
 	if((new_socket =TcpServer_SocketAccept(tcp_server)) != INVALID_SOCKET){
 
-		ClientSocket *c = TcpServer_GetFreeSlot(tcp_server);
+		SocketClient *socket_client= TcpServer_GetFreeSlot(tcp_server);
 
-		if(c==NULL){ // no space left ... reject client ...
+		if(socket_client==NULL){ // no space left ... reject client ...
 			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***");
-			TcpServer_CloseSocket(tcp_server,new_socket);
+			TcpServer_CloseSocket(tcp_server,&new_socket);
 		}else{
 
 #if __DEBUG__
-	printf("\nAdding new client %i",new_socket);
+			printf("\nAdding new client");
 #endif
 
-			c->socket=new_socket;
+			socket_client->socket=new_socket;
 		}
 	}
 
-
-
-	for (int clientNumber = 0; clientNumber < MAX_SOCKETS; clientNumber++)  {
+	for (int cn = 0; cn < MAX_SOCKETS; cn++)  {
 		// If the socket is ready (i.e. it has data we can read)... (SDLNet_SocketReady returns non-zero if there is activity on the socket, and zero if there is no activity)
-		if(tcp_server->clientSocket[clientNumber].socket != INVALID_SOCKET){
-			int clientSocketActivity = TcpServer_SocketReady(tcp_server,tcp_server->clientSocket[clientNumber].socket);
+		if(tcp_server->socket_client[cn].socket != INVALID_SOCKET){
+			int client_socket_activity = TcpServer_SocketReady(tcp_server,tcp_server->socket_client[cn].socket);
 #if __DEBUG__
 		//	printf("Just checked client number %i  and received activity status is: %i\n", clientNumber,clientSocketActivity);
 #endif
 			// If there is any activity on the client socket...
-			if (clientSocketActivity != 0)
+			if (client_socket_activity != 0)
 			{
 				int ok=1;
 				if(!tcp_server->is_streaming_server){ // read from client...
-					ok=TcpServer_ReceiveBytes(tcp_server->clientSocket[clientNumber].socket,  (uint8_t  *)tcp_server->buffer);
+					ok=TcpUtils_ReceiveBytes(tcp_server->socket_client[cn].socket,  (uint8_t  *)tcp_server->buffer);
 				}
 
 				if(ok) // serve to client ...
 				{
-					TcpServerOnGestMessage cf=tcp_server->tcp_server_on_gest_message;
-					if(!cf.callback_function(tcp_server,tcp_server->clientSocket[clientNumber].socket,tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
+					TcpServerOnGestMessage cf=tcp_server->on_gest_message;
+					if(!cf.callback_function(tcp_server,&tcp_server->socket_client[cn],tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
 #if __DEBUG__
-						printf("\ngestMessage:Erasing client %i (gestMessage)",clientNumber);
+						printf("\ngestMessage:Erasing client %i (gestMessage)",cn);
 #endif
-						TcpServer_FreeSlot(tcp_server,&tcp_server->clientSocket[clientNumber]);
+						TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 					}
 				}else{ // remove that socket because client closed the connection ...
 #if __DEBUG__
-					printf("\ngestMessage:Erasing client %i (getMessage)",clientNumber);
+					printf("\ngestMessage:Erasing client %i (getMessage)",cn);
 #endif
-					TcpServer_FreeSlot(tcp_server,&tcp_server->clientSocket[clientNumber]);
+					TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 				}
 
 			} // End of if client socket is active check
@@ -543,22 +384,22 @@ void  TcpServer_InternalDisconnect(TcpServer * tcp_server)
 
 		// remove all clients boot (only for TCP protocol)
 		for(int i = 0; i < MAX_SOCKETS; i++){
-			if(tcp_server->clientSocket[i].socket!=INVALID_SOCKET){
-				TcpServer_CloseSocket(tcp_server,tcp_server->clientSocket[i].socket);
-				tcp_server->clientSocket[i].socket=INVALID_SOCKET;
-				tcp_server->clientSocket[i].header_sent=false;
+			if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
+				TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[i]);
+				//tcp_server->socket_client[i].socket=INVALID_SOCKET;
+				//tcp_server->socket_client[i].streaming_header_sent=false;
 			}
 		}
 
-		for(int i=0; i < MAX_SOCKETS; i++){
-			tcp_server->freeSocket[i]=i;
+		/*for(int i=0; i < MAX_SOCKETS; i++){
+			tcp_server->free_socket[i]=i;
 		}
 
-		tcp_server->n_freeSockets=MAX_SOCKETS;
+		tcp_server->n_free_sockets=MAX_SOCKETS;*/
 
 		if(tcp_server->sockfd != 0){
-			// close and free socket server...
-			TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
+			// close and ZN_FREE socket server...
+			TcpServer_CloseSocket(tcp_server,&tcp_server->sockfd);
 		}
 
 		tcp_server->sockfd = 0;
@@ -618,22 +459,24 @@ void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 //------------------------------------------------------------------------------------------------------------------------
 //char  *str  =  NULL;
 
+void TcpServer_Stop(TcpServer * tcp_server) {
+
+	tcp_server->end_loop_mdb=true;
+	pthread_join(tcp_server->thread,NULL);
+	TcpServer_InternalDisconnect(tcp_server);
+
+	TcpServer_CloseSocket(tcp_server,&tcp_server->sockfd);
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
+
+
+}
+
 void TcpServer_Delete(TcpServer * tcp_server) {
-	if(tcp_server!=NULL){
-
-		tcp_server->end_loop_mdb=true;
-		pthread_join(tcp_server->thread,NULL);
-		TcpServer_InternalDisconnect(tcp_server);
-
-
-		TcpServer_CloseSocket(tcp_server,tcp_server->sockfd);
-
-	#ifdef _WIN32
-		WSACleanup();
-	#endif
-
-		free(tcp_server);
-	}
+	TcpServer_Stop(tcp_server);
+	ZN_FREE(tcp_server);
 }
 
 

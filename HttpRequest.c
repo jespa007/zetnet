@@ -12,7 +12,7 @@ HttpRequest * HttpRequest_New(char *  _type
 		, ZNList * _param
 		)
 {
-	HttpRequest * http_request=malloc(sizeof(HttpRequest));
+	HttpRequest * http_request=ZN_MALLOC(sizeof(HttpRequest));
 	strcpy(http_request->type, _type);
 	strcpy(http_request->URL ,_url);
 	strcpy(http_request->host, _host);
@@ -48,7 +48,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	size_t request_len=strlen(str_request)+1;
 	char *request_aux=NULL;
 
-	request=malloc(request_len);
+	request=ZN_MALLOC(request_len);
 
 
 	if(request==NULL){
@@ -204,12 +204,12 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 	http_request=HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, params);
 
-	// finally free all depending resources...
+	// finally ZN_FREE all depending resources...
 	ZNList_DeleteAndFreeAllItems(tokens);
 	ZNList_DeleteAndFreeAllItems(url_tokens);
 	ZNList_DeleteAndFreeAllItems(lst);
-	free(request);
-	free(request_aux);
+	ZN_FREE(request);
+	ZN_FREE(request_aux);
 
 	return http_request;
 }
@@ -218,6 +218,6 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 void		  HttpRequest_Delete(HttpRequest *http_request){
 	if(http_request!=NULL){
 		ZNList_DeleteAndFreeAllItems(http_request->param);
-		free(http_request);
+		ZN_FREE(http_request);
 	}
 }

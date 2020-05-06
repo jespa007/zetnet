@@ -8,7 +8,7 @@ void ZNString_SplitBuiltin(const char *s, char delim, ZNList  * elems) {
    // loop through the string to extract all other tokens
    while( token != NULL ) {
 	   size_t len=strlen(token)+1;
-	   char *text=malloc(len+1);
+	   char *text=ZN_MALLOC(len+1);
 	   strcpy(text,token);
 	   ZNList_Add(elems,text);
 	   token = strtok(NULL, delim_str);
@@ -81,10 +81,10 @@ void  ZNString_ReplaceString(char * str, const char * match_str, const char * re
 		}
 	}
 
-#ifdef __MEMMGR__
+#ifdef __MEMMANAGER__
 	MEMMGR_free_c_pointer(tmp); // because strdup is not using MEMMGR
 #else
-	free(tmp);
+	ZN_FREE(tmp);
 #endif
 
 }
