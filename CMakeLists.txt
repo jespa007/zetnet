@@ -60,7 +60,7 @@ if(MSVC)
 	add_definitions(/wd4244)
 
 else()  # g++ / gcc
-	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -std=c99 -pipe -Wall -Wstrict-prototypes ")
+	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -fPIC -pipe -Wall -Wstrict-prototypes ")
 	  
 	if (MINGW)
 		MESSAGE ("Target: MinGW" )
@@ -147,7 +147,9 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 	util/ZNUrl.c
 	util/ZNString.c
 	util/ZNList.c
-	util/ZNIo.c
+	util/ZNIO.c
+	util/ZNFile.c
+	util/ZNDirectory.c
 	util/ZNPath.c
 	TcpServer.c
 	HttpParamValue.c

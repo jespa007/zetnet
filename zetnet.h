@@ -1,11 +1,14 @@
-#pragma once
+#ifndef __ZETNET_H__
+#define __ZETNET_H__
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
 #include <memory.h>
 #include <pthread.h>
+
 
 #ifdef __GNUC__
 #include <sys/stat.h>
@@ -18,23 +21,22 @@
 // include socket platform
 #ifdef _WIN32
 
-		#include <winsock2.h>
-		#include <ws2tcpip.h>
-		#include <windows.h>
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
+	#include <windows.h>
 
 
-		#define ioctl ioctlsocket
-		#define bzero ZeroMemory
-#else
-
+	#define ioctl ioctlsocket
+	#define bzero ZeroMemory
+#else // linux ?
 	typedef  int SOCKET;
 	#define INVALID_SOCKET -1
 
 	#define addrinfo sockaddr_in
 
-
-
 	#ifdef __GNUC__
+		#include <arpa/inet.h>
+		#include <sys/select.h>
 		#include <sys/socket.h>
 		#include <netinet/in.h>
 		#include <sys/ioctl.h>
@@ -62,8 +64,10 @@ extern "C" {
 #include "util/ZNMem.h"
 #include "util/ZNList.h"
 #include "util/ZNString.h"
-#include "util/ZNIO.h"
 #include "util/ZNPath.h"
+#include "util/ZNFile.h"
+#include "util/ZNDirectory.h"
+#include "util/ZNIO.h"
 #include "util/ZNUrl.h"
 
 
@@ -85,4 +89,4 @@ void ZetNet_DeInit(void);
 }
 #endif
 
-
+#endif

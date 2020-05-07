@@ -46,10 +46,11 @@ struct  TcpServer
 	TcpServerOnGestMessage on_gest_message;
 
 	 //set of socket descriptors
+
 	  fd_set readfds;
+	  struct timeval timeout;
 
 
-	struct timeval timeout;
 	bool end_loop_mdb;
 	unsigned long time_delay_ms;
 

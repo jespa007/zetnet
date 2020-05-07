@@ -3,11 +3,11 @@
 
 SOCKET TcpUtils_NewSocketClient(int _portno){
 	SOCKET socket_client=INVALID_SOCKET;
-	struct addrinfo *result = NULL,
-	                    *ptr = NULL,
-						serv_addr;
+	struct addrinfo	serv_addr;
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 #ifdef _WIN32
+	struct                 *ptr = NULL,*result=NULL;
+
 
 	serv_addr.ai_family = AF_UNSPEC;
 	serv_addr.ai_socktype = SOCK_STREAM;
@@ -69,7 +69,7 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 		return INVALID_SOCKET;
 	}
 
-	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+	if (connect(socket_client, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
 		fprintf(stderr,"\nConnection Failed \n");
 		return INVALID_SOCKET;
@@ -130,7 +130,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 
 
 #else // GNU
-
+	int opt = 1;
 	 // create socket for server...
 	socket_server = socket(AF_INET, SOCK_STREAM, 0);
 	 if (socket_server < 0){
@@ -141,7 +141,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 	 //set server socket to allow multiple connections , this is just a good habit, it will work without this
 	 if(( setsockopt(socket_server, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt))) < 0 )
 	 {
-		 fprintf(stderr,"\nsetsockopt:%s",getErrorSockOpt());
+		 fprintf(stderr,"\nsetsockopt failed");
 		 return INVALID_SOCKET;
 	 }
 
@@ -156,7 +156,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 				  return INVALID_SOCKET;
 	}
 
-	listen(tcp_server->socket_server,5); // block until new connection is established...
+	listen(socket_server,5); // block until new connection is established...
 #endif
 
 

@@ -139,7 +139,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 		ZNPath_GetDirectory(path,filename_with_path);
 
-		if (ZNIO_FileExists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+		if (ZNFile_Exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
 		{
 			ZNPath_GetFilename(file,filename_with_path);
 
@@ -154,11 +154,11 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 			printf("\nfile \"%s\" not exist ...",filename_with_path);
 
-			if (!ZNIO_IsDirectory(path)){
+			if (!ZNDirectory_Exists(path)){
 				return HttpResponse_MakePageNotFound(webserver);
 			}
 
-			list_file = ZNIO_ListFiles(path,NULL,false);//,"*.html",false);
+			list_file = ZNDirectory_ListFiles(path,NULL,false);//,"*.html",false);
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
@@ -193,7 +193,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 			BufferData data;
 
-			data.buffer=ZNIO_ReadFile(filename_to_load,&data.size);
+			data.buffer=ZNFile_Read(filename_to_load,&data.size);
 
 			return HttpResponse_New("200 OK", request->mime, request->is_binary, data);
 		}

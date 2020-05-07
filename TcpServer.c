@@ -112,12 +112,11 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 		}
 #else
 
-
-
-	socklen_t clilen=sizeof(tcp_server->cli_addr);
+	struct addrinfo cli_addr;
+	socklen_t clilen=sizeof(cli_addr);
 	newsockfd = accept(tcp_server->sockfd,
-					 (struct sockaddr *) &tcp_server->cli_addr,
-					 &tcp_server->clilen);
+					 (struct sockaddr *) &cli_addr,
+					 &clilen);
 	 if (newsockfd < 0) {
 		  fprintf(stderr,"ERROR on accept\n");
 		  return INVALID_SOCKET;
