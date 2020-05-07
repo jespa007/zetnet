@@ -1,5 +1,5 @@
-
 #include "zetnet.h"
+
 
 
 void ZNString_SplitBuiltin(const char *s, char delim, ZNList  * elems) {
@@ -44,12 +44,30 @@ int ZNString_MyStrStr(char *txt1,const char *txt2)
     }
 }
 
+char *ZNString_StrDup(const char *in){
+	size_t len=0;
+	char *out;
+
+	if(in==NULL) return NULL;
+
+	len=strlen(in);
+
+	if(len < 0){
+		return NULL;
+	}
+
+	out=ZN_MALLOC(len+1);
+	strcpy(out,in);
+	return out;
+
+}
+
 void  ZNString_ReplaceString(char * str, const char * match_str, const char * replace_str){
 	char *tmp=NULL;
 	char *nextStr=NULL;
 	int pos=0;
 
-	tmp=strdup(str);
+	tmp=ZNString_StrDup(str);
 
 	if(tmp == NULL) return;
 
