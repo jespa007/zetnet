@@ -6,7 +6,7 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 	struct addrinfo	serv_addr;
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 #ifdef _WIN32
-	struct                 *ptr = NULL,*result=NULL;
+	struct        addrinfo         *ptr = NULL,*result=NULL;
 
 
 	serv_addr.ai_family = AF_UNSPEC;
