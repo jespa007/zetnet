@@ -60,7 +60,7 @@ if(MSVC)
 	add_definitions(/wd4244)
 
 else()  # g++ / gcc
-	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wstrict-prototypes ")
+	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wstrict-prototypes -fPIC ")
 	  
 	if (MINGW)
 		MESSAGE ("Target: MinGW" )
