@@ -60,13 +60,14 @@ if(MSVC)
 	add_definitions(/wd4244)
 
 else()  # g++ / gcc
-	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wstrict-prototypes -fPIC ")
+	SET( COMMON_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wstrict-prototypes ")
 	  
 	if (MINGW)
 		MESSAGE ("Target: MinGW" )
 		set(CMAKE_LEGACY_MINGW_WIN32 0)
 		SET( COMMON_PARAMS " ${COMMON_PARAMS} -DCMAKE_SH='CMAKE_SH-NOTFOUND'")
 	else()
+		SET( COMMON_PARAMS " ${COMMON_PARAMS} -fPIC " )
 		MESSAGE ("Target: Unix" )
 	endif()  
 endif()
