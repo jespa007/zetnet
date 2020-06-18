@@ -44,6 +44,28 @@ int ZNString_MyStrStr(char *txt1,const char *txt2)
     }
 }
 
+bool ZNString_StrToInt(int * i, const char *s, int base){
+	 char *end;
+	long  l;
+	errno = 0;
+	l = strtol(s, &end, base);
+	if ((errno == ERANGE && l == LONG_MAX) || l > INT_MAX) {
+		fprintf(stderr,"\n\"%s\" number overflow",s);
+		return false;
+	}
+	if ((errno == ERANGE && l == LONG_MIN) || l < INT_MIN) {
+		fprintf(stderr,"\n\"%s\" number underflow",s);
+		return false;
+
+	}
+	if (*s == '\0' || *end != '\0') {
+		fprintf(stderr,"\n\"%s\" number inconvertible",s);
+		return false;
+	}
+	*i = l;
+	return true;
+}
+
 char *ZNString_StrDup(const char *in){
 	size_t len=0;
 	char *out;

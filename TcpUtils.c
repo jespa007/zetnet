@@ -221,13 +221,12 @@ int  TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
 
 
 void TcpUtils_CloseSocket(SOCKET *sock){
-#ifdef _WIN32
-	// shutdown the connection since we're done
-	int iResult = shutdown(*sock, SD_SEND);
-	if (iResult == SOCKET_ERROR) {
-		fprintf(stderr,"\nshutdown failed with error: %d", WSAGetLastError());
+
+	if(*sock == INVALID_SOCKET){
+		return;
 	}
 
+#ifdef _WIN32
 	closesocket(*sock);
 #else
 	close(*sock);

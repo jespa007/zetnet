@@ -170,7 +170,7 @@ TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message)
 	tcp_server->thread = -1;
 	tcp_server->end_loop_mdb=false;
 
-	tcp_server->sockfd=-1;
+	tcp_server->sockfd=INVALID_SOCKET;
 	tcp_server->portno=-1;
 	tcp_server->time_delay_ms=10; // 10ms delay
 
@@ -243,18 +243,6 @@ void TcpServer_Pause(TcpServer * tcp_server){
 	TcpServer_Disconnect(tcp_server);
 }
 
-void TcpServer_CloseSocket(TcpServer * tcp_server,SOCKET * sock){
-
-	if(*sock != INVALID_SOCKET){
-
-		if(tcp_server->sockfd != *sock){ // is not my self (it could be, i.e server)...
-			TcpUtils_CloseSocket(sock);
-		}else{
-			fprintf(stderr,"\nWarning! attempting to close server socket!");
-		}
-	}
-
-}
 //--------------------------------------------------------------------
 SocketClient * TcpServer_GetFreeSlot(TcpServer * tcp_server){
 
@@ -283,9 +271,17 @@ bool TcpServer_CloseSocketClient(TcpServer * tcp_server,SocketClient *socket_cli
 
 		if(socket_client->socket != INVALID_SOCKET){
 
-
 			//socketDel(clientSock->socket);
-			TcpServer_CloseSocket(tcp_server,&socket_client->socket);
+#ifdef _WIN32
+			// in wsa we have to shutdown client socket connection by default recv and send operations
+			int iResult = shutdown(socket_client->socket, SD_BOTH);
+			if (iResult == SOCKET_ERROR) {
+				fprintf(stderr,"\nshutdown failed with error: %d", WSAGetLastError());
+			}
+#endif
+
+			// close socket client...
+			TcpUtils_CloseSocket(&socket_client->socket);
 
 			socket_client->socket=INVALID_SOCKET;
 			socket_client->streaming_header_sent=false;
@@ -328,7 +324,7 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 
 		if(socket_client==NULL){ // no space left ... reject client ...
 			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***");
-			TcpServer_CloseSocket(tcp_server,&new_socket);
+			TcpUtils_CloseSocket(&new_socket);
 		}else{
 
 #if __DEBUG__
@@ -385,24 +381,15 @@ void  TcpServer_InternalDisconnect(TcpServer * tcp_server)
 		for(int i = 0; i < MAX_SOCKETS; i++){
 			if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
 				TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[i]);
-				//tcp_server->socket_client[i].socket=INVALID_SOCKET;
-				//tcp_server->socket_client[i].streaming_header_sent=false;
 			}
 		}
 
-		/*for(int i=0; i < MAX_SOCKETS; i++){
-			tcp_server->free_socket[i]=i;
-		}
-
-		tcp_server->n_free_sockets=MAX_SOCKETS;*/
-
-		if(tcp_server->sockfd != 0){
+		if(tcp_server->sockfd != INVALID_SOCKET){
 			// close and ZN_FREE socket server...
-			TcpServer_CloseSocket(tcp_server,&tcp_server->sockfd);
+			TcpUtils_CloseSocket(&tcp_server->sockfd);
 		}
 
-		tcp_server->sockfd = 0;
-		printf("\nDisconnect server!");
+		printf("\nDisconnect server");
 
 	}
 }
@@ -464,7 +451,9 @@ void TcpServer_Stop(TcpServer * tcp_server) {
 	pthread_join(tcp_server->thread,NULL);
 	TcpServer_InternalDisconnect(tcp_server);
 
-	TcpServer_CloseSocket(tcp_server,&tcp_server->sockfd);
+	if(tcp_server->sockfd!=INVALID_SOCKET){
+		TcpUtils_CloseSocket(&tcp_server->sockfd);
+	}
 
 #ifdef _WIN32
 	WSACleanup();
