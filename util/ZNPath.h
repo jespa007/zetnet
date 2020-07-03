@@ -6,8 +6,8 @@
 #endif
 
 bool  ZNPath_GetDirectory(char *dst,const char * _absolute_filename);
-bool  ZNPath_GetFilename(char *dst,const char * _absolute_filename);
-bool  ZNPath_GetFilenameWithoutExtension(char *dst,const char * _absolute_filename);
+void  ZNPath_GetFilename(char *dst,const char * _absolute_filename);
+
 
 
 #endif

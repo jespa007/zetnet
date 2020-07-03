@@ -27,9 +27,6 @@ HttpServer * HttpServer_New(
 	http_server->name=server_name;
 
 
-
-
-
 	return http_server;
 }
 

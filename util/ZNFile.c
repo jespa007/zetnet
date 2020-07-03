@@ -33,7 +33,7 @@ uint8_t * ZNFile_Read(const char * filename,size_t * buffer_size){
 	{
 		if((file_length = ZNFile_Length(filename)) != -1) {
 
-			*buffer_size = file_length+1; // +1 is for string end
+			*buffer_size = file_length; // +1 is for string end
 
 			uint8_t *buffer = (uint8_t *)ZN_MALLOC(*buffer_size);
 

@@ -32,31 +32,25 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 		if(req->param!=NULL){
 			param=req->param->items;
 			param_len=req->param->count;
-
 		}
-
 
 		cf.callback_function(http_handle_client->http_server,http_handle_client->socket_client,(HttpParamValue *)param,param_len,cf.user_data);
 	}
 	else{
-
 		HttpResponse *resp = HttpResponse_From(req, http_handle_client->http_server);
 		HttpResponse_Post(resp,http_handle_client->socket_client->socket, http_handle_client->http_server);
 		HttpResponse_Delete(resp);
 	}
-
 
 	HttpRequest_Delete(req);
 	HttpHandleClient_Delete(http_handle_client);
 
 }
 
-
 void HttpHandleClient_Delete(HttpHandleClient *http_handle_client){
 	if(http_handle_client!=NULL){
 		ZN_FREE(http_handle_client);
 	}
-
 }
 
 

@@ -152,7 +152,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 		{
 			ZNList * list_file=NULL;
 
-			printf("\nfile \"%s\" not exist ...",filename_with_path);
+			//printf("\nfile \"%s\" not exist ...",filename_with_path);
 
 			if (!ZNDirectory_Exists(path)){
 				return HttpResponse_MakePageNotFound(webserver);
@@ -164,16 +164,17 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				//String n = ff.Name;
 				char n[MAX_PATH]="";
 
-				if(ZNPath_GetFilename(n,list_file->items[f])){
+				//printf("\nlisting files in  %s %i",(const char *)list_file->items[f],list_file->count);
+
+				ZNPath_GetFilename(n,list_file->items[f]);
 
 	#ifdef __DEBUG__
-					printf("\ntry_file2:%s",n);
-	#endif
+				printf("\ntry_file2:%s",n);
+#endif
 
-					if(strcmp(n,"index.html")==0){
-						strcpy(file,n);
-						ok = true;
-					}
+				if(strcmp(n,"index.html")==0){
+					strcpy(file,n);
+					ok = true;
 				}
 			}
 
@@ -224,9 +225,9 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 	if (strcmp(http_response->status,"200 OK")==0) // send response content
 	{
 		data_len=http_response->data.size;
-		if(!http_response->is_binary){
+		/*if(!http_response->is_binary){
 			data_len=strlen((char *)http_response->data.buffer);
-		}
+		}*/
 		strcat(header_str,"Content-Type: ");
 		strcat(header_str, http_response->mime);
 		strcat(header_str,"\n");
@@ -236,7 +237,7 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 		strcat(header_str,ZNString_IntToString(data_len));
 
 		if(http_response->is_binary){
-			strcat(header_str,"Content-Transfer-Encoding: binary");
+			strcat(header_str,"\nContent-Transfer-Encoding: binary");
 		}
 
 		strcat(header_str,"\n\n");

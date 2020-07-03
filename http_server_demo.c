@@ -34,7 +34,7 @@ void MyCustomHttpServer_OnGetUserRequest(HttpServer *http_server, SocketClient *
 
 int main(int argc, char *argv[])
 {
-	const char *path=".";
+	char path[MAX_PATH]={"."};
 	int port=HTTP_SERVER_DEFAULT_PORT;
 	bool error=false;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 			if(strcmp(l->items[0],"--port")==0){
 				error=!ZNString_StrToInt(&port,l->items[1],10);
 			}else if(strcmp(l->items[0],"--path")==0){
-				path=l->items[1];
+				strcpy(path,(const char *)l->items[1]);
 			}else{
 				fprintf(stderr,"\nunknow option %s",(const char *)l->items[0]);
 				error=true;
@@ -72,10 +72,12 @@ int main(int argc, char *argv[])
 
 	printf("\npress any key to stop http_server...");
 	getchar();
-	//while(true){
-	//Sleep(10000);
-	//}
+	/*while(true){
+	Sleep(10000);
+	}*/
 	
+
+
 	printf("\nshutdown...");
 
 

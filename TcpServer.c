@@ -145,7 +145,7 @@ TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message)
 
 	tcp_server->src_port=0;
 	tcp_server->dst_port=0;
-	tcp_server->disconnect_request=false;
+
 	tcp_server->on_gest_message=on_gest_message;
 
 
@@ -163,8 +163,6 @@ TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message)
 
 	tcp_server->message=NULL;
 
-	tcp_server->connected  =  false;
-	tcp_server->reconnection_request  =  false;
 	tcp_server->configured = false;
 
 	tcp_server->thread = -1;
@@ -225,7 +223,6 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 bool TcpServer_Start(TcpServer * tcp_server,  int _portno){
 	if(TcpServer_Setup(tcp_server, _portno)){
-		TcpServer_Connect(tcp_server);
 		return true;
 	}
 	return false;
@@ -233,14 +230,7 @@ bool TcpServer_Start(TcpServer * tcp_server,  int _portno){
 
 //---------------------------------------------------------------
 bool  TcpServer_IsConnected(TcpServer * tcp_server) {
-	return  tcp_server->connected;
-}
-//--------------------------------------------------------------------
-void TcpServer_Resume(TcpServer * tcp_server){
-	TcpServer_Connect(tcp_server);
-}
-void TcpServer_Pause(TcpServer * tcp_server){
-	TcpServer_Disconnect(tcp_server);
+	return  tcp_server->sockfd != INVALID_SOCKET;
 }
 
 //--------------------------------------------------------------------
@@ -371,72 +361,38 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 	}// End of server socket check sockets loop
 }
 //------------------------------------------------------------------------------------------------
-void  TcpServer_InternalDisconnect(TcpServer * tcp_server)
-{
-	if( tcp_server->connected)
-	{
-		tcp_server->connected  =  false;
 
-		// remove all clients boot (only for TCP protocol)
-		for(int i = 0; i < MAX_SOCKETS; i++){
-			if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
-				TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[i]);
-			}
-		}
-
-		if(tcp_server->sockfd != INVALID_SOCKET){
-			// close and ZN_FREE socket server...
-			TcpUtils_CloseSocket(&tcp_server->sockfd);
-		}
-
-		printf("\nDisconnect server");
-
-	}
-}
-//---------------------------------------------------------------------------------------------------------v
 void  TcpServer_GetMessage(TcpServer * tcp_server)
 {
-	if(!tcp_server->connected)  return;
-
-	TcpServer_GestServer(tcp_server);
-}
-//--------------------------------------------------------------------
-void  TcpServer_Connect(TcpServer * tcp_server)
-{
-	tcp_server->reconnection_request  =  true;
-}
-//--------------------------------------------------------------------
-void  TcpServer_Disconnect(TcpServer * tcp_server)
-{
-	tcp_server->disconnect_request  =  true;
+	if(tcp_server->sockfd != INVALID_SOCKET){
+		TcpServer_GestServer(tcp_server);
+	}
 }
 //--------------------------------------------------------------------
 void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 {
+
+
 	if(varg != NULL){
 		TcpServer * tcp_server=(TcpServer *)varg;
 		//printf("reco %i\n",tcp_server->end_loop_mdb);
-		while(!tcp_server->end_loop_mdb)
-		{
-			if(tcp_server->reconnection_request){
-
-				tcp_server->connected=true;
-				tcp_server->reconnection_request=false;
-			}
-			else{
+		if(tcp_server->sockfd != INVALID_SOCKET){
+			while(!tcp_server->end_loop_mdb)
+			{
 				TcpServer_GetMessage(tcp_server);  //  For  server  update  connections  &  get  messages  from  clients...
-			}
 
-			if(tcp_server->time_delay_ms>0){
-	#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__)
-			Sleep( tcp_server->time_delay_ms );
-	#else
-			usleep( tcp_server->time_delay_ms * 1000 );
-	#endif
-			}
 
+				if(tcp_server->time_delay_ms>0){
+		#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__)
+				Sleep( tcp_server->time_delay_ms );
+		#else
+				usleep( tcp_server->time_delay_ms * 1000 );
+		#endif
+				}
+			}
 		}
 	}
+
 
 	return 0;
 }
@@ -447,17 +403,29 @@ void  * TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send...
 
 void TcpServer_Stop(TcpServer * tcp_server) {
 
-	tcp_server->end_loop_mdb=true;
-	pthread_join(tcp_server->thread,NULL);
-	TcpServer_InternalDisconnect(tcp_server);
+	if(tcp_server->sockfd != INVALID_SOCKET){
 
-	if(tcp_server->sockfd!=INVALID_SOCKET){
+		tcp_server->end_loop_mdb=true;
+		pthread_join(tcp_server->thread,NULL);
+
+
+		// remove all clients boot (only for TCP protocol)
+		for(int i = 0; i < MAX_SOCKETS; i++){
+			if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
+				TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[i]);
+			}
+		}
+
 		TcpUtils_CloseSocket(&tcp_server->sockfd);
-	}
 
-#ifdef _WIN32
-	WSACleanup();
-#endif
+		if(tcp_server->sockfd!=INVALID_SOCKET){
+			TcpUtils_CloseSocket(&tcp_server->sockfd);
+		}
+
+		printf("\nDisconnect server");
+
+
+	}
 
 
 }

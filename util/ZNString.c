@@ -121,11 +121,7 @@ void  ZNString_ReplaceString(char * str, const char * match_str, const char * re
 		}
 	}
 
-#ifdef __MEMMANAGER__
-	MEMMGR_free_c_pointer(tmp); // because strdup is not using MEMMGR
-#else
 	ZN_FREE(tmp);
-#endif
 
 }
 

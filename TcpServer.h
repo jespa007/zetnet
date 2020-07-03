@@ -33,10 +33,7 @@ struct  TcpServer
 	uint8_t  buffer[ZETNET_TCP_MESSAGE_LENGTH];
 	int	      src_port,dst_port;
 
-	bool  	connected
-	,reconnection_request
-	,disconnect_request
-	,is_streaming_server;
+	bool  is_streaming_server;
 
 
 	char  value_variable_host[256];
