@@ -1,13 +1,13 @@
 #include "zetnet.h"
 
-bool ZNURL_IsNonSymbol(char c)
+bool zn_url_is_non_symbol(char c)
 {
     if(c == '\0') return 1; //we want to write null regardless
     int c_int = (int)c;
     return (c_int >= 48 && c_int <= 57) || (c_int >= 65 && c_int <= 90) || (c_int >= 97 && c_int <= 122);
 }
 
-char * ZNURL_Escape(const char * input)
+char * zn_url_escape(const char * input)
 {
 	int end = strlen(input);
 	size_t final_size = (end * 3) + 1;
@@ -20,7 +20,7 @@ char * ZNURL_Escape(const char * input)
 		{
 			input++;
 		}
-		else if(ZNURL_IsNonSymbol(c))
+		else if(zn_url_is_non_symbol(c))
 		{
 			*working++ = *input++;
 		}
@@ -41,7 +41,7 @@ char * ZNURL_Escape(const char * input)
 }
 
 
-char * ZNUrl_Unescape(const char * input)
+char * zn_url_unescape(const char * input)
 {
 	int input_length = strlen(input);
 

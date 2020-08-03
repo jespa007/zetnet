@@ -144,21 +144,20 @@ LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 # Library
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	util/ZNMem.c
-	util/ZNUrl.c
-	util/ZNString.c
-	util/ZNList.c
-	util/ZNIO.c
-	util/ZNFile.c
-	util/ZNDirectory.c
-	util/ZNPath.c
+	util/zn_mem.c
+	util/zn_url.c
+	util/zn_str.c
+	util/zn_list.c
+	util/zn_file.c
+	util/zn_dir.c
+	util/zn_path.c
 	TcpServer.c
-	HttpParamValue.c
-	HttpHandleClient.c
-	HttpRequest.c
-	HttpResponse.c
-	HttpServer.c
-	HttpServerMPS.c
+	http/HttpParamValue.c
+	http/HttpHandleClient.c
+	http/HttpRequest.c
+	http/HttpResponse.c
+	http/HttpServer.c
+	http/HttpServerMPS.c
 	TcpUtils.c
 	zetnet.c
 )

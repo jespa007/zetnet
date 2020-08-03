@@ -1,7 +1,7 @@
 #include "zetnet.h"
 
 
-void * ZNMem_malloc(size_t size,const char *file, int line){
+void * zn_mem_malloc(size_t size,const char *file, int line){
 	void * p=NULL;
 #ifdef __MEMMANAGER__
 	p=MEMMGR_malloc(size,file,line);

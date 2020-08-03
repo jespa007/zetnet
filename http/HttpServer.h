@@ -16,6 +16,7 @@ struct HttpServer
 	const char * version;
 	const char * name;
 	const char * logo_base64;
+	bool send_same_site_attribute;
 	HttpServerOnGetUserRequest on_get_user_request;
 
 	//private

@@ -21,7 +21,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 	serv_addr.ai_flags = AI_PASSIVE;
 
 	// Resolve the server address and port
-	i_result = getaddrinfo(NULL, (const char *)ZNString_IntToString(_portno), &serv_addr, &result);
+	i_result = getaddrinfo(NULL, (const char *)zn_str_from_int(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
 	   fprintf(stderr,"\ngetaddrinfo failed with error: %d", i_result);
 	   return INVALID_SOCKET;
@@ -141,7 +141,7 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 
 
 	// Resolve the server address and port
-	int i_result = getaddrinfo("127.0.0.1", (const char *)ZNString_IntToString(_portno), &serv_addr, &result);
+	int i_result = getaddrinfo("127.0.0.1", (const char *)zn_str_from_int(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
 		fprintf(stderr,"getaddrinfo failed with error: %d\n", i_result);
 		return INVALID_SOCKET;

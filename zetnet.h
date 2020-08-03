@@ -61,24 +61,23 @@
 extern "C" {
 #endif
 
-#include "util/ZNMem.h"
-#include "util/ZNList.h"
-#include "util/ZNString.h"
-#include "util/ZNPath.h"
-#include "util/ZNFile.h"
-#include "util/ZNDirectory.h"
-#include "util/ZNIO.h"
-#include "util/ZNUrl.h"
+#include "util/zn_mem.h"
+#include "util/zn_list.h"
+#include "util/zn_str.h"
+#include "util/zn_path.h"
+#include "util/zn_file.h"
+#include "util/zn_dir.h"
+#include "util/zn_url.h"
 
 
 #include "TcpUtils.h"
 #include "TcpServer.h"
-#include "HttpParamValue.h"
-#include "HttpServerMPS.h"
-#include "HttpRequest.h"
-#include "HttpResponse.h"
-#include "HttpHandleClient.h"
-#include "HttpServer.h"
+#include "http/HttpParamValue.h"
+#include "http/HttpServerMPS.h"
+#include "http/HttpRequest.h"
+#include "http/HttpResponse.h"
+#include "http/HttpHandleClient.h"
+#include "http/HttpServer.h"
 
 
 bool ZetNet_Init(void);

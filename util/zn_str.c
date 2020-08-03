@@ -2,7 +2,7 @@
 
 
 
-void ZNString_SplitBuiltin(const char *s, char delim, ZNList  * elems) {
+void zn_str_split_builtin(const char *s, char delim, zn_list  * elems) {
 	char delim_str[2]={delim,0};
 	char * token = strtok((char *)s, delim_str);
    // loop through the string to extract all other tokens
@@ -10,20 +10,20 @@ void ZNString_SplitBuiltin(const char *s, char delim, ZNList  * elems) {
 	   size_t len=strlen(token)+1;
 	   char *text=ZN_MALLOC(len+1);
 	   strcpy(text,token);
-	   ZNList_Add(elems,text);
+	   zn_list_add(elems,text);
 	   token = strtok(NULL, delim_str);
    }
 }
 
-ZNList * ZNString_Split(const char * s, char delim) {
-	ZNList *elems=ZNList_New();
+zn_list * zn_str_split(const char * s, char delim) {
+	zn_list *elems=zn_list_new();
 	if(s!=0 && strcmp(s,"")!=0){
-		ZNString_SplitBuiltin(s, delim, elems);
+		zn_str_split_builtin(s, delim, elems);
 	}
 	return elems;
 }
 
-void  ZNString_ReplaceChar(char * str, char old_ch, char new_ch){
+void  zn_str_replace_by_char(char * str, char old_ch, char new_ch){
 	while(*str!=0){
 		if(*str == old_ch){
 			*str = new_ch;
@@ -32,7 +32,7 @@ void  ZNString_ReplaceChar(char * str, char old_ch, char new_ch){
 	}
 }
 
-int ZNString_MyStrStr(char *txt1,const char *txt2)
+int zn_str_find(char *txt1,const char *txt2)
 {
     char *posstr=strstr(txt1,txt2);
     if(posstr!=NULL)
@@ -44,7 +44,7 @@ int ZNString_MyStrStr(char *txt1,const char *txt2)
     }
 }
 
-bool ZNString_StrToInt(int * i, const char *s, int base){
+bool zn_str_to_int(int * i, const char *s, int base){
 	 char *end;
 	long  l;
 	errno = 0;
@@ -66,7 +66,7 @@ bool ZNString_StrToInt(int * i, const char *s, int base){
 	return true;
 }
 
-char *ZNString_StrDup(const char *in){
+char *zn_str_dup(const char *in){
 	size_t len=0;
 	char *out;
 
@@ -84,16 +84,16 @@ char *ZNString_StrDup(const char *in){
 
 }
 
-void  ZNString_ReplaceString(char * str, const char * match_str, const char * replace_str){
+void  zn_str_replace(char * str, const char * match_str, const char * replace_str){
 	char *tmp=NULL;
 	char *nextStr=NULL;
 	int pos=0;
 
-	tmp=ZNString_StrDup(str);
+	tmp=zn_str_dup(str);
 
 	if(tmp == NULL) return;
 
-	pos=ZNString_MyStrStr(tmp,match_str);
+	pos=zn_str_find(tmp,match_str);
 	if(pos!=-1)
 	{
 		str[0]=0;
@@ -106,7 +106,7 @@ void  ZNString_ReplaceString(char * str, const char * match_str, const char * re
 
 		while(strlen(nextStr)!=0)
 		{
-			pos=ZNString_MyStrStr(nextStr,match_str);
+			pos=zn_str_find(nextStr,match_str);
 
 			if(pos==-1)
 			{
@@ -125,7 +125,7 @@ void  ZNString_ReplaceString(char * str, const char * match_str, const char * re
 
 }
 
-void  ZNString_Remove(char * str, char ch_to_remove){
+void  zn_str_erase_char(char * str, char ch_to_remove){
 
 	while(*str!=0){
 		if(*str == ch_to_remove){ // move 1 position left...
@@ -142,13 +142,13 @@ void  ZNString_Remove(char * str, char ch_to_remove){
 }
 
 
-char * ZNString_IntToString(int number){
+char * zn_str_from_int(int number){
 	static char to_number[256];
 	sprintf(to_number,"%i",number);
 	return to_number;
 }
 
-bool ZNString_EndsWith(const char * str, const char * end_str){
+bool zn_str_ends_with(const char * str, const char * end_str){
 	size_t len_str=strlen(str);
 	size_t len_end_str=strlen(end_str);
 	if(len_end_str<=len_str){

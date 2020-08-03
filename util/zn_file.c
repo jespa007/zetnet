@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-bool ZNFile_Exists(const char * filename) {
+bool zn_file_exists(const char * filename) {
 
 	if(filename == NULL) return false;
 
@@ -14,7 +14,7 @@ bool ZNFile_Exists(const char * filename) {
 	return true;
 #else
 
-	if(ZNDirectory_Exists(filename)) return false;
+	if(zn_dir_exists(filename)) return false;
 
 
 	struct stat buffer;
@@ -23,7 +23,7 @@ bool ZNFile_Exists(const char * filename) {
 
 }
 
-uint8_t * ZNFile_Read(const char * filename,size_t * buffer_size){
+uint8_t * zn_file_read(const char * filename,size_t * buffer_size){
 
 
 	int  file_length, readed_elements;
@@ -31,7 +31,7 @@ uint8_t * ZNFile_Read(const char * filename,size_t * buffer_size){
 
 	if((fp  =  fopen(filename,"rb"))  !=  NULL)
 	{
-		if((file_length = ZNFile_Length(filename)) != -1) {
+		if((file_length = zn_file_length(filename)) != -1) {
 
 			*buffer_size = file_length; // +1 is for string end
 
@@ -58,7 +58,7 @@ uint8_t * ZNFile_Read(const char * filename,size_t * buffer_size){
 }
 
 
-int  ZNFile_Length(const char * filename)
+int  zn_file_length(const char * filename)
 {
 
 	int  ini,  end;

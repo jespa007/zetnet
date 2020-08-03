@@ -117,11 +117,11 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 	if(strcmp(request->type,"GET")==0){
 
-		char *unescaped_url=ZNUrl_Unescape(request->URL);
+		char *unescaped_url=zn_url_unescape(request->URL);
 		sprintf(path_url,"%s",unescaped_url);
 		ZN_FREE(unescaped_url);
 #ifdef WIN32
-		ZNString_ReplaceChar(path_url, '/','\\');//CUri::unescape(request->URL)
+		zn_str_replace_by_char(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
 		sprintf(filename_with_path,
@@ -137,11 +137,11 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 		printf("\ntry_file:%s request:%s",filename_with_path,request->URL);
 #endif
 
-		ZNPath_GetDirectory(path,filename_with_path);
+		zn_path_get_directory_name(path,filename_with_path);
 
-		if (ZNFile_Exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+		if (zn_file_exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
 		{
-			ZNPath_GetFilename(file,filename_with_path);
+			zn_path_get_file_name(file,filename_with_path);
 
 #ifdef __DEBUG__
 			printf("\nfile \"%s\" filename with ok!",filename_with_path);
@@ -150,15 +150,15 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 		}
 		else // file not exist try to solve automatically...
 		{
-			ZNList * list_file=NULL;
+			zn_list * list_file=NULL;
 
 			//printf("\nfile \"%s\" not exist ...",filename_with_path);
 
-			if (!ZNDirectory_Exists(path)){
+			if (!zn_dir_exists(path)){
 				return HttpResponse_MakePageNotFound(webserver);
 			}
 
-			list_file = ZNDirectory_ListFiles(path,NULL,false);//,"*.html",false);
+			list_file = zn_dir_list_files(path,NULL,false);//,"*.html",false);
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
@@ -166,7 +166,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 				//printf("\nlisting files in  %s %i",(const char *)list_file->items[f],list_file->count);
 
-				ZNPath_GetFilename(n,list_file->items[f]);
+				zn_path_get_file_name(n,list_file->items[f]);
 
 	#ifdef __DEBUG__
 				printf("\ntry_file2:%s",n);
@@ -178,7 +178,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				}
 			}
 
-			ZNList_DeleteAndFreeAllItems(list_file);
+			zn_list_delete_and_free_all_items(list_file);
 		}
 
 		if (ok)
@@ -194,7 +194,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 			BufferData data;
 
-			data.buffer=ZNFile_Read(filename_to_load,&data.size);
+			data.buffer=zn_file_read(filename_to_load,&data.size);
 
 			return HttpResponse_New("200 OK", request->mime, request->is_binary, data);
 		}
@@ -225,16 +225,17 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 	if (strcmp(http_response->status,"200 OK")==0) // send response content
 	{
 		data_len=http_response->data.size;
-		/*if(!http_response->is_binary){
-			data_len=strlen((char *)http_response->data.buffer);
-		}*/
+
 		strcat(header_str,"Content-Type: ");
 		strcat(header_str, http_response->mime);
 		strcat(header_str,"\n");
 		strcat(header_str,"Accept-Ranges: bytes\n");
 		strcat(header_str,"Connection: Keep-Alive\n");
+		if(http_server->send_same_site_attribute){
+			strcat(header_str,"Set-Cookie: cross-site-cookie=name; SameSite=None; Secure\n");
+		}
 		strcat(header_str,"Content-Length: ");
-		strcat(header_str,ZNString_IntToString(data_len));
+		strcat(header_str,zn_str_from_int(data_len));
 
 		if(http_response->is_binary){
 			strcat(header_str,"\nContent-Transfer-Encoding: binary");
@@ -245,19 +246,15 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 #ifdef __DEBUG__
 		printf("POST:\n%s\n",header_str);
 #endif
-
-
 	}
 	else // only basic html error information
 	{
-
 		strcat(header_str,"Content-Type: ");
 		strcat(header_str, http_response->mime);
 		strcat(header_str,"\n");
 		strcat(header_str,"Content-Length: ");
-		strcat(header_str,ZNString_IntToString(http_response->data.size));
+		strcat(header_str,zn_str_from_int(http_response->data.size));
 		strcat(header_str,"\n\n");
-
 	}
 
 	header_str_len=strlen(header_str);
@@ -272,7 +269,6 @@ void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer
 	TcpUtils_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
 
 	ZN_FREE(buffer);
-
 }
 
 void HttpResponse_Delete(HttpResponse * http_response){

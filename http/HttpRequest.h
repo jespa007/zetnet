@@ -20,7 +20,7 @@ struct HttpRequest
 	const char *mime;
 	bool is_binary;
 	char  content_type[MAX_CONTENT_LEN];
-	ZNList * param;
+	zn_list * param;
 
 };
 

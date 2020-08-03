@@ -9,7 +9,7 @@ HttpRequest * HttpRequest_New(char *  _type
 		, const char * _mime
 		, bool _is_binary
 		, char * _content_type
-		, ZNList * _param
+		, zn_list * _param
 		)
 {
 	HttpRequest * http_request=ZN_MALLOC(sizeof(HttpRequest));
@@ -37,10 +37,10 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	char  host[MAX_HOST_LEN];
 	char referer[MAX_REFERER_LEN];
 
-	ZNList * params=NULL;
-	ZNList * lst=NULL;
-	ZNList * tokens = NULL;
-	ZNList * url_tokens = NULL;
+	zn_list * params=NULL;
+	zn_list * lst=NULL;
+	zn_list * tokens = NULL;
+	zn_list * url_tokens = NULL;
 
 	bool is_binary=false;
 	char *type = 0; // GET/POST/etc...
@@ -63,16 +63,16 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		return NULL;
 	}
 
-	ZNString_ReplaceString(request,"\r", "");
+	zn_str_replace(request,"\r", "");
 
 	is_binary= false;
 
 	request_aux=request; // save old pointer...
-	request=ZNUrl_Unescape(request_aux); // unescape request...
+	request=zn_url_unescape(request_aux); // unescape request...
 
 
-	tokens = ZNString_Split(request,'\n');
-	url_tokens = ZNString_Split(tokens->items[0],' ');
+	tokens = zn_str_split(request,'\n');
+	url_tokens = zn_str_split(tokens->items[0],' ');
 	type = url_tokens->items[0]; // GET/POST/etc...
 
 
@@ -125,7 +125,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	}
 
 
-	lst= ZNString_Split(url, '?');//.Split('?');
+	lst= zn_str_split(url, '?');//.Split('?');
 	if (lst->count > 1)
 	{
 		strcpy(url,lst->items[0]);
@@ -144,7 +144,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		if (is_header)
 		{
 
-			ZNList * sub_tokens = ZNString_Split(tokens->items[i],':'); // split only the first : occurrence ...
+			zn_list * sub_tokens = zn_str_split(tokens->items[i],':'); // split only the first : occurrence ...
 
 			if (sub_tokens->count > 1) // it has header value ...
 			{
@@ -158,32 +158,32 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 				}else if(strcmp(variable ,  "Accept")==0){
 
 				}else if(strcmp(variable ,  "Content-Type")==0){
-					ZNList *tl=ZNString_Split(value,';');
+					zn_list *tl=zn_str_split(value,';');
 					if(tl->count > 0){
 						strcpy(content_type,tl->items[0]);
 					}
-					ZNString_ReplaceString(content_type," ","");
-					ZNList_DeleteAndFreeAllItems(tl);
+					zn_str_replace(content_type," ","");
+					zn_list_delete_and_free_all_items(tl);
 				}
 			}
 
-			ZNList_DeleteAndFreeAllItems(sub_tokens);
+			zn_list_delete_and_free_all_items(sub_tokens);
 
 
 		}
 		else // check parameters...
 		{
-			ZNList * pre_check_params = ZNString_Split(tokens->items[i],'&');
+			zn_list * pre_check_params = zn_str_split(tokens->items[i],'&');
 
 			if (pre_check_params->count >= 1)
 			{
 				for (unsigned j = 0; j < pre_check_params->count; j++)
 				{
-					ZNList *sub_tokens = ZNString_Split(pre_check_params->items[j], '=' ); // split only the first = occurrence ...
+					zn_list *sub_tokens = zn_str_split(pre_check_params->items[j], '=' ); // split only the first = occurrence ...
 
 					if (sub_tokens->count == 2)
 					{
-						ZNList_Add(params,
+						zn_list_add(params,
 							 HttpParamValue_New(
 								sub_tokens->items[0],
 								sub_tokens->items[1]
@@ -191,12 +191,12 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 						);
 					}
 
-					ZNList_DeleteAndFreeAllItems(sub_tokens);
+					zn_list_delete_and_free_all_items(sub_tokens);
 				}
 
 			}
 
-			ZNList_DeleteAndFreeAllItems(pre_check_params);
+			zn_list_delete_and_free_all_items(pre_check_params);
 		}
 	}
 
@@ -205,9 +205,9 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	http_request=HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, params);
 
 	// finally ZN_FREE all depending resources...
-	ZNList_DeleteAndFreeAllItems(tokens);
-	ZNList_DeleteAndFreeAllItems(url_tokens);
-	ZNList_DeleteAndFreeAllItems(lst);
+	zn_list_delete_and_free_all_items(tokens);
+	zn_list_delete_and_free_all_items(url_tokens);
+	zn_list_delete_and_free_all_items(lst);
 	ZN_FREE(request);
 	ZN_FREE(request_aux);
 
@@ -217,7 +217,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 void		  HttpRequest_Delete(HttpRequest *http_request){
 	if(http_request!=NULL){
-		ZNList_DeleteAndFreeAllItems(http_request->param);
+		zn_list_delete_and_free_all_items(http_request->param);
 		ZN_FREE(http_request);
 	}
 }
