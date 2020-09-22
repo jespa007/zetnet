@@ -142,25 +142,36 @@ LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 #
 
 # Library
-set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
+IF ( "${FCOMPILE}" STREQUAL "ON")
 
-	util/zn_mem.c
-	util/zn_url.c
-	util/zn_str.c
-	util/zn_list.c
-	util/zn_file.c
-	util/zn_dir.c
-	util/zn_path.c
-	TcpServer.c
-	http/HttpParamValue.c
-	http/HttpHandleClient.c
-	http/HttpRequest.c
-	http/HttpResponse.c
-	http/HttpServer.c
-	http/HttpServerMPS.c
-	TcpUtils.c
-	zetnet.c
-)
+	MESSAGE ("-- Fast compile: ON (Only generates library | Install process is disabled)" )
+
+	set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
+		include_all.c
+	)
+ELSE()
+
+	set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
+	
+		util/zn_mem.c
+		util/zn_url.c
+		util/zn_str.c
+		util/zn_list.c
+		util/zn_file.c
+		util/zn_dir.c
+		util/zn_path.c
+		TcpServer.c
+		http/HttpParamValue.c
+		http/HttpHandleClient.c
+		http/HttpRequest.c
+		http/HttpResponse.c
+		http/HttpServer.c
+		http/HttpServerMPS.c
+		TcpUtils.c
+		zetnet.c
+	)
+	
+ENDIF()
 
 #HTTPSERVER TEST executable
 set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/http_server_demo.c)
