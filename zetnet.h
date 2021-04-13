@@ -8,7 +8,7 @@
 #include <time.h>
 #include <memory.h>
 #include <pthread.h>
-
+#include <limits.h> /* LONG_MAX */
 
 #ifdef __GNUC__
 #include <sys/stat.h>
@@ -30,9 +30,10 @@
 	#define bzero ZeroMemory
 #else // linux ?
 	typedef  int SOCKET;
-	#define INVALID_SOCKET -1
+	#define INVALID_SOCKET 	-1
+	#define SOCKET_ERROR	-1
 
-	#define addrinfo sockaddr_in
+	//#define addrinfo sockaddr_in
 
 	#ifdef __GNUC__
 		#include <arpa/inet.h>
@@ -40,6 +41,8 @@
 		#include <sys/socket.h>
 		#include <netinet/in.h>
 		#include <sys/ioctl.h>
+		#include <sys/types.h>
+ 	  	#include <netdb.h>
 	#endif
 #endif
 

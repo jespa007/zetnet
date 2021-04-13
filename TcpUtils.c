@@ -14,11 +14,17 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 
 
 	struct addrinfo *result = NULL;
-
+//#ifdef _WIN32
 	serv_addr.ai_family = AF_INET;
 	serv_addr.ai_socktype = SOCK_STREAM;
 	serv_addr.ai_protocol = IPPROTO_TCP;
 	serv_addr.ai_flags = AI_PASSIVE;
+/*#else // linux
+	serv_addr.sin_family = AF_INET;
+	serv_addr.ai_socktype = SOCK_STREAM;
+	serv_addr.ai_protocol = IPPROTO_TCP;
+	serv_addr.ai_flags = AI_PASSIVE;
+#endif*/
 
 	// Resolve the server address and port
 	i_result = getaddrinfo(NULL, (const char *)zn_str_from_int(_portno), &serv_addr, &result);
