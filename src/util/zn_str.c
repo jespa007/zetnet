@@ -74,10 +74,6 @@ char *zn_str_dup(const char *in){
 
 	len=strlen(in);
 
-	if(len < 0){
-		return NULL;
-	}
-
 	out=ZN_MALLOC(len+1);
 	strcpy(out,in);
 	return out;

@@ -101,15 +101,16 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 			}
 			else if(strcmp(file_extension,".css")==0){
 				mime = "text/css";
-
+			}else if(strcmp(file_extension,".js")==0){
+				mime = "text/javascript";
 			}else if(strcmp(file_extension,  ".json")==0){
 				mime = "application/json";
-			}
-			else if(strcmp(file_extension, ".pdf")==0){
+			}else if(strcmp(file_extension,  ".gltf")==0){
+				mime = "model/gltf+json";
+			}else if(strcmp(file_extension, ".pdf")==0){
 				mime = "application/pdf";
 				is_binary=true;
-			}
-			else if(
+			}else if(
 					 (strcmp(file_extension,".eot")==0)
 				  || (strcmp(file_extension,".svg")==0)
 				  || (strcmp(file_extension,".ttf")==0)
