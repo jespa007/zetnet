@@ -4,6 +4,8 @@
 #define HTTP_SERVER_DEFAULT_PORT 8081
 
 void MyCustomHttpServer_OnGetUserRequest(HttpServer *http_server, SocketClient *socket_client, HttpParamValue  * param, size_t param_len,void *data){
+	ZN_UNUSUED_PARAM(data);
+
 
 	char returning_value[1024]= "{\"status\":false, \"msg\":\"unknow value\"}";
 

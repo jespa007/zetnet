@@ -22,7 +22,10 @@ typedef struct {
 }HttpServerMPSData;
 
 
-bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_socket, uint8_t *buffer, size_t len, void *user_data){
+bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_socket, uint8_t *buffer, size_t buffer_len, void *user_data){
+	ZN_UNUSUED_PARAM(buffer);
+	ZN_UNUSUED_PARAM(buffer_len);
+
 	HttpServerMPS * http_server_mps=user_data;
 	HttpServerMPSData *data=http_server_mps->data;
 

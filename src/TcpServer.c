@@ -292,12 +292,12 @@ bool TcpServer_CloseSocketClient(TcpServer * tcp_server,SocketClient *socket_cli
 }
 
 //---------------------------------------------------------------------------------------------------------------
-bool TcpServer_GestServerBase(TcpServer * tcp_server)
+/*bool TcpServer_GestServerBase(TcpServer * tcp_server)
 {
 	//int  numready=0;
 
 	return true;
-}
+}*/
 
 void TcpServer_GestServer(TcpServer * tcp_server)
 {

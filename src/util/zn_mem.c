@@ -6,6 +6,8 @@ void * zn_mem_malloc(size_t size,const char *file, int line){
 #ifdef __MEMMANAGER__
 	p=MEMMGR_malloc(size,file,line);
 #else
+	ZN_UNUSUED_PARAM(file);
+	ZN_UNUSUED_PARAM(line);
 	p=malloc(size);
 #endif
 

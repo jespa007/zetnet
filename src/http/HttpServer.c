@@ -6,6 +6,9 @@ typedef struct{
 }HttpServerData;
 
 bool HttpServer_GestMessageDefault(TcpServer * tcp_server,SocketClient * socket_client, uint8_t *data, size_t data_len, void * user_data){
+	ZN_UNUSUED_PARAM(tcp_server);
+
+
 	HttpServer * http_server = (HttpServer *)user_data;
 
 	HttpHandleClient * hc = HttpHandleClient_New(socket_client, http_server,data, data_len);
@@ -56,6 +59,9 @@ void HttpServer_Stop(HttpServer *http_server){
 
 
 void HttpServer_OnGetUserRequest(TcpServer * tcp_server,SOCKET  _socket_client, HttpParamValue  * param, size_t param_len, void *data){
+	ZN_UNUSUED_PARAM(tcp_server);
+	ZN_UNUSUED_PARAM(param);
+	ZN_UNUSUED_PARAM(param_len);
 
 	HttpServer * http_server = (HttpServer* )data;
 

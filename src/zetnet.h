@@ -64,6 +64,8 @@
 extern "C" {
 #endif
 
+#define ZN_UNUSUED_PARAM(x) ((void)x)
+
 #include "util/zn_mem.h"
 #include "util/zn_list.h"
 #include "util/zn_str.h"

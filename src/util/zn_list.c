@@ -59,7 +59,7 @@ void zn_list_erase(zn_list *_this, uint16_t idx){
 
 	_this->items[idx] = NULL;
 
-	for (unsigned i = idx; i < (_this->count-1); i++) {
+	for (int i = idx; i < (_this->count-1); i++) {
 		_this->items[i] = _this->items[i+1];
 	}
 
