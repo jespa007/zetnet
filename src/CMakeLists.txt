@@ -162,11 +162,11 @@ endif()
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
 
 #HTTPSERVER TEST executable
-set(ZETNET_DEMO_SRCS ${PROJECT_SOURCE_DIR}/http_server_demo.c)
+set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/test_httpserver.c)
 
 
 
-# httpserver library
+# test_httpserver library
 add_library( zetnet${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
 target_link_libraries(zetnet${POST_NAME} )
 
@@ -200,12 +200,12 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(http_server_demo${POST_NAME}
-	${ZETNET_DEMO_SRCS}
+add_executable(test_httpserver${POST_NAME}
+	${ZETNET_HTTPSERVER_SRCS}
 )
 
 
-target_link_libraries(http_server_demo${POST_NAME}  zetnet${POST_NAME} -pthread )	
+target_link_libraries(test_httpserver${POST_NAME}  zetnet${POST_NAME} -pthread )	
 
 
 
@@ -217,8 +217,8 @@ INSTALL(TARGETS zetnet${POST_NAME}
 )
 
 #install other resources
-configure_files(${PROJECT_SOURCE_DIR}/test/ 				  		${PROJECT_SOURCE_DIR}/bin/${TARGET}/)
-configure_files(${PROJECT_SOURCE_DIR}/test/assets/bootstrap/css 	${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/bootstrap/css)
-configure_files(${PROJECT_SOURCE_DIR}/test/assets/bootstrap/font 	${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/bootstrap/font)
-configure_files(${PROJECT_SOURCE_DIR}/test/assets/bootstrap/js 		${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/bootstrap/js)
-configure_files(${PROJECT_SOURCE_DIR}/test/assets/jquery/js 		${PROJECT_SOURCE_DIR}/bin/${TARGET}/assets/jquery/js)
+configure_files(${PROJECT_SOURCE_DIR}/test/ 				  			${CMAKE_BINARY_DIR}/${TARGET}/)
+configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/css 	${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/css)
+configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/font 	${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/font)
+configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/js 		${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/js)
+configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/jquery/js 		${CMAKE_BINARY_DIR}/${TARGET}/assets/jquery/js)
