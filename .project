@@ -3,6 +3,7 @@
 	<name>zetnet</name>
 	<comment></comment>
 	<projects>
+		<project>memmgr</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

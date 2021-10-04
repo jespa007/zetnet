@@ -1,6 +1,5 @@
-/CMakeFiles/
-/cmake_install.cmake
-/CMakeCache.txt
-/Makefile
 /bin/
+/build/
 /.pydevproject
+/.settings/
+
