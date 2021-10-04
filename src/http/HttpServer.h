@@ -25,7 +25,7 @@ struct HttpServer
 };
 
 HttpServer *HttpServer_New(const char * web_dir,const char *  instance_name);
-void HttpServer_Start(HttpServer *http_server, int port);
+bool HttpServer_Start(HttpServer *http_server, int port);
 void HttpServer_Stop(HttpServer *http_server);
 void HttpServer_Delete(HttpServer *http_server);
 

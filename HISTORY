@@ -1,13 +1,15 @@
 a good tutorial for winsockets
 
 https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html
+> Implement WebSocket Server #2
 
 //----------------------------
-Date: XXXX/XX/XX
+Date: 4/10/2021
 Version: 1.2.0
 
-> Implement WebSocket Server #2 
-> Update style C (all utils files lower case) #3
+
+#3 Update style C (all utils files lower case) #3
+#5 If no file found html request it returns index.html 
 
 //----------------------------
 Date: 2020/08/02

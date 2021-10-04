@@ -35,7 +35,7 @@ HttpServer * HttpServer_New(
 
 
 
-void HttpServer_Start(HttpServer *http_server,int _port){
+bool HttpServer_Start(HttpServer *http_server,int _port){
 	HttpServerData *data = http_server->data;
 	if(data->tcp_server==NULL){
 		TcpServerOnGestMessage on_gest_message=(TcpServerOnGestMessage){
@@ -45,8 +45,9 @@ void HttpServer_Start(HttpServer *http_server,int _port){
 
 		data->tcp_server=TcpServer_New(on_gest_message);
 
-		TcpServer_Start(data->tcp_server,_port);
+		return TcpServer_Start(data->tcp_server,_port);
 	}
+	return false;
 }
 
 void HttpServer_Stop(HttpServer *http_server){

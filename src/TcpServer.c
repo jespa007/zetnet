@@ -210,15 +210,19 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 	TcpServer_SetTimeout(tcp_server,DEFAULT_TIMEOUT_SECONDS);
 
-	tcp_server->sockfd=TcpUtils_NewSocketServer(_portno);
+	if((tcp_server->sockfd=TcpUtils_NewSocketServer(_portno))!=INVALID_SOCKET){
 
-	 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
-		 fprintf(stderr,"\nerror creating thread");
-		 tcp_server->thread=0;
-		 return false;
-	 }
 
-	return true;
+		 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
+			 fprintf(stderr,"\nerror creating thread");
+			 tcp_server->thread=0;
+			 return false;
+		 }
+
+		return true;
+	}
+
+	return false;
 }
 
 bool TcpServer_Start(TcpServer * tcp_server,  int _portno){

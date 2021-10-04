@@ -81,10 +81,12 @@ int main(int argc, char *argv[])
 		.callback_function=MyCustomHttpServer_OnGetUserRequest
 		,.user_data=NULL
 	};
-	HttpServer_Start(http_server,port);
+	if(HttpServer_Start(http_server,port)){
 
-	printf("\npress any key to stop http_server...");
-	getchar();
+		printf("\npress any key to stop http_server...");
+		getchar();
+	}
+
 	/*while(true){
 	Sleep(10000);
 	}*/

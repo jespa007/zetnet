@@ -1,5 +1,11 @@
 #include "zetnet.h"
 
+#ifdef _WIN32
+#define ZN_SEPARATOR_DIR "\\"
+#else
+#define ZN_SEPARATOR_DIR "/"
+#endif
+
 typedef struct{
 	const char * title;
 	const char * description;
@@ -148,23 +154,19 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 #endif
 			ok = true;
 		}
-		else // file not exist try to solve automatically...
+		else if(zn_dir_exists(filename_with_path)) // file not exist try to index.html  in the directory...
 		{
 			zn_list * list_file=NULL;
 
-			//printf("\nfile \"%s\" not exist ...",filename_with_path);
-
-			if (!zn_dir_exists(path)){
+			/*if (!zn_dir_exists(path)){
 				return HttpResponse_MakePageNotFound(webserver);
-			}
+			}*/
 
-			list_file = zn_dir_list_files(path,NULL,false);//,"*.html",false);
+			list_file = zn_dir_list_files(filename_with_path,NULL,false);//,"*.html",false);
 
 			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 				//String n = ff.Name;
 				char n[MAX_PATH]="";
-
-				//printf("\nlisting files in  %s %i",(const char *)list_file->items[f],list_file->count);
 
 				zn_path_get_file_name(n,list_file->items[f]);
 
@@ -173,6 +175,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 #endif
 
 				if(strcmp(n,"index.html")==0){
+					strcpy(path,filename_with_path);
 					strcpy(file,n);
 					ok = true;
 				}
@@ -183,14 +186,12 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 		if (ok)
 		{
-#ifdef _WIN32
-#define SEPARATOR_DIR "\\"
-#else
-#define SEPARATOR_DIR "/"
-#endif
-
 			char filename_to_load[MAX_PATH];
-			sprintf(filename_to_load,"%s%s%s",path,SEPARATOR_DIR,file);
+			sprintf(filename_to_load,"%s%s%s",path,ZN_SEPARATOR_DIR,file);
+
+#ifdef __DEBUG__
+			printf("\nsend file:%s",filename_to_load);
+#endif
 
 			BufferData data;
 
