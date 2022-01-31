@@ -19,11 +19,12 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	HttpRequest *req = NULL;
 
 #ifdef __DEBUG__
-	printf("\nreceived:%s",http_handle_client->rcv_buffer_data );
+	printf("\nreceived:%s\nreceived_len:%i",http_handle_client->rcv_buffer_data,http_handle_client->rcv_buffer_data_len);
 #endif
 
 	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data );
 
+	// POST type
 	if(strcmp(req->type,"POST")==0){
 		void *param=NULL;
 		size_t param_len=0;
@@ -36,7 +37,7 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 
 		cf.callback_function(http_handle_client->http_server,http_handle_client->socket_client,(HttpParamValue *)param,param_len,cf.user_data);
 	}
-	else{
+	else{ // response GET
 		HttpResponse *resp = HttpResponse_From(req, http_handle_client->http_server);
 		HttpResponse_Post(resp,http_handle_client->socket_client->socket, http_handle_client->http_server);
 		HttpResponse_Delete(resp);

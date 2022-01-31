@@ -30,12 +30,12 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	 HttpRequest *http_request=NULL;
 	char content_type[MAX_CONTENT_LEN]={0};
 	const char *mime = "text/html"; //default plain text
-	char url[MAX_URL_LEN]="";
-	char file_extension[10] = "";
+	char url[MAX_URL_LEN]={0};
+	char file_extension[10] = {0};
 	char * find_extension=NULL;
 	bool is_header = true;
-	char  host[MAX_HOST_LEN];
-	char referer[MAX_REFERER_LEN];
+	char  host[MAX_HOST_LEN]={0};
+	char referer[MAX_REFERER_LEN]={0};
 
 	zn_list * params=NULL;
 	zn_list * lst=NULL;
@@ -63,7 +63,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 		return NULL;
 	}
 
-	zn_str_replace(request,"\r", "");
+	zn_str_replace(request,"\r", ""); // avoid windows \r
 
 	is_binary= false;
 
@@ -73,9 +73,11 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 	tokens = zn_str_split(request,'\n');
 	url_tokens = zn_str_split(tokens->items[0],' ');
+
+	// get type
 	type = url_tokens->items[0]; // GET/POST/etc...
 
-
+	// get url
 	if(url_tokens->count >= 2){
 		strcpy(url,url_tokens->items[1]);
 	}
@@ -110,6 +112,9 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 			}else if(strcmp(file_extension, ".pdf")==0){
 				mime = "application/pdf";
 				is_binary=true;
+			}else if(strcmp(file_extension, ".wasm")==0){
+				mime = "application/wasm";
+				is_binary=true;
 			}else if(
 					 (strcmp(file_extension,".eot")==0)
 				  || (strcmp(file_extension,".svg")==0)
@@ -135,7 +140,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	for (unsigned i = 0; i < tokens->count; i++)
 	{
 		char variable[256]="";
-		char value[256]="";
+		char value[4096]="";
 
 		if (strcmp(tokens->items[i],"")==0)
 		{
