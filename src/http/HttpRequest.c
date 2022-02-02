@@ -88,7 +88,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 		size_t pos = find_extension-url+1;
 		if(strlen(url)-pos > 5){
-			fprintf(stderr,"Error max extension");
+			fprintf(stderr,"Error max extension (url: %s)",url);
 		}
 		else{
 			strcpy(file_extension,find_extension);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
