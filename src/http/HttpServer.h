@@ -1,9 +1,6 @@
 ﻿#ifndef __HTTP_SERVER__
 #define __HTTP_SERVER__
 
-typedef struct HttpServer HttpServer;
-
-
 typedef struct{
 	void (*callback_function)(HttpServer * http_server,SocketClient  * _socket_client, HttpParamValue  * param, size_t param_len,void *user_data);
 	void *user_data;
