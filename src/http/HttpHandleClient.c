@@ -19,7 +19,7 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	HttpRequest *req = NULL;
 
 #ifdef __DEBUG__
-	printf("\nreceived:%s\nreceived_len:%i",http_handle_client->rcv_buffer_data,http_handle_client->rcv_buffer_data_len);
+	printf("received:%s\nreceived_len:%i\n",http_handle_client->rcv_buffer_data,http_handle_client->rcv_buffer_data_len);
 #endif
 
 	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data );

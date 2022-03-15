@@ -322,7 +322,7 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 		}else{
 
 #if __DEBUG__
-			printf("\nAdding new client");
+			printf("Adding new client\n");
 #endif
 
 			socket_client->socket=new_socket;
@@ -349,13 +349,13 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 					TcpServerOnGestMessage cf=tcp_server->on_gest_message;
 					if(!cf.callback_function(tcp_server,&tcp_server->socket_client[cn],tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
 #if __DEBUG__
-						printf("\ngestMessage:Erasing client %i (gestMessage)",cn);
+						printf("gestMessage:Erasing client %i (gestMessage)\n",cn);
 #endif
 						TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 					}
 				}else{ // remove that socket because client closed the connection ...
 #if __DEBUG__
-					printf("\ngestMessage:Erasing client %i (getMessage)",cn);
+					printf("gestMessage:Erasing client %i (getMessage)\n",cn);
 #endif
 					TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 				}
@@ -426,7 +426,7 @@ void TcpServer_Stop(TcpServer * tcp_server) {
 			TcpUtils_CloseSocket(&tcp_server->sockfd);
 		}
 
-		printf("\nDisconnect server");
+		printf("Disconnect server\n");
 
 
 	}

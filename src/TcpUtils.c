@@ -120,7 +120,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 #endif*/
 
 
-	printf("\nSetup server  (%d.%d.%d.%d:%i)",
+	printf("Setup server  (%d.%d.%d.%d:%i)\n",
 			ipaddr>>24,
 			(ipaddr>>16)&0xff,
 			(ipaddr>>8)&0xff,

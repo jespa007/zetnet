@@ -45,6 +45,7 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 		"</body>"
 	"</html>";
 
+
 	sprintf(int_error,"%i",error_id);
 
 	if(error_id < MAX_ERROR_TYPES){
@@ -54,17 +55,16 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 		error.description="not implemented";
 	}
 
-	data.size=strlen(template)+strlen(http_server->logo_base64)+strlen(error.description)+strlen(error.title);
+	data.size=strlen(template)+(http_server->logo_base64!=NULL?strlen(http_server->logo_base64):0)+strlen(error.description)+strlen(error.title);
 	data.buffer = (uint8_t *)ZN_MALLOC(data.size+1); // +1 for end str
 
 	sprintf((char *)data.buffer,
 			template
-		,http_server->logo_base64
+		,http_server->logo_base64!=NULL?http_server->logo_base64:""
 		,error.title
 		,error.description
 	);
 	//strcpy((char *)data.buffer,(char *)str);
-
 
 	return data;
 
@@ -140,7 +140,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 
 
 #ifdef __DEBUG__
-		printf("\ntry_file:%s request:%s",filename_with_path,request->URL);
+		printf("try_file:%s request:%s\n",filename_with_path,request->URL);
 #endif
 
 		zn_path_get_directory_name(path,filename_with_path);
@@ -150,17 +150,13 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 			zn_path_get_file_name(file,filename_with_path);
 
 #ifdef __DEBUG__
-			printf("\nfile \"%s\" filename with ok!",filename_with_path);
+			printf("file \"%s\" filename with ok!\n",filename_with_path);
 #endif
 			ok = true;
 		}
 		else if(zn_dir_exists(filename_with_path)) // file not exist try to index.html  in the directory...
 		{
 			zn_list * list_file=NULL;
-
-			/*if (!zn_dir_exists(path)){
-				return HttpResponse_MakePageNotFound(webserver);
-			}*/
 
 			list_file = zn_dir_list_files(filename_with_path,NULL,false);//,"*.html",false);
 
@@ -171,7 +167,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 				zn_path_get_file_name(n,list_file->items[f]);
 
 	#ifdef __DEBUG__
-				printf("\ntry_file2:%s",n);
+				printf("try_file2:%s\n",n);
 #endif
 
 				if(strcmp(n,"index.html")==0){
@@ -190,7 +186,7 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 			sprintf(filename_to_load,"%s%s%s",path,ZN_SEPARATOR_DIR,file);
 
 #ifdef __DEBUG__
-			printf("\nsend file:%s",filename_to_load);
+			printf("send file:%s\n",filename_to_load);
 #endif
 
 			BufferData data;
@@ -198,6 +194,10 @@ HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
 			data.buffer=zn_file_read(filename_to_load,&data.size);
 
 			return HttpResponse_New("200 OK", request->mime, request->is_binary, data);
+		}else{
+#ifdef __DEBUG__
+			printf("not found\n");
+#endif
 		}
 
 	}

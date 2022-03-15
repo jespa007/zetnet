@@ -83,26 +83,15 @@ int main(int argc, char *argv[])
 	};
 	if(HttpServer_Start(http_server,port)){
 
-		printf("\npress any key to stop http_server...");
+		printf("press any key to stop http_server...\n");
 		getchar();
 	}
 
-	/*while(true){
-	Sleep(10000);
-	}*/
-	
-
-
-	printf("\nshutdown...");
-
+	printf("shutdown...\n");
 
 	HttpServer_Delete(http_server);
 
 	ZetNet_DeInit();
-
-#ifdef __MEMMANAGER__
-	MEMMGR_print_status();
-#endif
 
 	return 0;
 }
