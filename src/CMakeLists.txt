@@ -162,11 +162,11 @@ endif()
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
 
 #HTTPSERVER TEST executable
-set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/test_httpserver.c)
+set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/httpserver.c)
 
 
 
-# test_httpserver library
+# httpserver library
 add_library( zetnet${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
 target_link_libraries(zetnet${POST_NAME} )
 
@@ -200,12 +200,12 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(test_httpserver${POST_NAME}
+add_executable(httpserver${POST_NAME}
 	${ZETNET_HTTPSERVER_SRCS}
 )
 
 
-target_link_libraries(test_httpserver${POST_NAME}  zetnet${POST_NAME} -pthread )	
+target_link_libraries(httpserver${POST_NAME}  zetnet${POST_NAME} -pthread )	
 
 
 
