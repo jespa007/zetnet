@@ -12,7 +12,7 @@ void * zn_mem_malloc(size_t size,const char *file, int line){
 #endif
 
 	if(p==NULL){
-		fprintf(stderr,"\nCannot allocate %lu",(unsigned long)size);
+		fprintf(stderr,"\nCannot allocate %lu\n",(unsigned long)size);
 		return NULL;
 	}
 

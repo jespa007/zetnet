@@ -1,12 +1,15 @@
 #include "zetnet.h"
 
+#include "TcpServer.c"
+#include "TcpUtils.c"
+
 bool ZetNet_Init(void){
 #ifdef _WIN32
 	WSADATA wsaData;
 	// Initialize Winsock
 	int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
 	if (iResult != 0) {
-		fprintf(stderr,"\nWSAStartup failed with error: %d", iResult);
+		fprintf(stderr,"\nWSAStartup failed with error: %d\n", iResult);
 		return false;
 	}
 #endif

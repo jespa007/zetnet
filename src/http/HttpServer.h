@@ -1,10 +1,7 @@
 ﻿#ifndef __HTTP_SERVER__
 #define __HTTP_SERVER__
 
-typedef struct{
-	void (*callback_function)(HttpServer * http_server,SocketClient  * _socket_client, HttpParamValue  * param, size_t param_len,void *user_data);
-	void *user_data;
-}HttpServerOnGetUserRequest;
+
 
 struct HttpServer
 {
@@ -14,17 +11,22 @@ struct HttpServer
 	const char * name;
 	const char * logo_base64;
 	bool send_same_site_attribute;
-	HttpServerOnGetUserRequest on_get_user_request;
+	HttpRouteOnRequest  on_request;
 
 	//private
 	void * data;
 
 };
 
-HttpServer *HttpServer_New(const char * web_dir,const char *  instance_name);
-bool HttpServer_Start(HttpServer *http_server, int port);
-void HttpServer_Stop(HttpServer *http_server);
-void HttpServer_Delete(HttpServer *http_server);
+HttpServer *HttpServer_New(const char * _web_dir,const char * _instance_name);
+void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  _on_request);
+void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  _on_request);
+HttpRoute *HttpServer_SearchGetRoute(HttpServer * _this,const char *_url_start_request);
+HttpRoute *HttpServer_SearchPostRoute(HttpServer * _this,const char *_url_start_request);
+
+bool HttpServer_Start(HttpServer *_this, int _port);
+void HttpServer_Stop(HttpServer *_this);
+void HttpServer_Delete(HttpServer *_this);
 
 
 #endif

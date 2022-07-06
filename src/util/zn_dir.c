@@ -14,7 +14,7 @@ bool zn_dir_exists(const char * filename){
 }
 
 zn_list * zn_dir_list_files_builtin(const char * folder, zn_list *list_attribs, bool recursive){
-	zn_list *list_file=zn_list_new();
+	zn_list *list_file=ZNList_New();
 	bool ok=false;
 	DIR *dir;
 	struct dirent *ent;
@@ -30,10 +30,10 @@ zn_list * zn_dir_list_files_builtin(const char * folder, zn_list *list_attribs, 
 					  if(recursive){
 						  zn_list * r = zn_dir_list_files_builtin(data,list_attribs,true);
 						  // add all resulting item elements to current list...
-						  zn_list_concat(list_file,r);
+						  ZNList_Concat(list_file,r);
 
 						  // r is not used any more, so delete it...
-						  zn_list_delete(r);
+						  ZNList_Delete(r);
 					  }
 				  }
 				  else{
@@ -42,10 +42,10 @@ zn_list * zn_dir_list_files_builtin(const char * folder, zn_list *list_attribs, 
 					  for(unsigned i = 0; i < list_attribs->count && !ok; i++){
 
 						  if((strcmp((char *)list_attribs->items[i],"*")==0) || zn_str_ends_with(ent->d_name,(char *)list_attribs->items[i])) {
-							  char *filename=ZN_MALLOC(strlen(data)+1); // 1 end string
+							  char *filename=malloc(strlen(data)+1); // 1 end string
 
 							  strcpy(filename,data);
-							  zn_list_add(list_file,filename);
+							  ZNList_Add(list_file,filename);
 							  ok=true;
 						  }
 					  }
@@ -54,7 +54,7 @@ zn_list * zn_dir_list_files_builtin(const char * folder, zn_list *list_attribs, 
 	  }
 	  closedir (dir);
 	} else {
-		fprintf(stderr,"could not open directory %s\n",folder);
+		fprintf(stderr,"\ncould not open directory %s\n",folder);
 	}
 
 	return list_file;
@@ -73,7 +73,7 @@ zn_list * zn_dir_list_files(const char * folder, const char * filter, bool recur
 
 	list_file=zn_dir_list_files_builtin(folder,list_attribs,recursive);
 
-	zn_list_delete_and_free_all_items(list_attribs);
+	ZNList_DeleteAndFreeAllItems(list_attribs);
 
 	return list_file;
 
@@ -83,7 +83,7 @@ zn_list * zn_dir_list_files(const char * folder, const char * filter, bool recur
 bool zn_dir_set_working_path(const char * path) {
 
 	if(chdir(path)==-1) {
-		fprintf(stderr,"Cannot change working path to %s\n", path);
+		fprintf(stderr,"\nCannot change working path to %s\n", path);
 		return false;
 	}
 	return true;

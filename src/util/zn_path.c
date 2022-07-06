@@ -26,11 +26,11 @@ bool zn_path_get_directory_name(char *ss, const char * _absolute_filename) {
 			return true;
 		}
 		else{
-			fprintf(stderr,"Reached MAX_ABSOLUTE_FILENAME_LENGTH or 0 ('%s':%lu)",_absolute_filename,(unsigned long)len);
+			fprintf(stderr,"\nReached MAX_ABSOLUTE_FILENAME_LENGTH or 0 ('%s':%lu)",_absolute_filename,(unsigned long)len);
 		}
 	}
 	else{
-		fprintf(stderr,"Cannot get folder name on '%s'",_absolute_filename);
+		fprintf(stderr,"\nCannot get folder name on '%s'",_absolute_filename);
 	}
 
 	return false;

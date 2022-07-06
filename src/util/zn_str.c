@@ -8,15 +8,15 @@ void zn_str_split_builtin(const char *s, char delim, zn_list  * elems) {
    // loop through the string to extract all other tokens
    while( token != NULL ) {
 	   size_t len=strlen(token)+1;
-	   char *text=ZN_MALLOC(len+1);
+	   char *text=malloc(len+1);
 	   strcpy(text,token);
-	   zn_list_add(elems,text);
+	   ZNList_Add(elems,text);
 	   token = strtok(NULL, delim_str);
    }
 }
 
 zn_list * zn_str_split(const char * s, char delim) {
-	zn_list *elems=zn_list_new();
+	zn_list *elems=ZNList_New();
 	if(s!=0 && strcmp(s,"")!=0){
 		zn_str_split_builtin(s, delim, elems);
 	}
@@ -50,16 +50,16 @@ bool zn_str_to_int(int * i, const char *s, int base){
 	errno = 0;
 	l = strtol(s, &end, base);
 	if ((errno == ERANGE && l == LONG_MAX) || l > INT_MAX) {
-		fprintf(stderr,"\n\"%s\" number overflow",s);
+		fprintf(stderr,"\n\n\"%s\" number overflow",s);
 		return false;
 	}
 	if ((errno == ERANGE && l == LONG_MIN) || l < INT_MIN) {
-		fprintf(stderr,"\n\"%s\" number underflow",s);
+		fprintf(stderr,"\n\n\"%s\" number underflow",s);
 		return false;
 
 	}
 	if (*s == '\0' || *end != '\0') {
-		fprintf(stderr,"\n\"%s\" number inconvertible",s);
+		fprintf(stderr,"\n\n\"%s\" number inconvertible",s);
 		return false;
 	}
 	*i = l;
@@ -74,7 +74,7 @@ char *zn_str_dup(const char *in){
 
 	len=strlen(in);
 
-	out=ZN_MALLOC(len+1);
+	out=malloc(len+1);
 	strcpy(out,in);
 	return out;
 

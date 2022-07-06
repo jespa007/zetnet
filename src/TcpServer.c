@@ -68,32 +68,32 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 
 		switch(wsa_error){
 		default:
-			fprintf(stderr,"select error:unknow error (%i)\n",wsa_error);
+			fprintf(stderr,"\nselect error:unknow error (%i)\n",wsa_error);
 			break;
 		case WSANOTINITIALISED:
-			fprintf(stderr,"select error:A successful WSAStartup call must occur before using this function.\n");
+			fprintf(stderr,"\nselect error:A successful WSAStartup call must occur before using this function.\n");
 			break;
 		case WSAEFAULT:
-			fprintf(stderr,"select error:The Windows Sockets implementation was unable to allocate needed resources for its internal operations, or the readfds, writefds, exceptfds, or timeval parameters are not part of the user address space.\n");
+			fprintf(stderr,"\nselect error:The Windows Sockets implementation was unable to allocate needed resources for its internal operations, or the readfds, writefds, exceptfds, or timeval parameters are not part of the user address space.\n");
 			break;
 		case WSAENETDOWN:
-			fprintf(stderr,"select error:The network subsystem has failed.\n");
+			fprintf(stderr,"\nselect error:The network subsystem has failed.\n");
 			break;
 		case WSAEINVAL:
-			fprintf(stderr,"select error:The time-out value is not valid, or all three descriptor parameters were null.\n");
+			fprintf(stderr,"\nselect error:The time-out value is not valid, or all three descriptor parameters were null.\n");
 			break;
 		case WSAEINTR:
-			fprintf(stderr,"select error:A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.\n");
+			fprintf(stderr,"\nselect error:A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.\n");
 			break;
 		case WSAEINPROGRESS:
-			fprintf(stderr,"select error:A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.\n");
+			fprintf(stderr,"\nselect error:A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.\n");
 			break;
 		case WSAENOTSOCK:
-			fprintf(stderr,"select error:One of the descriptor sets contains an entry that is not a socket or fd_set is not valid.\n");
+			fprintf(stderr,"\nselect error:One of the descriptor sets contains an entry that is not a socket or fd_set is not valid.\n");
 			break;
 		}
 #else
-		fprintf(stderr,"select error:unknow error (%i)\n",activity);
+		fprintf(stderr,"\nselect error:unknow error (%i)\n",activity);
 #endif
 
 	}
@@ -105,7 +105,7 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 #ifdef _WIN32
 	newsockfd = accept(tcp_server->sockfd, NULL, NULL);
 		if (newsockfd == INVALID_SOCKET) {
-			fprintf(stderr,"\naccept failed with error: %d", WSAGetLastError());
+			fprintf(stderr,"\n\naccept failed with error: %d", WSAGetLastError());
 			//socketClose(newsockfd);
 			//WSACleanup();
 		   // return INVALID_SOCKET;
@@ -118,7 +118,7 @@ SOCKET TcpServer_SocketAccept(TcpServer * tcp_server){
 					 (struct sockaddr *) &cli_addr,
 					 &clilen);
 	 if (newsockfd < 0) {
-		  fprintf(stderr,"ERROR on accept\n");
+		  fprintf(stderr,"\nERROR on accept\n");
 		  return INVALID_SOCKET;
 	 }
 #endif
@@ -141,7 +141,7 @@ bool TcpServer_SocketReady(TcpServer * tcp_server,SOCKET sock){
 //  PUBLIC
 TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message)
 {
-	TcpServer * tcp_server = ZN_MALLOC(sizeof(TcpServer));
+	TcpServer * tcp_server = ZN_MALLOC(TcpServer);
 
 	tcp_server->src_port=0;
 	tcp_server->dst_port=0;
@@ -214,7 +214,7 @@ bool  TcpServer_Setup(TcpServer * tcp_server,  int _portno)  //  Reads  configur
 
 
 		 if(pthread_create(&tcp_server->thread,NULL,TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
-			 fprintf(stderr,"\nerror creating thread");
+			 fprintf(stderr,"\nerror creating thread\n");
 			 tcp_server->thread=0;
 			 return false;
 		 }
@@ -249,12 +249,12 @@ SocketClient * TcpServer_GetFreeSlot(TcpServer * tcp_server){
 			tcp_server->free_socket[tcp_server->n_free_sockets-1]=SOCKET_CLIENT_NOT_AVAILABLE;
 			tcp_server->n_free_sockets--;
 		}else{
-			fprintf(stderr,"\ninternal error!");
+			fprintf(stderr,"\ninternal error!\n");
 			return NULL;
 		}
 	}
 	else{
-		fprintf(stderr,"\nno space left!!");
+		fprintf(stderr,"\nno space left!!\n");
 	}
 	return cs;
 }
@@ -270,7 +270,7 @@ bool TcpServer_CloseSocketClient(TcpServer * tcp_server,SocketClient *socket_cli
 			// in wsa we have to shutdown client socket connection by default recv and send operations
 			int iResult = shutdown(socket_client->socket, SD_BOTH);
 			if (iResult == SOCKET_ERROR) {
-				fprintf(stderr,"\nshutdown failed with error: %d", WSAGetLastError());
+				fprintf(stderr,"\nshutdown failed with error: %d\n", WSAGetLastError());
 			}
 #endif
 
@@ -286,11 +286,11 @@ bool TcpServer_CloseSocketClient(TcpServer * tcp_server,SocketClient *socket_cli
 			return true;
 		}
 		else{
-			fprintf(stderr,"\nCannot ZN_FREE because -SOCKET IS NOT AVAILABLE-");
+			fprintf(stderr,"\nCannot ZN_FREE because -SOCKET IS NOT AVAILABLE-\n");
 		}
 	}
 	else{
-		fprintf(stderr,"\nCannot ZN_FREE because -MAX_SOCKETS REACHED-");
+		fprintf(stderr,"\nCannot ZN_FREE because -MAX_SOCKETS REACHED-\n");
 	}
 	return false;
 }
@@ -317,7 +317,7 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 		SocketClient *socket_client= TcpServer_GetFreeSlot(tcp_server);
 
 		if(socket_client==NULL){ // no space left ... reject client ...
-			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***");
+			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***\n");
 			TcpUtils_CloseSocket(&new_socket);
 		}else{
 

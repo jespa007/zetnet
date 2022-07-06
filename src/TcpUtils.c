@@ -29,7 +29,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 	// Resolve the server address and port
 	i_result = getaddrinfo(NULL, (const char *)zn_str_from_int(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
-	   fprintf(stderr,"\ngetaddrinfo failed with error: %d", i_result);
+	   fprintf(stderr,"\ngetaddrinfo failed with error: %d\n", i_result);
 	   return INVALID_SOCKET;
 	}
 
@@ -39,7 +39,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 #ifdef _WIN32
 		error=WSAGetLastError();
 #endif
-		fprintf(stderr,"\nsocket failed with error: %i", error);
+		fprintf(stderr,"\nsocket failed with error: %i\n", error);
 		freeaddrinfo(result);
 		return INVALID_SOCKET;
 	}
@@ -50,7 +50,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 #ifdef _WIN32
 		error=WSAGetLastError();
 #endif
-		 fprintf(stderr,"\nsetsockopt failed error: %i", error);
+		 fprintf(stderr,"\nsetsockopt failed error: %i\n", error);
 		 return INVALID_SOCKET;
 	 }*/
 
@@ -63,11 +63,11 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 		switch(error){
 #ifdef _WIN32
 		case WSAEADDRINUSE:
-			fprintf(stderr,"\nport %i alraedy in use",_portno);
+			fprintf(stderr,"\nport %i alraedy in use\n",_portno);
 #endif
 			break;
 		default:
-			fprintf(stderr,"\nbind failed with error: %i", error);
+			fprintf(stderr,"\nbind failed with error: %i\n", error);
 			break;
 		}
 		freeaddrinfo(result);
@@ -82,7 +82,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 #ifdef _WIN32
 		error=WSAGetLastError();
 #endif
-		fprintf(stderr,"\nlisten failed with error: %i", error);
+		fprintf(stderr,"\nlisten failed with error: %i\n", error);
 
 		TcpUtils_CloseSocket(&socket_server);
 		return INVALID_SOCKET;
@@ -94,14 +94,14 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 	 // create socket for server...
 	socket_server = socket(AF_INET, SOCK_STREAM, 0);
 	 if (socket_server < 0){
-		fprintf(stderr,"\nERROR opening socket");
+		fprintf(stderr,"\n\nERROR opening socket");
 		return INVALID_SOCKET;
 	 }
 
 	 //set server socket to allow multiple connections , this is just a good habit, it will work without this
 	 if(( setsockopt(socket_server, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt))) < 0 )
 	 {
-		 fprintf(stderr,"\nsetsockopt failed");
+		 fprintf(stderr,"\n\nsetsockopt failed");
 		 return INVALID_SOCKET;
 	 }
 
@@ -112,7 +112,7 @@ SOCKET TcpUtils_NewSocketServer(int _portno){
 
 	if (bind(socket_server, (struct sockaddr *) &serv_addr,
 				  sizeof(serv_addr)) < 0){
-				  fprintf(stderr,"\nERROR on binding");
+				  fprintf(stderr,"\n\nERROR on binding");
 				  return INVALID_SOCKET;
 	}
 
@@ -149,7 +149,7 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 	// Resolve the server address and port
 	int i_result = getaddrinfo("127.0.0.1", (const char *)zn_str_from_int(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
-		fprintf(stderr,"getaddrinfo failed with error: %d\n", i_result);
+		fprintf(stderr,"\ngetaddrinfo failed with error: %d\n", i_result);
 		return INVALID_SOCKET;
 	}
 
@@ -162,7 +162,7 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 	#ifdef _WIN32
 			error=WSAGetLastError();
 	#endif
-			fprintf(stderr,"\nsocket failed with error: %i", error);
+			fprintf(stderr,"\nsocket failed with error: %i\n", error);
 			return INVALID_SOCKET;
 		}
 
@@ -172,7 +172,7 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 	#ifdef _WIN32
 			error=WSAGetLastError();
 	#endif
-			fprintf(stderr,"\nconnect failed with error: %i", error);
+			fprintf(stderr,"\nconnect failed with error: %i\n", error);
 			TcpUtils_CloseSocket(&socket_client);
 			socket_client = INVALID_SOCKET;
 			continue;
@@ -183,14 +183,14 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 	freeaddrinfo(result);
 
 	if (socket_client == INVALID_SOCKET) {
-		fprintf(stderr,"Unable to connect to server!\n");
+		fprintf(stderr,"\nUnable to connect to server!\n");
 	}
 /*#else
 
 	 // create socket for server...
 	socket_client = socket(AF_INET, SOCK_STREAM, 0);
 	 if (socket_client < 0){
-		fprintf(stderr,"\nERROR opening socket");
+		fprintf(stderr,"\n\nERROR opening socket");
 		return INVALID_SOCKET;
 	 }
 
@@ -203,13 +203,13 @@ SOCKET TcpUtils_NewSocketClient(int _portno){
 	// Convert IPv4 and IPv6 addresses from text to binary form
 	if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)
 	{
-		fprintf(stderr,"\nInvalid address/ Address not supported \n");
+		fprintf(stderr,"\n\nInvalid address/ Address not supported \n");
 		return INVALID_SOCKET;
 	}
 
 	if (connect(socket_client, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
 	{
-		fprintf(stderr,"\nConnection Failed \n");
+		fprintf(stderr,"\n\nConnection Failed \n");
 		return INVALID_SOCKET;
 	}
 #endif*/
@@ -239,7 +239,7 @@ int  TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *buf)
 
 		}
 		else {
-			fprintf(stderr,"TcpUtils_ReceiveBytes: Max message reached %i<%i!\n",result,ZETNET_TCP_MESSAGE_LENGTH);
+			fprintf(stderr,"\nTcpUtils_ReceiveBytes: Max message reached %i<%i!\n",result,ZETNET_TCP_MESSAGE_LENGTH);
 			return 0;
 		}
 	}
@@ -253,7 +253,7 @@ int  TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
 	uint32_t  result=0;
 
 	if(!len) {
-		fprintf(stderr,"TcpUtils_SendBytes: 0 bytes to send or buffer is NULL!\n");
+		fprintf(stderr,"\nTcpUtils_SendBytes: 0 bytes to send or buffer is NULL!\n");
 		return 0;
 	}
 
@@ -261,7 +261,7 @@ int  TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
 	result=send(sock,(const char *)buf,len,0);
 
 	if(result<len) {
-		fprintf(stderr,"TcpUtils_SendBytes (%i<%i)\n",result,len);
+		fprintf(stderr,"\nTcpUtils_SendBytes (%i<%i)\n",result,len);
 		return(0);
 	}
 	return(result);

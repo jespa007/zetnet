@@ -56,7 +56,7 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 	}
 
 	data.size=strlen(template)+(http_server->logo_base64!=NULL?strlen(http_server->logo_base64):0)+strlen(error.description)+strlen(error.title);
-	data.buffer = (uint8_t *)ZN_MALLOC(data.size+1); // +1 for end str
+	data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
 
 	sprintf((char *)data.buffer,
 			template
@@ -72,7 +72,7 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 
 
 HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_binary, BufferData data) {
-	HttpResponse * http_response = ZN_MALLOC(sizeof(HttpResponse));
+	HttpResponse * http_response = ZN_MALLOC(HttpResponse);
 	http_response->data = data;
 	http_response->status = status;
 	http_response->mime = mime;
@@ -86,7 +86,7 @@ HttpResponse * HttpResponse_MakeFromString(const char * str, const char * mime)
 {
 	BufferData data;
 	data.size=strlen(str);
-	data.buffer=(uint8_t *)ZN_MALLOC(data.size+1);
+	data.buffer=(uint8_t *)malloc(data.size+1);
 
 	strcpy((char *)data.buffer,(char *)str);
 
@@ -109,103 +109,122 @@ HttpResponse * HttpResponse_MakePageNotFound(HttpServer * webserver)
 	return HttpResponse_New("404 Bad Request", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_404, webserver));
 }
 
-HttpResponse *HttpResponse_From(HttpRequest * request, HttpServer * webserver) {
+HttpResponse *HttpResponse_From(HttpRequest * _request, HttpServer * _webserver) {
 	char filename_with_path[MAX_PATH]={0};
+	char *unescaped_url=NULL;
 	char path_url[MAX_PATH]={0};
 	char file[MAX_PATH]="";
 	char path[MAX_PATH]="";
+	HttpRoute *route_found=NULL;
 
 	bool ok = false;
 
-	if (request == NULL){
-		return HttpResponse_MakeNullRequest(webserver);
+	if (_request == NULL){
+		return HttpResponse_MakeNullRequest(_webserver);
 	}
 
-	if(strcmp(request->type,"GET")==0){
+	unescaped_url=zn_url_unescape(_request->URL);
+	sprintf(path_url,"%s",unescaped_url);
+	ZN_FREE(unescaped_url);
 
-		char *unescaped_url=zn_url_unescape(request->URL);
-		sprintf(path_url,"%s",unescaped_url);
-		ZN_FREE(unescaped_url);
 #ifdef WIN32
-		zn_str_replace_by_char(path_url, '/','\\');//CUri::unescape(request->URL)
+	zn_str_replace_by_char(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
-		sprintf(filename_with_path,
-				"%s%s",
-			  webserver->web_dir,
-			path_url);
+	if(strcmp(_request->type,"GET")==0){
+		// route GET
+		route_found=HttpServer_SearchGetRoute(_webserver,unescaped_url);
 
-		ok = false;
+	}else if(strcmp(_request->type,"POST")==0){
+		// route POST
+		route_found=HttpServer_SearchPostRoute(_webserver,unescaped_url);
 
+	}else{
+		// request type not allowed
+		return HttpResponse_MakeMethodNotAllowed(_webserver);
+	}
 
+	// get src path
+	strcpy(filename_with_path,_webserver->web_dir);
 
-#ifdef __DEBUG__
-		printf("try_file:%s request:%s\n",filename_with_path,request->URL);
-#endif
-
-		zn_path_get_directory_name(path,filename_with_path);
-
-		if (zn_file_exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
-		{
-			zn_path_get_file_name(file,filename_with_path);
-
-#ifdef __DEBUG__
-			printf("file \"%s\" filename with ok!\n",filename_with_path);
-#endif
-			ok = true;
-		}
-		else if(zn_dir_exists(filename_with_path)) // file not exist try to index.html  in the directory...
-		{
-			zn_list * list_file=NULL;
-
-			list_file = zn_dir_list_files(filename_with_path,NULL,false);//,"*.html",false);
-
-			for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
-				//String n = ff.Name;
-				char n[MAX_PATH]="";
-
-				zn_path_get_file_name(n,list_file->items[f]);
-
-	#ifdef __DEBUG__
-				printf("try_file2:%s\n",n);
-#endif
-
-				if(strcmp(n,"index.html")==0){
-					strcpy(path,filename_with_path);
-					strcpy(file,n);
-					ok = true;
-				}
-			}
-
-			zn_list_delete_and_free_all_items(list_file);
-		}
-
-		if (ok)
-		{
-			char filename_to_load[MAX_PATH];
-			sprintf(filename_to_load,"%s%s%s",path,ZN_SEPARATOR_DIR,file);
-
-#ifdef __DEBUG__
-			printf("send file:%s\n",filename_to_load);
-#endif
-
-			BufferData data;
-
-			data.buffer=zn_file_read(filename_to_load,&data.size);
-
-			return HttpResponse_New("200 OK", request->mime, request->is_binary, data);
-		}else{
-#ifdef __DEBUG__
-			printf("not found\n");
-#endif
-		}
-
+	if(route_found != NULL){
+		// concat to filename_with_path
+		strcat(filename_with_path,route_found->path);
 	}
 	else{
-		return HttpResponse_MakeMethodNotAllowed(webserver);
+		strcpy(
+			filename_with_path
+			,_webserver->web_dir
+		);
 	}
 
-	return HttpResponse_MakePageNotFound(webserver);
+	ok = false;
+
+
+
+#ifdef __DEBUG__
+	printf("try_file:%s request:%s\n",filename_with_path,_request->URL);
+#endif
+
+	zn_path_get_directory_name(path,filename_with_path);
+
+	if (zn_file_exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+	{
+		zn_path_get_file_name(file,filename_with_path);
+
+#ifdef __DEBUG__
+		printf("file \"%s\" filename with ok!\n",filename_with_path);
+#endif
+		ok = true;
+	}
+	else if(zn_dir_exists(filename_with_path)) // file not exist try to index.html  in the directory...
+	{
+		zn_list * list_file=NULL;
+
+		list_file = zn_dir_list_files(filename_with_path,NULL,false);//,"*.html",false);
+
+		for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
+			//String n = ff.Name;
+			char n[MAX_PATH]="";
+
+			zn_path_get_file_name(n,list_file->items[f]);
+
+	#ifdef __DEBUG__
+			printf("try_file2:%s\n",n);
+#endif
+
+			if(strcmp(n,"index.html")==0){
+				strcpy(path,filename_with_path);
+				strcpy(file,n);
+				ok = true;
+			}
+		}
+
+		ZNList_DeleteAndFreeAllItems(list_file);
+	}
+
+	if (ok)
+	{
+		char filename_to_load[MAX_PATH];
+		sprintf(filename_to_load,"%s%s%s",path,ZN_SEPARATOR_DIR,file);
+
+#ifdef __DEBUG__
+		printf("send file:%s\n",filename_to_load);
+#endif
+
+		BufferData data;
+
+		data.buffer=zn_file_read(filename_to_load,&data.size);
+
+		return HttpResponse_New("200 OK", _request->mime, _request->is_binary, data);
+	}else{
+#ifdef __DEBUG__
+		printf("not found\n");
+#endif
+	}
+
+
+	return HttpResponse_MakePageNotFound(_webserver);
 }
 
 void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer * http_server) //, const string & response_action)

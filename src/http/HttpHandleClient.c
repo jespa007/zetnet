@@ -3,7 +3,7 @@
 
 HttpHandleClient * HttpHandleClient_New(SocketClient * _socket_client, HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
 {
-	HttpHandleClient * http_handle_client = ZN_MALLOC(sizeof(HttpHandleClient));
+	HttpHandleClient * http_handle_client = ZN_MALLOC(HttpHandleClient);
 	http_handle_client->socket_client = _socket_client;
 	http_handle_client->http_server = _http_server;
 
@@ -22,13 +22,13 @@ void HttpHandleClient_DoHandle(HttpHandleClient *http_handle_client)
 	printf("received:%s\nreceived_len:%i\n",http_handle_client->rcv_buffer_data,http_handle_client->rcv_buffer_data_len);
 #endif
 
-	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data );
+	req = HttpRequest_GetRequest((const char *)http_handle_client->rcv_buffer_data);
 
 	// POST type
 	if(strcmp(req->type,"POST")==0){
 		void *param=NULL;
 		size_t param_len=0;
-		HttpServerOnGetUserRequest cf=http_handle_client->http_server->on_get_user_request;
+		HttpRouteOnRequest cf=http_handle_client->http_server->on_request;
 
 		if(req->param!=NULL){
 			param=req->param->items;

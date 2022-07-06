@@ -61,7 +61,7 @@ bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_so
 		if(!client_socket->streaming_header_sent){
 			if(!TcpUtils_SendBytes(client_socket->socket,(uint8_t *)HTTP_SERVER_MPS_HEADER, strlen(HTTP_SERVER_MPS_HEADER))){
 #if __DEBUG__
-				fprintf(stderr,"HttpServerMPS_TcpServerOnGestMessage:Erasing client (Stream)\n");
+				fprintf(stderr,"\nHttpServerMPS_TcpServerOnGestMessage:Erasing client (Stream)\n");
 #endif
 				TcpServer_CloseSocketClient(tcp_server,client_socket);
 
@@ -73,7 +73,7 @@ bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_so
 		// send streaming...
 		if(!TcpUtils_SendBytes(client_socket->socket,(uint8_t *)start_buffer, buffer_len)){
 #if __DEBUG__
-			fprintf(stderr,"gestMessage:Erasing client (Stream)\n");
+			fprintf(stderr,"\ngestMessage:Erasing client (Stream)\n");
 #endif
 			TcpServer_CloseSocketClient(tcp_server,client_socket);
 		}
@@ -91,8 +91,8 @@ bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_so
 
 
 HttpServerMPS *	HttpServerMPS_New(){
-	HttpServerMPS * http_server_mps=ZN_MALLOC(sizeof(HttpServerMPS));
-	HttpServerMPSData *data=ZN_MALLOC(sizeof(HttpServerMPSData));
+	HttpServerMPS * http_server_mps=ZN_MALLOC(HttpServerMPS);
+	HttpServerMPSData *data=ZN_MALLOC(HttpServerMPSData);
 	http_server_mps->data=data;
 
 	return http_server_mps;
@@ -139,7 +139,7 @@ bool				HttpServerMPS_CanWrite(HttpServerMPS	*_this){
 void				HttpServerMPS_Write(HttpServerMPS	*_this, uint8_t *ptr_src, size_t len){
 	HttpServerMPSData *data=_this->data;
 	if(HttpServerMPS_CanWrite(_this)){
-		void *ptr_dst=ZN_MALLOC(len);
+		void *ptr_dst=malloc(len);
 		memcpy(ptr_dst,ptr_src,len);
 
 		data->data_ptr[data->n_write] = ptr_dst;

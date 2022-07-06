@@ -2,6 +2,24 @@ cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
 
+
+file(READ "zetnet.h" zetnet_h)
+
+string(REGEX MATCH "ZETNET_VERSION_MAJOR ([0-9]*)" _ ${zetnet_h})
+set(ZETNET_VERSION_MAJOR ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "ZETNET_VERSION_MINOR ([0-9]*)" _ ${zetnet_h})
+set(ZETNET_VERSION_MINOR ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "ZETNET_VERSION_PATCH ([0-9]*)" _ ${zetnet_h})
+set(ZETNET_VERSION_PATCH ${CMAKE_MATCH_1})
+
+
+
+MESSAGE("-- Zetnet ${ZETNET_VERSION_MAJOR}.${ZETNET_VERSION_MINOR}.${ZETNET_VERSION_PATCH}" )
+
+set(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZETNET_VERSION_PATCH}")
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
 # MACRO UTILS
@@ -17,22 +35,7 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
-macro(configure_files srcDir destDir)
-    message(STATUS "Configuring files to ${destDir}")
-    make_directory(${destDir})
 
-    file(GLOB templateFiles RELATIVE ${srcDir} ${srcDir}/*)
-    foreach(templateFile ${templateFiles})
-        set(srcTemplatePath ${srcDir}/${templateFile})
-        if(NOT IS_DIRECTORY ${srcTemplatePath})
-            message(STATUS "Copying file ${srcTemplatePath} to ${destDir}/${templateFile}")
-            configure_file(
-                    ${srcTemplatePath}
-                    ${destDir}/${templateFile}
-                    COPYONLY)
-        endif(NOT IS_DIRECTORY ${srcTemplatePath})
-    endforeach(templateFile)
-endmacro(configure_files)
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -131,21 +134,12 @@ MESSAGE ("-- Target: " ${TARGET})
 
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	util/zn_mem.c
-	util/zn_url.c
-	util/zn_str.c
-	util/zn_list.c
-	util/zn_file.c
-	util/zn_dir.c
-	util/zn_path.c
-	TcpServer.c
-	http/HttpParamValue.c
-	http/HttpHandleClient.c
-	http/HttpRequest.c
-	http/HttpResponse.c
-	http/HttpServer.c
-	http/HttpServerMPS.c
-	TcpUtils.c
+	# util
+	util/zn_util.c
+	
+	# http
+	http/zn_http.c
+
 	zetnet.c
 )
 
@@ -167,16 +161,16 @@ set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/httpserver.c)
 
 
 # httpserver library
-add_library( zetnet${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
-target_link_libraries(zetnet${POST_NAME} )
+add_library( ${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
+target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} )
 
 if(MSVC)
 	#only for msvc...
-	set_target_properties(zetnet${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
+	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
 endif()
 	
 if(MINGW OR MSVC)
-	target_link_libraries(zetnet${POST_NAME} Ws2_32 )	
+	target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} Ws2_32 )	
 endif()
 
 
@@ -205,20 +199,15 @@ add_executable(httpserver${POST_NAME}
 )
 
 
-target_link_libraries(httpserver${POST_NAME}  zetnet${POST_NAME} -pthread )	
+target_link_libraries(httpserver${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
 
 
 
-INSTALL(TARGETS zetnet${POST_NAME}
+INSTALL(TARGETS ${ZETNET_LIB_NAME}${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
 		RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
     	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
     	PUBLIC_HEADER DESTINATION	${CMAKE_INSTALL_PREFIX}/includes
 )
 
-#install other resources
-configure_files(${PROJECT_SOURCE_DIR}/test/ 				  			${CMAKE_BINARY_DIR}/${TARGET}/)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/css 	${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/css)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/font 	${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/font)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/js 		${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/js)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/jquery/js 		${CMAKE_BINARY_DIR}/${TARGET}/assets/jquery/js)
+

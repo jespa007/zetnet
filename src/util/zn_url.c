@@ -11,7 +11,7 @@ char * zn_url_escape(const char * input)
 {
 	int end = strlen(input);
 	size_t final_size = (end * 3) + 1;
-	char *working = ZN_MALLOC(final_size * sizeof(char)), *output = working;
+	char *working = malloc(final_size * sizeof(char)), *output = working;
 
 	while(*input)
 	{
@@ -46,7 +46,7 @@ char * zn_url_unescape(const char * input)
 	int input_length = strlen(input);
 
 		size_t output_length = (input_length + 1) * sizeof(char);
-		char *working = ZN_MALLOC(output_length), *output = working;
+		char *working = malloc(output_length), *output = working;
 
 		while(*input)
 		{

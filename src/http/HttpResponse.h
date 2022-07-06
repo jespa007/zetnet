@@ -1,9 +1,6 @@
 ﻿#ifndef __HTTP_RESPONSE__
 #define __HTTP_RESPONSE__
 
-
-
-
 typedef struct{
 	uint8_t * 	buffer;
 	size_t 		size;

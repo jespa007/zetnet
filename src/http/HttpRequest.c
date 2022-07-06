@@ -12,7 +12,7 @@ HttpRequest * HttpRequest_New(char *  _type
 		, zn_list * _param
 		)
 {
-	HttpRequest * http_request=ZN_MALLOC(sizeof(HttpRequest));
+	HttpRequest * http_request=ZN_MALLOC(HttpRequest);
 	strcpy(http_request->type, _type);
 	strcpy(http_request->URL ,_url);
 	strcpy(http_request->host, _host);
@@ -88,7 +88,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 		size_t pos = find_extension-url+1;
 		if(strlen(url)-pos > 5){
-			fprintf(stderr,"Error max extension (url: %s)\n",url);
+			fprintf(stderr,"\nError max extension (url: %s)\n",url);
 		}
 		else{
 			strcpy(file_extension,find_extension);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
@@ -169,11 +169,11 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 						strcpy(content_type,tl->items[0]);
 					}
 					zn_str_replace(content_type," ","");
-					zn_list_delete_and_free_all_items(tl);
+					ZNList_DeleteAndFreeAllItems(tl);
 				}
 			}
 
-			zn_list_delete_and_free_all_items(sub_tokens);
+			ZNList_DeleteAndFreeAllItems(sub_tokens);
 
 
 		}
@@ -189,7 +189,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 					if (sub_tokens->count == 2)
 					{
-						zn_list_add(params,
+						ZNList_Add(params,
 							 HttpParamValue_New(
 								sub_tokens->items[0],
 								sub_tokens->items[1]
@@ -197,12 +197,12 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 						);
 					}
 
-					zn_list_delete_and_free_all_items(sub_tokens);
+					ZNList_DeleteAndFreeAllItems(sub_tokens);
 				}
 
 			}
 
-			zn_list_delete_and_free_all_items(pre_check_params);
+			ZNList_DeleteAndFreeAllItems(pre_check_params);
 		}
 	}
 
@@ -211,9 +211,9 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 	http_request=HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, params);
 
 	// finally ZN_FREE all depending resources...
-	zn_list_delete_and_free_all_items(tokens);
-	zn_list_delete_and_free_all_items(url_tokens);
-	zn_list_delete_and_free_all_items(lst);
+	ZNList_DeleteAndFreeAllItems(tokens);
+	ZNList_DeleteAndFreeAllItems(url_tokens);
+	ZNList_DeleteAndFreeAllItems(lst);
 	ZN_FREE(request);
 	ZN_FREE(request_aux);
 
@@ -223,7 +223,7 @@ HttpRequest *HttpRequest_GetRequest(const char * str_request) {
 
 void		  HttpRequest_Delete(HttpRequest *http_request){
 	if(http_request!=NULL){
-		zn_list_delete_and_free_all_items(http_request->param);
+		ZNList_DeleteAndFreeAllItems(http_request->param);
 		ZN_FREE(http_request);
 	}
 }

@@ -35,12 +35,12 @@ uint8_t * zn_file_read(const char * filename,size_t * buffer_size){
 
 			*buffer_size = file_length; // +1 is for string end
 
-			uint8_t *buffer = (uint8_t *)ZN_MALLOC(*buffer_size);
+			uint8_t *buffer = (uint8_t *)malloc(*buffer_size);
 
 			readed_elements = fread(buffer, 1, file_length, fp);
 
 			if(readed_elements != file_length) {
-				fprintf(stderr,"number elements doesn't match with length file (%s)\n",filename);
+				fprintf(stderr,"\nnumber elements doesn't match with length file (%s)\n",filename);
 				ZN_FREE(buffer);
 				return NULL;
 			}
@@ -49,9 +49,9 @@ uint8_t * zn_file_read(const char * filename,size_t * buffer_size){
 
 			return buffer;
 		}
-		else  fprintf(stderr,"I can't read file \"%s\"\n",filename);
+		else  fprintf(stderr,"\nI can't read file \"%s\"\n",filename);
 	}
-	else  fprintf(stderr,"I can't open file \"%s\"\n",filename);
+	else  fprintf(stderr,"\nI can't open file \"%s\"\n",filename);
 
 
 	return NULL;
