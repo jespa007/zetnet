@@ -6,7 +6,6 @@ typedef struct{
 	size_t 		size;
 }BufferData;
 
-
 typedef struct HttpServer HttpServer;
 typedef struct HttpResponse HttpResponse;
 
@@ -20,6 +19,11 @@ struct HttpResponse
 
 };
 
+typedef struct{
+	HttpResponse * (*callback_function)(HttpServer * _http_server, HttpParamValue  * _param, size_t _param_len,void *_user_data);
+	void *user_data;
+}HttpResponseCallback;
+
 HttpResponse *HttpResponse_New(
 		 const char * status
 		,const char * mime
@@ -27,9 +31,12 @@ HttpResponse *HttpResponse_New(
 		,BufferData  data
 		);
 
+
+HttpResponse * 	HttpResponse_MakePageNotFound(HttpServer * _http_server);
 HttpResponse *  HttpResponse_MakeFromString(const char * si, const char * mime);
-HttpResponse *	HttpResponse_From(HttpRequest * request, HttpServer * http_server);
-void 			HttpResponse_Post(HttpResponse * http_response,SOCKET dst_socket, HttpServer * http_server);
+HttpResponse * 	HttpResponse_MakeMethodNotAllowed(HttpServer * _http_server);
+HttpResponse *	HttpResponse_FromFile(HttpRequest * _request,const char *_filename_with_path);
+void 			HttpResponse_Send(HttpResponse * http_response,SOCKET dst_socket, HttpServer * http_server);
 void 			HttpResponse_Delete(HttpResponse * http_response);
 
 

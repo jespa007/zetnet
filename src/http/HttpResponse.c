@@ -64,12 +64,8 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 		,error.title
 		,error.description
 	);
-	//strcpy((char *)data.buffer,(char *)str);
-
 	return data;
-
 }
-
 
 HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_binary, BufferData data) {
 	HttpResponse * http_response = ZN_NEW(HttpResponse);
@@ -81,7 +77,6 @@ HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_b
 	return http_response;
 }
 
-
 HttpResponse * HttpResponse_MakeFromString(const char * str, const char * mime)
 {
 	BufferData data;
@@ -90,95 +85,50 @@ HttpResponse * HttpResponse_MakeFromString(const char * str, const char * mime)
 
 	strcpy((char *)data.buffer,(char *)str);
 
-
 	return HttpResponse_New("200 OK", mime, false, data);
 }
 
-HttpResponse * HttpResponse_MakeMethodNotAllowed(HttpServer * webserver)
+HttpResponse * HttpResponse_MakeMethodNotAllowed(HttpServer * _http_server)
 {
-	return HttpResponse_New("405 Method not allowed", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_405, webserver));
+	return HttpResponse_New("405 Method not allowed", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_405, _http_server));
 }
 
-HttpResponse * HttpResponse_MakeNullRequest(HttpServer * webserver)
+HttpResponse * HttpResponse_MakeNullRequest(HttpServer * _http_server)
 {
-	return HttpResponse_New("400 Bad Request", "html/text",false,  HttpResponse_GenerateError(HTML_ERROR_400, webserver));
+	return HttpResponse_New("400 Bad Request", "html/text",false,  HttpResponse_GenerateError(HTML_ERROR_400, _http_server));
 }
 
-HttpResponse * HttpResponse_MakePageNotFound(HttpServer * webserver)
+HttpResponse * HttpResponse_MakePageNotFound(HttpServer * _http_server)
 {
-	return HttpResponse_New("404 Bad Request", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_404, webserver));
+	return HttpResponse_New("404 Bad Request", "html/text", false, HttpResponse_GenerateError(HTML_ERROR_404, _http_server));
 }
 
-HttpResponse *HttpResponse_From(HttpRequest * _request, HttpServer * _webserver) {
-	char filename_with_path[MAX_PATH]={0};
-	char *unescaped_url=NULL;
-	char path_url[MAX_PATH]={0};
-	char file[MAX_PATH]="";
+HttpResponse *HttpResponse_FromFile(HttpRequest * _request,const char *_filename_with_path){
+
 	char path[MAX_PATH]="";
-	HttpRoute *route_found=NULL;
-
+	char file[MAX_PATH]="";
 	bool ok = false;
 
-	if (_request == NULL){
-		return HttpResponse_MakeNullRequest(_webserver);
-	}
-
-	unescaped_url=zn_url_unescape(_request->URL);
-	sprintf(path_url,"%s",unescaped_url);
-	ZN_FREE(unescaped_url);
-
-#ifdef WIN32
-	zn_str_replace_by_char(path_url, '/','\\');//CUri::unescape(request->URL)
-#endif
-
-	if(strcmp(_request->type,"GET")==0){
-		// route GET
-		route_found=HttpServer_SearchGetRoute(_webserver,unescaped_url);
-
-	}else if(strcmp(_request->type,"POST")==0){
-		// route POST
-		route_found=HttpServer_SearchPostRoute(_webserver,unescaped_url);
-
-	}else{
-		// request type not allowed
-		return HttpResponse_MakeMethodNotAllowed(_webserver);
-	}
-
-	// get src path
-	strcpy(filename_with_path,_webserver->web_dir);
-
-	if(route_found != NULL){
-		// concat to filename_with_path
-		strcat(filename_with_path,route_found->path);
-	}
-
-
-	strcat(filename_with_path,path_url);
-
-	ok = false;
-
-
-
 #ifdef __DEBUG__
-	printf("try_file:%s request:%s\n",filename_with_path,_request->URL);
+	printf("try_file:%s request:%s\n",_filename_with_path,_request->URL);
 #endif
 
-	zn_path_get_directory_name(path,filename_with_path);
+	zn_path_get_directory_name(path,_filename_with_path);
 
-	if (zn_file_exists(filename_with_path)/* && fi.Extension.Contains(".")*/)
+	if (zn_file_exists(_filename_with_path)/* && fi.Extension.Contains(".")*/)
 	{
-		zn_path_get_file_name(file,filename_with_path);
+		zn_path_get_file_name(file,_filename_with_path);
 
 #ifdef __DEBUG__
-		printf("file \"%s\" filename with ok!\n",filename_with_path);
+		printf("file \"%s\" filename with ok!\n",_filename_with_path);
 #endif
 		ok = true;
 	}
-	else if(zn_dir_exists(filename_with_path)) // file not exist try to index.html  in the directory...
+	else if(zn_dir_exists(_filename_with_path)) // file not exist try to index.html  in the directory...
 	{
 		zn_list * list_file=NULL;
 
-		list_file = zn_dir_list_files(filename_with_path,NULL,false);//,"*.html",false);
+		list_file = zn_dir_list_files(_filename_with_path,NULL,false);//,"*.html",false);
 
 		for(unsigned f=0; f < list_file->count && !ok; f++){ //foreach(FileInfo ff in files){
 			//String n = ff.Name;
@@ -191,7 +141,7 @@ HttpResponse *HttpResponse_From(HttpRequest * _request, HttpServer * _webserver)
 #endif
 
 			if(strcmp(n,"index.html")==0){
-				strcpy(path,filename_with_path);
+				strcpy(path,_filename_with_path);
 				strcpy(file,n);
 				ok = true;
 			}
@@ -220,11 +170,10 @@ HttpResponse *HttpResponse_From(HttpRequest * _request, HttpServer * _webserver)
 #endif
 	}
 
-
-	return HttpResponse_MakePageNotFound(_webserver);
+	return NULL;
 }
 
-void HttpResponse_Post(HttpResponse *http_response,SOCKET dst_socket, HttpServer * http_server) //, const string & response_action)
+void HttpResponse_Send(HttpResponse *http_response,SOCKET dst_socket, HttpServer * http_server) //, const string & response_action)
 {
 	char header_str[4096]={0};
 	size_t header_str_len=0;

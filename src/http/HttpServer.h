@@ -11,7 +11,7 @@ struct HttpServer
 	const char * name;
 	const char * logo_base64;
 	bool send_same_site_attribute;
-	HttpRouteOnRequest  on_request;
+	HttpResponseCallback  on_request;
 
 	//private
 	void * data;
@@ -19,8 +19,8 @@ struct HttpServer
 };
 
 HttpServer *HttpServer_New(const char * _web_dir,const char * _instance_name);
-void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request);
-void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request);
+void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpResponseCallback  *_on_request);
+void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpResponseCallback  *_on_request);
 HttpRoute *HttpServer_SearchGetRoute(HttpServer * _this,const char *_url_start_request);
 HttpRoute *HttpServer_SearchPostRoute(HttpServer * _this,const char *_url_start_request);
 

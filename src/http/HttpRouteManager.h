@@ -9,7 +9,7 @@ struct HttpRouteManager{
 
 
 HttpRouteManager *	HttpRouteManager_New(void);
-void 				HttpRouteManager_AddRoute(HttpRouteManager * _this, const char *_url,const char *_path,HttpRouteOnRequest  *_on_request);
+void 				HttpRouteManager_AddRoute(HttpRouteManager * _this, const char *_url,const char *_path,HttpResponseCallback  *_on_request);
 HttpRoute *			HttpRouteManager_SearchRoute(HttpRouteManager * _this, const char *__url);
 void 				HttpRouteManager_Delete(HttpRouteManager * _this);
 

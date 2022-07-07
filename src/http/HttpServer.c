@@ -74,17 +74,17 @@ void HttpServer_OnGetUserRequest(TcpServer * tcp_server,SOCKET  _socket_client, 
 
 	HttpResponse *resp = HttpResponse_MakeFromString("onGetUserRequest is not implemented!", "application/json");
 
-	HttpResponse_Post(resp,_socket_client, http_server);
+	HttpResponse_Send(resp,_socket_client, http_server);
 
 	HttpResponse_Delete(resp);
 }
 
-void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request){
+void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpResponseCallback  *_on_request){
 	HttpServerData *data = _this->data;
 	HttpRouteManager_AddRoute(data->get_routes,_url,_path,_on_request);
 }
 
-void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request){
+void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpResponseCallback  *_on_request){
 	HttpServerData *data = _this->data;
 	HttpRouteManager_AddRoute(data->post_routes,_url,_path,_on_request);
 }

@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-HttpRoute *HttpRoute_New(const char *_url, const char *_path, HttpRouteOnRequest *_on_request){
+HttpRoute *HttpRoute_New(const char *_url, const char *_path, HttpResponseCallback *_on_request){
 	HttpRoute *route=ZN_NEW(HttpRoute);
 	route->url=ZN_MALLOC(strlen(_url)+1);
 	route->path=ZN_MALLOC(strlen(_path)+1);
