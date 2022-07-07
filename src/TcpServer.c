@@ -141,7 +141,7 @@ bool TcpServer_SocketReady(TcpServer * tcp_server,SOCKET sock){
 //  PUBLIC
 TcpServer * TcpServer_New(TcpServerOnGestMessage on_gest_message)
 {
-	TcpServer * tcp_server = ZN_MALLOC(TcpServer);
+	TcpServer * tcp_server = ZN_NEW(TcpServer);
 
 	tcp_server->src_port=0;
 	tcp_server->dst_port=0;

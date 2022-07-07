@@ -21,8 +21,8 @@ HttpServer * HttpServer_New(
 	const char * web_dir
 	,const char * server_name
 	){
-	HttpServer 		* http_server=ZN_MALLOC(HttpServer);
-	HttpServerData  * data=ZN_MALLOC(HttpServerData);
+	HttpServer 		* http_server=ZN_NEW(HttpServer);
+	HttpServerData  * data=ZN_NEW(HttpServerData);
 	data->tcp_server=NULL;
 	data->get_routes=HttpRouteManager_New();
 	data->post_routes=HttpRouteManager_New();
@@ -79,12 +79,12 @@ void HttpServer_OnGetUserRequest(TcpServer * tcp_server,SOCKET  _socket_client, 
 	HttpResponse_Delete(resp);
 }
 
-void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  _on_request){
+void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request){
 	HttpServerData *data = _this->data;
 	HttpRouteManager_AddRoute(data->get_routes,_url,_path,_on_request);
 }
 
-void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  _on_request){
+void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request){
 	HttpServerData *data = _this->data;
 	HttpRouteManager_AddRoute(data->post_routes,_url,_path,_on_request);
 }

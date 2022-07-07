@@ -19,8 +19,8 @@ struct HttpServer
 };
 
 HttpServer *HttpServer_New(const char * _web_dir,const char * _instance_name);
-void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  _on_request);
-void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  _on_request);
+void HttpServer_AddGetRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request);
+void HttpServer_AddPostRoute(HttpServer * _this,const char *_url,const char *_path,HttpRouteOnRequest  *_on_request);
 HttpRoute *HttpServer_SearchGetRoute(HttpServer * _this,const char *_url_start_request);
 HttpRoute *HttpServer_SearchPostRoute(HttpServer * _this,const char *_url_start_request);
 

@@ -12,7 +12,7 @@ HttpRequest * HttpRequest_New(char *  _type
 		, zn_list * _param
 		)
 {
-	HttpRequest * http_request=ZN_MALLOC(HttpRequest);
+	HttpRequest * http_request=ZN_NEW(HttpRequest);
 	strcpy(http_request->type, _type);
 	strcpy(http_request->URL ,_url);
 	strcpy(http_request->host, _host);

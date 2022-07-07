@@ -91,8 +91,8 @@ bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_so
 
 
 HttpServerMPS *	HttpServerMPS_New(){
-	HttpServerMPS * http_server_mps=ZN_MALLOC(HttpServerMPS);
-	HttpServerMPSData *data=ZN_MALLOC(HttpServerMPSData);
+	HttpServerMPS * http_server_mps=ZN_NEW(HttpServerMPS);
+	HttpServerMPSData *data=ZN_NEW(HttpServerMPSData);
 	http_server_mps->data=data;
 
 	return http_server_mps;

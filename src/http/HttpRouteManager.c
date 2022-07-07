@@ -5,15 +5,15 @@ typedef struct{
 }HttpRouteManagerData;
 
 HttpRouteManager *HttpRouteManager_New(void){
-	HttpRouteManager *http_route_manager=ZN_MALLOC(HttpRouteManager);
-	HttpRouteManagerData *data=ZN_MALLOC(HttpRouteManagerData);
+	HttpRouteManager *http_route_manager=ZN_NEW(HttpRouteManager);
+	HttpRouteManagerData *data=ZN_NEW(HttpRouteManagerData);
 	data->routes=ZNList_New();
 
 	http_route_manager->data=data;
 	return http_route_manager;
 }
 
-void HttpRouteManager_AddRoute(HttpRouteManager * _this, const char *_url,const char *_path,HttpRouteOnRequest  _on_request){
+void HttpRouteManager_AddRoute(HttpRouteManager * _this, const char *_url,const char *_path,HttpRouteOnRequest  *_on_request){
 	HttpRouteManagerData *data=_this->data;
 	HttpRoute *route=HttpRoute_New(_url,_path, _on_request);
 	ZNList_Add(data->routes,route);
@@ -49,6 +49,9 @@ void HttpRouteManager_Delete(HttpRouteManager * _this){
 	for(unsigned i=0; i < data->routes->count; i++){
 		HttpRoute_Delete(data->routes->items[i]);
 	}
+
+	ZNList_Delete(data->routes);
+
 	ZN_FREE(data);
 	ZN_FREE(_this);
 }

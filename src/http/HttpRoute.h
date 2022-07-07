@@ -15,7 +15,7 @@ struct HttpRoute{
 };
 
 
-HttpRoute *HttpRoute_New(const char *_url, const char *_path, HttpRouteOnRequest _on_request);
+HttpRoute *HttpRoute_New(const char *_url, const char *_path, HttpRouteOnRequest *_on_request);
 void HttpRoute_Delete(HttpRoute * _this);
 
 #endif

@@ -72,7 +72,7 @@ BufferData  HttpResponse_GenerateError(int error_id,HttpServer * http_server)
 
 
 HttpResponse * HttpResponse_New( const char * status,const char * mime,bool is_binary, BufferData data) {
-	HttpResponse * http_response = ZN_MALLOC(HttpResponse);
+	HttpResponse * http_response = ZN_NEW(HttpResponse);
 	http_response->data = data;
 	http_response->status = status;
 	http_response->mime = mime;
@@ -151,12 +151,9 @@ HttpResponse *HttpResponse_From(HttpRequest * _request, HttpServer * _webserver)
 		// concat to filename_with_path
 		strcat(filename_with_path,route_found->path);
 	}
-	else{
-		strcpy(
-			filename_with_path
-			,_webserver->web_dir
-		);
-	}
+
+
+	strcat(filename_with_path,path_url);
 
 	ok = false;
 
