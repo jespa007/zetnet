@@ -52,12 +52,13 @@
 #include "memmgr.h"
 #endif
 
+
 //----------------------------
 // START ZETNET PROTOTYPES
 
-#define ZETNET_VERSION_MAJOR 1
-#define ZETNET_VERSION_MINOR 3
-#define ZETNET_VERSION_PATCH 0
+#define ZETNET_VERSION_MAJOR	1
+#define ZETNET_VERSION_MINOR	3
+#define ZETNET_VERSION_PATCH	0
 
 
 #ifdef  __cplusplus

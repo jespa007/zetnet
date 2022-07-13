@@ -3,35 +3,29 @@
 
 #define HTTP_SERVER_DEFAULT_PORT 8081
 
-void MyCustomHttpServer_OnGetUserRequest(HttpServer *http_server, SocketClient *socket_client, HttpParamValue  * param, size_t param_len,void *data){
-	ZN_UNUSUED_PARAM(data);
-
+HttpResponse *  MyCustomHttpServer_OnGetUserRequest(HttpServer * _http_server, HttpParamValue  * _param, size_t _param_len,void *_user_data){
+	ZN_UNUSUED_PARAM(_user_data);
 
 	char returning_value[1024]= "{\"status\":false, \"msg\":\"unknow value\"}";
 
 
-	if (param!=NULL && param_len>0)
+	if (_param!=NULL && _param_len>0)
 	{
-		if (strcmp(param[0].name,"cmd")==0)
+		if (strcmp(_param[0].name,"cmd")==0)
 		{
-			if(strcmp(param[0].value,"text")==0){
+			if(strcmp(_param[0].value,"text")==0){
 				sprintf(returning_value,"{\"status\":ok, \"msg\":\"message ok\"}");
 			}
 			else{
-				sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow value  %s for cmd value\"}",param[0].name);
+				sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow value  %s for cmd value\"}",_param[0].name);
 			}
 
 		}else{
-			sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow cmd %s\"}",param[0].name);
+			sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow cmd %s\"}",_param[0].name);
 		}
 	}
 
-	HttpResponse *resp = HttpResponse_MakeFromString(returning_value, "application/json");
-
-	HttpResponse_Send(resp,socket_client->socket, http_server);
-
-	HttpResponse_Delete(resp);
-
+	return HttpResponse_MakeFromString(returning_value, "application/json");
 }
 
 int main(int argc, char *argv[])

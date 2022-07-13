@@ -72,9 +72,9 @@ bool HttpServerMPS_OnGestMessage(TcpServer * tcp_server,SocketClient * client_so
 
 		// send streaming...
 		if(!TcpUtils_SendBytes(client_socket->socket,(uint8_t *)start_buffer, buffer_len)){
-#if __DEBUG__
-			fprintf(stderr,"\ngestMessage:Erasing client (Stream)\n");
-#endif
+
+			ZN_LOG_ERRORF("gestMessage: Cannot send bytes to socket. Erasing client (Stream)");
+
 			TcpServer_CloseSocketClient(tcp_server,client_socket);
 		}
 
@@ -127,7 +127,7 @@ void 	HttpServerMPS_Stop(HttpServerMPS 	*_this){
 		TcpServer_Delete(data->tcp_server);
 		data->tcp_server=NULL;
 	}else{
-		//Log_Error("HttpServerMPS not started!");
+		//LOG_ERROR("HttpServerMPS not started!");
 	}
 }
 

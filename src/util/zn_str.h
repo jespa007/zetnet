@@ -1,5 +1,5 @@
-#ifndef __ZNSTRING_H__
-#define __ZNSTRING_H__
+#ifndef __ZN_STR_H__
+#define __ZN_STR_H__
 
 
 zn_list * 	zn_str_split(const char * s, char delim);

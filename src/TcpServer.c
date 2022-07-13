@@ -348,15 +348,15 @@ void TcpServer_GestServer(TcpServer * tcp_server)
 				{
 					TcpServerOnGestMessage cf=tcp_server->on_gest_message;
 					if(!cf.callback_function(tcp_server,&tcp_server->socket_client[cn],tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
-#if __DEBUG__
-						printf("gestMessage:Erasing client %i (gestMessage)\n",cn);
-#endif
+
+						ZN_LOG_DEBUG("gestMessage:Erasing client %i (gestMessage)",cn);
+
 						TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 					}
 				}else{ // remove that socket because client closed the connection ...
-#if __DEBUG__
-					printf("gestMessage:Erasing client %i (getMessage)\n",cn);
-#endif
+
+					ZN_LOG_DEBUG("gestMessage:Erasing client %i (getMessage)",cn);
+
 					TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 				}
 

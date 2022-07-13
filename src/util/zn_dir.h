@@ -1,5 +1,5 @@
-#ifndef __ZNDIRECTORY_H__
-#define __ZNDIRECTORY_H__
+#ifndef __ZN_DIR_H__
+#define __ZN_DIR_H__
 
 
 bool 		zn_dir_set_working_path(const char * path);

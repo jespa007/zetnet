@@ -5,14 +5,14 @@ project(zetnet)
 
 file(READ "zetnet.h" zetnet_h)
 
-string(REGEX MATCH "ZETNET_VERSION_MAJOR ([0-9]*)" _ ${zetnet_h})
-set(ZETNET_VERSION_MAJOR ${CMAKE_MATCH_1})
+string(REGEX MATCH "ZETNET_VERSION_MAJOR([\t-\ ][0-9])*" _ ${zetnet_h})
+string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_MAJOR)
 
-string(REGEX MATCH "ZETNET_VERSION_MINOR ([0-9]*)" _ ${zetnet_h})
-set(ZETNET_VERSION_MINOR ${CMAKE_MATCH_1})
+string(REGEX MATCH "ZETNET_VERSION_MINOR([\t-\ ][0-9])*" _ ${zetnet_h})
+string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_MINOR)
 
-string(REGEX MATCH "ZETNET_VERSION_PATCH ([0-9]*)" _ ${zetnet_h})
-set(ZETNET_VERSION_PATCH ${CMAKE_MATCH_1})
+string(REGEX MATCH "ZETNET_VERSION_PATCH([\t-\ ][0-9])*" _ ${zetnet_h})
+string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_PATCH)
 
 
 

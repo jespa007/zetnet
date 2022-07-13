@@ -1,5 +1,5 @@
-#ifndef __ZNPATH_H__
-#define __ZNPATH_H__
+#ifndef __ZN_PATH_H__
+#define __ZN_PATH_H__
 
 #ifndef MAX_PATH
 #define MAX_PATH		4096

@@ -1,5 +1,5 @@
-#ifndef __ZNLIST_H__
-#define __ZNLIST_H__
+#ifndef __ZN_LIST_H__
+#define __ZN_LIST_H__
 
 typedef struct zn_list zn_list;
 

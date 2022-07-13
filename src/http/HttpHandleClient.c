@@ -18,8 +18,8 @@ void HttpHandleClient_DoHandle(HttpHandleClient *_http_handle_client)
 	//std::string msg = "";
 	HttpRequest *http_request = NULL;
 
-#ifdef __DEBUG__
-	printf("received:%s\nreceived_len:%i\n",_http_handle_client->rcv_buffer_data,_http_handle_client->rcv_buffer_data_len);
+#ifdef __ZN_VERBOSE__
+	LOG_DEBUG("received:%s\nreceived_len:%i\n",_http_handle_client->rcv_buffer_data,_http_handle_client->rcv_buffer_data_len);
 #endif
 
 	http_request = HttpRequest_GetRequest((const char *)_http_handle_client->rcv_buffer_data);
