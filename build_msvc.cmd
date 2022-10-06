@@ -65,7 +65,7 @@ IF NOT EXIST %THIRD_PARTY_LIB%\openssl.lib (
 	
 	cd %THIRD_PARTY_BUILD_DIR%\%OPENSSL_VERSION%
 		
-	perl Configure VC-WIN64A no-shared PREFIX=%THIRD_PARTY_INSTALL_DIR%
+	perl Configure VC-WIN64A no-shared --prefix=%THIRD_PARTY_INSTALL_DIR% --openssldir=%THIRD_PARTY_INSTALL_DIR%
 	
 	nmake install
 	

@@ -92,7 +92,7 @@ if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib/libopenssl"$EXTENSION_STATIC_LIB ]
 then
 
 	
-	perl Configure mingw64 no-shared --prefix=$THIRD_PARTY_INSTALL_DIR
+	perl Configure mingw64 no-shared --prefix=$THIRD_PARTY_INSTALL_DIR --openssldir=$THIRD_PARTY_INSTALL_DIR
 
 	# in mingw it doesn't find podman and it throws an error
 	#if ! [ $? -eq 0 ] 
