@@ -91,23 +91,25 @@ cd $OPENSSL_TAG
 if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib/libopenssl"$EXTENSION_STATIC_LIB ] 
 then
 
-	rm -rf build
+	
+	perl Configure mingw64 no-shared --prefix=$THIRD_PARTY_INSTALL_DIR
 
-	perl Configure mingw64  --prefix=$THIRD_PARTY_INSTALL_DIR
-
-
-	if ! [ $? -eq 0 ] 
-	then
-		exit 1
-	fi
-
+	# in mingw it doesn't find podman and it throws an error
+	#if ! [ $? -eq 0 ] 
+	#then
+	#	exit 1
+	#fi
+	
 	make clean
-	make -j2 install
+	
+	# make with only one build processor, if not it won't work
+	make install
 
-	if ! [ $? -eq 0 ] 
-	then
-		exit 1
-	fi
+	# in mingw it doesn't find podman and it throws an error
+	#if ! [ $? -eq 0 ] 
+	#then
+	#	exit 1
+	#fi
 fi
 
 cd ..
@@ -122,7 +124,7 @@ cd $ROOT_DIR
 if ! [ -f $BINARY_DIR"/libzetnet"$EXTENSION_STATIC_LIB ] 
 then
 
-	rm -rf build/gcc/zs_ge
+	rm -rf build/gcc/zetnet
 	cmake -H. -Bbuild/gcc/zetnet "${CMAKE_CONFIG[@]}"
 	
 	if ! [ $? -eq 0 ] 

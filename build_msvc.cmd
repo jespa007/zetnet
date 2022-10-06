@@ -64,9 +64,10 @@ IF NOT EXIST %THIRD_PARTY_BUILD_DIR%\%OPENSSL_VERSION%\NUL (
 IF NOT EXIST %THIRD_PARTY_LIB%\openssl.lib (
 	
 	cd %THIRD_PARTY_BUILD_DIR%\%OPENSSL_VERSION%
-	rd build /S /Q
 		
-	perl Configure mingw64  --prefix=$THIRD_PARTY_INSTALL_DIR
+	perl Configure VC-WIN64A no-shared PREFIX=%THIRD_PARTY_INSTALL_DIR%
+	
+	nmake install
 	
 	IF NOT EXIST %THIRD_PARTY_INCLUDE%\openssh (
 		MD %THIRD_PARTY_INCLUDE%\openssh
