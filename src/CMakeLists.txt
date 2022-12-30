@@ -69,7 +69,7 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")	
 
 else()  # g++ / gcc
-	SET( COMMON_C_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
+	SET( CMAKE_C_FLAGS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
 	  
 	if (MINGW)
 		MESSAGE ("-- Plataform: MINGW" )
@@ -79,25 +79,26 @@ else()  # g++ / gcc
     	MESSAGE ("-- Plataform: Unknown" )
 	endif()
 	
-	IF ( "${TARGET}" STREQUAL "debug")
+	IF ( "${TARGET}" STREQUAL "debug" AND EXISTS  ${PROJECT_SOURCE_DIR}/../../memmgr)
 		set( POST_NAME "_d")
-		SET( COMMON_C_PARAMS " ${COMMON_C_PARAMS} -O0 -g -D__DEBUG__ ")
-		IF( EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr )
-			message("-- Memmanager: ON")
-			SET( COMMON_C_PARAMS " ${COMMON_C_PARAMS} -D__MEMMANAGER__")
-			include_directories (
-				${PROJECT_SOURCE_DIR}/../../memmgr
-			)
-		
-	   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
-	   	else()
-	   		message("-- Memmanager: OFF (../../memmgr not exist)")
-	   	endif()
+		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O0 -g -D__DEBUG__ ")
+		message("-- Memmanager: ON")
+		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
+		include_directories (
+			${PROJECT_SOURCE_DIR}/../../memmgr
+		)
+	
+   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
 		
 	ELSE()
 		set(TARGET "release")
-		SET( COMMON_C_PARAMS " ${COMMON_C_PARAMS} -O2 ")
-		message("-- Memmanager: OFF")
+		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O2 ")
+	   	if(UNIX)
+			set(CMAKE_C_FLAGS " ${CMAKE_CXX_FLAGS} -fsanitize=address ")
+			message("-- Memmanager: -fsanitize=address")
+		else()
+			message("-- Memmanager: OFF (../../memmgr not exist)")
+		endif()		
 	ENDIF()
 	
 	#Redefine output dir ...
@@ -106,8 +107,7 @@ else()  # g++ / gcc
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
 	LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 	
-	SET(CMAKE_C_FLAGS   " ${COMMON_C_PARAMS}  " )
-	
+
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
