@@ -32,7 +32,6 @@ void HttpHandleClient_DoHandle(HttpHandleClient *_http_handle_client)
 
 	unescaped_url=zn_url_unescape(http_request->URL);
 	sprintf(path_url,"%s",unescaped_url);
-	ZN_FREE(unescaped_url);
 
 #ifdef WIN32
 	zn_str_replace_by_char(path_url, '/','\\');//CUri::unescape(request->URL)
@@ -50,6 +49,9 @@ void HttpHandleClient_DoHandle(HttpHandleClient *_http_handle_client)
 		// request type not allowed
 		http_response=HttpResponse_MakeMethodNotAllowed(_http_handle_client->http_server);
 	}
+
+	// deallocate unescaped_url, not used anymore
+	ZN_FREE(unescaped_url);
 
 	if(route_found != NULL){
 

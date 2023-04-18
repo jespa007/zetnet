@@ -2,6 +2,20 @@ cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
 
+IF( NOT CMAKE_BUILD_TYPE )
+   SET( CMAKE_BUILD_TYPE Release )
+ENDIF()
+
+set(POST_NAME "")
+set(IS_DEBUG FALSE)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	set(IS_DEBUG TRUE)
+	SET( CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D__DEBUG__ ")
+	set( POST_NAME "_d")
+endif()
+
+MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
+
 
 file(READ "zetnet.h" zetnet_h)
 
@@ -49,7 +63,6 @@ include_directories (
 
 message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
 
-set( POST_NAME "")
 set(ZETNET_LIB_SRCS "")
 
 
@@ -79,32 +92,40 @@ else()  # g++ / gcc
     	MESSAGE ("-- Plataform: Unknown" )
 	endif()
 	
-	IF ( "${TARGET}" STREQUAL "debug" AND EXISTS  ${PROJECT_SOURCE_DIR}/../../memmgr)
-		set( POST_NAME "_d")
-		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O0 -g -D__DEBUG__ ")
-		message("-- Memmanager: ON")
-		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
-		include_directories (
-			${PROJECT_SOURCE_DIR}/../../memmgr
-		)
-	
-   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
+	IF ( IS_DEBUG)
+		set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -O0 -g ")
 		
+		IF (EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr)
+		
+			message("-- Memmanager: Yes")
+			SET( CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D__MEMMANAGER__")
+			include_directories (
+				${PROJECT_SOURCE_DIR}/../../memmgr
+			)
+			
+	   		set(ZETSCRIPT_LIB_SRCS ${ZETSCRIPT_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
+		
+		ELSE()
+	
+			if(UNIX)
+				if( NOT "${DIST}" STREQUAL "Alpine")
+					set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -fsanitize=address ")
+					message("-- Memmanager: -fsanitize=address")
+				else()
+					message("-- Memmanager: -fsanitize NOT supported")
+				endif()
+			 else()
+			 	message("-- Memmanager: OFF (../../memmgr not exist)")
+			 endif()
+		ENDIF()
 	ELSE()
-		set(TARGET "release")
-		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O2 ")
-	   	if(UNIX)
-			set(CMAKE_C_FLAGS " ${CMAKE_CXX_FLAGS} -fsanitize=address ")
-			message("-- Memmanager: -fsanitize=address")
-		else()
-			message("-- Memmanager: OFF (../../memmgr not exist)")
-		endif()		
+		set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -O2 ")
 	ENDIF()
 	
 	#Redefine output dir ...
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 	LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 	
 
@@ -118,7 +139,7 @@ elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     MESSAGE ("-- Architecture: 32bit")
 endif()
 
-MESSAGE ("-- Target: " ${TARGET})
+MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 
 
 #
