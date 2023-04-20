@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <stdarg.h>
 #endif
 
 // include socket platform
