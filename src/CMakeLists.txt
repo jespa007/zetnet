@@ -10,7 +10,7 @@ set(POST_NAME "")
 set(IS_DEBUG FALSE)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set(IS_DEBUG TRUE)
-	SET( CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D__DEBUG__ ")
+	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__DEBUG__ ")
 	set( POST_NAME "_d")
 endif()
 
@@ -82,7 +82,7 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")	
 
 else()  # g++ / gcc
-	SET( CMAKE_C_FLAGS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
+	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
 	  
 	if (MINGW)
 		MESSAGE("-- Plataform: MINGW" )
@@ -96,23 +96,23 @@ else()  # g++ / gcc
 	endif()
 	
 	IF ( IS_DEBUG)
-		set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -O0 -g ")
+		set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O0 -g ")
 		
 		IF (EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr)
 		
 			message("-- Memmanager: Yes")
-			SET( CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -D__MEMMANAGER__")
+			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
 			include_directories (
 				${PROJECT_SOURCE_DIR}/../../memmgr
 			)
 			
-	   		set(ZETSCRIPT_LIB_SRCS ${ZETSCRIPT_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
+	   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
 		
 		ELSE()
 	
 			if(UNIX)
 				if( NOT "${DIST}" STREQUAL "Alpine")
-					set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -fsanitize=address ")
+					set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -fsanitize=address ")
 					message("-- Memmanager: -fsanitize=address")
 				else()
 					message("-- Memmanager: -fsanitize NOT supported")
@@ -122,7 +122,7 @@ else()  # g++ / gcc
 			 endif()
 		ENDIF()
 	ELSE()
-		set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -O2 ")
+		set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O2 ")
 	ENDIF()
 	
 	#Redefine output dir ...
