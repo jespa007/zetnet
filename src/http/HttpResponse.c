@@ -153,7 +153,9 @@ HttpResponse *HttpResponse_FromFile(HttpRequest * _request,const char *_filename
 	if (ok)
 	{
 		char filename_to_load[MAX_PATH];
-		sprintf(filename_to_load,"%s%s%s",path,ZN_SEPARATOR_DIR,file);
+		strcpy(filename_to_load,path);
+		strcat(filename_to_load,ZN_SEPARATOR_DIR);
+		strcat(filename_to_load,file);
 
 #ifdef __DEBUG__
 		printf("send file:%s\n",filename_to_load);
