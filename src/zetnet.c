@@ -1,7 +1,7 @@
 #include "zetnet.h"
 
-#include "TcpServer.c"
-#include "TcpUtils.c"
+#include "ZN_TcpServer.c"
+#include "ZN_TcpUtils.c"
 
 bool ZetNet_Init(void){
 #ifdef _WIN32

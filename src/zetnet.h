@@ -58,7 +58,7 @@
 // START ZETNET PROTOTYPES
 
 #define ZETNET_VERSION_MAJOR	1
-#define ZETNET_VERSION_MINOR	3
+#define ZETNET_VERSION_MINOR	4
 #define ZETNET_VERSION_PATCH	0
 
 
@@ -68,11 +68,11 @@ extern "C" {
 
 #define ZN_UNUSUED_PARAM(x) ((void)x)
 
-#include "TcpUtils.h"
-#include "TcpServer.h"
+#include "ZN_TcpUtils.h"
+#include "ZN_TcpServer.h"
 
-#include "util/zn_util.h"
-#include "http/zn_http.h"
+#include "util/_zn_util_.h"
+#include "http/_zn_http_.h"
 
 bool ZetNet_Init(void);
 void ZetNet_DeInit(void);

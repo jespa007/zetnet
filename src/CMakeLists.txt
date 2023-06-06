@@ -158,10 +158,10 @@ MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	# util
-	util/zn_util.c
+	util/_zn_util_.c
 	
 	# http
-	http/zn_http.c
+	http/_zn_http_.c
 
 	zetnet.c
 )
@@ -204,11 +204,11 @@ SET(
 	util/ZNPath.h
 	util/url.h
 	zetnet.h
-	TcpServer.h
-	HttpHandleClient.h
-	HttpRequest.h
-	HttpResponse.h
-	HttpServer.h
+	ZN_TcpServer.h
+	ZN_HttpHandleClient.h
+	ZN_HttpRequest.h
+	ZN_HttpResponse.h
+	ZN_HttpServer.h
 
 )
 
