@@ -3,7 +3,7 @@
 #include "ZN_TcpServer.c"
 #include "ZN_TcpUtils.c"
 
-bool ZetNet_Init(void){
+bool ZN_ZetNet_Init(void){
 #ifdef _WIN32
 	WSADATA wsaData;
 	// Initialize Winsock
@@ -17,7 +17,7 @@ bool ZetNet_Init(void){
 	return true;
 }
 
-void ZetNet_DeInit(void){
+void ZN_ZetNet_DeInit(void){
 #ifdef _WIN32
 	WSACleanup();
 #endif
