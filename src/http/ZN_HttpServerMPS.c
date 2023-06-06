@@ -63,7 +63,7 @@ bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_SocketClient * 
 #if __DEBUG__
 				fprintf(stderr,"\nZN_HttpServerMPS_ZN_TcpServerOnGestMessage:Erasing client (Stream)\n");
 #endif
-				ZN_TcpServer_CloseZN_SocketClient(tcp_server,client_socket);
+				ZN_TcpServer_CloseSocketClient(tcp_server,client_socket);
 
 			}
 
@@ -75,7 +75,7 @@ bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_SocketClient * 
 
 			ZN_LOG_ERRORF("gestMessage: Cannot send bytes to socket. Erasing client (Stream)");
 
-			ZN_TcpServer_CloseZN_SocketClient(tcp_server,client_socket);
+			ZN_TcpServer_CloseSocketClient(tcp_server,client_socket);
 		}
 
 

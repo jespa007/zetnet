@@ -259,7 +259,7 @@ ZN_SocketClient * ZN_TcpServer_GetFreeSlot(ZN_TcpServer * tcp_server){
 	return cs;
 }
 
-bool ZN_TcpServer_CloseZN_SocketClient(ZN_TcpServer * tcp_server,ZN_SocketClient *socket_client){
+bool ZN_TcpServer_CloseSocketClient(ZN_TcpServer * tcp_server,ZN_SocketClient *socket_client){
 
 	if(tcp_server->n_free_sockets < ZN_MAX_SOCKETS){
 
@@ -351,13 +351,13 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 
 						ZN_LOG_DEBUG("gestMessage:Erasing client %i (gestMessage)",cn);
 
-						ZN_TcpServer_CloseZN_SocketClient(tcp_server,&tcp_server->socket_client[cn]);
+						ZN_TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 					}
 				}else{ // remove that socket because client closed the connection ...
 
 					ZN_LOG_DEBUG("gestMessage:Erasing client %i (getMessage)",cn);
 
-					ZN_TcpServer_CloseZN_SocketClient(tcp_server,&tcp_server->socket_client[cn]);
+					ZN_TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
 				}
 
 			} // End of if client socket is active check
@@ -416,7 +416,7 @@ void ZN_TcpServer_Stop(ZN_TcpServer * tcp_server) {
 		// remove all clients boot (only for TCP protocol)
 		for(int i = 0; i < ZN_MAX_SOCKETS; i++){
 			if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
-				ZN_TcpServer_CloseZN_SocketClient(tcp_server,&tcp_server->socket_client[i]);
+				ZN_TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[i]);
 			}
 		}
 
