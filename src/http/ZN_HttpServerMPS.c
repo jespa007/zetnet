@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-#define HTTP_SERVER_MPS_BUFFER	2
+#define ZN_HTTP_SERVER_MPS_BUFFER	2
 
 static const char * HTTP_SERVER_MPS_HEADER=
 
@@ -17,8 +17,8 @@ typedef struct {
 	ZN_TcpServer *	tcp_server;
 	unsigned long time_delay_ms;
 	uint8_t		n_read,n_write;
-	size_t		data_len[HTTP_SERVER_MPS_BUFFER];
-	uint8_t		*data_ptr[HTTP_SERVER_MPS_BUFFER];
+	size_t		data_len[ZN_HTTP_SERVER_MPS_BUFFER];
+	uint8_t		*data_ptr[ZN_HTTP_SERVER_MPS_BUFFER];
 }ZN_HttpServerMPSData;
 
 

@@ -1,22 +1,18 @@
 #include "zetnet.h"
 
 
-#define  	MAX_BYTES_TO_SEND	512
+#define  	ZN_MAX_BYTES_TO_SEND	512
 
-#define  	MAX_TRIES_BAD_MESSAGE	3
-#define  	TIME_WAIT_ACK		3000	//  ms
+#define  	ZN_MAX_TRIES_BAD_MESSAGE	3
+#define  	ZN_TIME_WAIT_ACK		3000	//  ms
 
-#define 	DEFAULT_TIMEOUT_SECONDS 0
-#define 	SOCKET_CLIENT_NOT_AVAILABLE -1
+#define 	ZN_DEFAULT_TIMEOUT_SECONDS 0
+#define 	ZN_SOCKET_CLIENT_NOT_AVAILABLE -1
 
+
+const char * ZN_SERVER_FULL     = "FULL";
 
 void  * ZN_TcpServer_Update(void * varg);
-
-void   ZN_TcpServer_Connect(ZN_TcpServer *tcp_server);
-void   ZN_TcpServer_Disconnect(ZN_TcpServer *tcp_server);
-
-const char * SERVER_FULL     = "FULL";
-
 
 
 void ZN_TcpServer_SetTimeout(ZN_TcpServer * tcp_server,int seconds){
@@ -208,7 +204,7 @@ bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server,  int _portno)  //  Reads  co
 
 	tcp_server->portno = _portno;
 
-	ZN_TcpServer_SetTimeout(tcp_server,DEFAULT_TIMEOUT_SECONDS);
+	ZN_TcpServer_SetTimeout(tcp_server,ZN_DEFAULT_TIMEOUT_SECONDS);
 
 	if((tcp_server->sockfd=ZN_TcpUtils_NewSocketServer(_portno))!=INVALID_SOCKET){
 
@@ -244,9 +240,9 @@ ZN_SocketClient * ZN_TcpServer_GetFreeSlot(ZN_TcpServer * tcp_server){
 
 	if(tcp_server->n_free_sockets > 0){
 
-		if(tcp_server->free_socket[tcp_server->n_free_sockets-1] != SOCKET_CLIENT_NOT_AVAILABLE){
+		if(tcp_server->free_socket[tcp_server->n_free_sockets-1] != ZN_SOCKET_CLIENT_NOT_AVAILABLE){
 			cs = &tcp_server->socket_client[tcp_server->free_socket[tcp_server->n_free_sockets-1]];
-			tcp_server->free_socket[tcp_server->n_free_sockets-1]=SOCKET_CLIENT_NOT_AVAILABLE;
+			tcp_server->free_socket[tcp_server->n_free_sockets-1]=ZN_SOCKET_CLIENT_NOT_AVAILABLE;
 			tcp_server->n_free_sockets--;
 		}else{
 			fprintf(stderr,"\ninternal error!\n");
