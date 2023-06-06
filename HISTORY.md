@@ -10,7 +10,7 @@ TODO
 Date: 06/06/2023
 Version: 1.4.0
 
-- [x] Prepend "ZN_" to all structs and files
+- [x] #6 Prepend "ZN_" to all structs and files
 - [x] Implement routes option
 
 ----------------------------
