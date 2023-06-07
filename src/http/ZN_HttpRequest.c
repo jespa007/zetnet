@@ -28,14 +28,14 @@ ZN_HttpRequest * ZN_HttpRequest_New(char *  _type
 
 ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 	 ZN_HttpRequest *http_request=NULL;
-	char content_type[MAX_CONTENT_LEN]={0};
+	char content_type[ZN_MAX_CONTENT_LEN]={0};
 	const char *mime = "text/html"; //default plain text
-	char url[MAX_URL_LEN]={0};
+	char url[ZN_MAX_URL_LEN]={0};
 	char file_extension[10] = {0};
 	char * find_extension=NULL;
 	bool is_header = true;
-	char  host[MAX_HOST_LEN]={0};
-	char referer[MAX_REFERER_LEN]={0};
+	char  host[ZN_MAX_HOST_LEN]={0};
+	char referer[ZN_MAX_REFERER_LEN]={0};
 
 	ZN_List * params=NULL;
 	ZN_List * lst=NULL;
