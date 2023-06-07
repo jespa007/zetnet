@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	ZN_ZetNet_Init();
+	ZN_Init();
 
 	ZN_HttpServer *http_server = ZN_HttpServer_New(path,"httpservercpp_demo");
 	http_server->send_same_site_attribute=send_same_site_attribute;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
 	ZN_HttpServer_Delete(http_server);
 
-	ZN_ZetNet_DeInit();
+	ZN_DeInit();
 
 	return 0;
 }

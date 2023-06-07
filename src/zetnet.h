@@ -74,8 +74,8 @@ extern "C" {
 #include "util/_zn_util_.h"
 #include "http/_zn_http_.h"
 
-bool ZN_ZetNet_Init(void);
-void ZN_ZetNet_DeInit(void);
+bool ZN_Init(void);
+void ZN_DeInit(void);
 
 
 #ifdef  __cplusplus
