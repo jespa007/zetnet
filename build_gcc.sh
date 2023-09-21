@@ -38,7 +38,7 @@ if [ "$(expr substr $(uname -s) 1 7)" = "MSYS_NT" ]; then
 	INSTALLED_DIR_LIBRARY_FILE="bin"
 	TOOLCHAIN=$1
 	EXTENSION_STATIC_LIB=".lib"
-
+	PLATFORM=mingw64
 	EXTENSION_STATIC_LIB=".a"
 	HOST=x86_64-w64-mingw32
 	CROSS_PREFIX=x86_64-w64-mingw32-
@@ -92,7 +92,7 @@ if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib/libopenssl"$EXTENSION_STATIC_LIB ]
 then
 
 	
-	perl Configure mingw64 no-shared --prefix=$THIRD_PARTY_INSTALL_DIR --openssldir=$THIRD_PARTY_INSTALL_DIR
+	perl Configure $PLATFORM no-shared --prefix=$THIRD_PARTY_INSTALL_DIR --openssldir=$THIRD_PARTY_INSTALL_DIR
 
 	# in mingw it doesn't find podman and it throws an error
 	#if ! [ $? -eq 0 ] 
