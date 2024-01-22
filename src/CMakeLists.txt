@@ -53,7 +53,7 @@ ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
-# COMMON PARAMS
+# COMPILE PARAMS
 #
 
 
@@ -145,11 +145,11 @@ MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 
 
 #
-# COMMON PARAMS
+# COMPILE PARAMS
 #
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
-# COMPILE PARAMS
+# SOURCE PARAMS
 #
 
 # Library
@@ -158,22 +158,25 @@ MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	# util
-	util/_zn_util_.c
+	util/@zn_util.c
 	
 	# http
-	http/_zn_http_.c
+	http/@zn_http.c
 
 	zetnet.c
 )
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 #
-# LIBRARY/EXECUTABLE PARAMS
+# LINKING PARAMS
 #
 	
+#set library generation as static by default
 set( LIBRARY_TYPE_CREATION "STATIC" )
 if(BUILD_SHARED_LIBS)
 	set( LIBRARY_TYPE_CREATION "SHARED" )
+else()
+	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
 endif()
 
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
@@ -199,19 +202,33 @@ endif()
 
 SET(
 	HS
-	util/ZNIo.h
-	util/ZNString.h
-	util/ZNPath.h
-	util/url.h
-	zetnet.h
+	
+	util/@zn_util.h
+	util/ZN_Dir.h
+	util/ZN_File.h
+	util/ZN_List.h
+	util/ZN_Log.h
+	util/ZN_Memory.h
+	util/ZN_Path.h
+	util/ZN_String.h
+	util/ZN_Url.h
+	
+	http/@zn_http.h
+	http/ZN_HttpHandleClient.h
+	http/ZN_HttpParamValue.h
+	http/ZN_HttpRequest.h
+	http/ZN_HttpResponse.h
+	http/ZN_HttpRoute.h
+	http/ZN_HttpRouteManager.h
+	http/ZN_HttpServer.h
+	http/ZN_HttpServerMPS.h
+	
 	ZN_TcpServer.h
-	ZN_HttpHandleClient.h
-	ZN_HttpRequest.h
-	ZN_HttpResponse.h
-	ZN_HttpServer.h
+	ZN_TcpUtils.h
+	
+	zetnet.h
 
 )
-
 
 INSTALL_HEADERS_WITH_DIRECTORY(HS)
 

@@ -71,8 +71,8 @@ extern "C" {
 #include "ZN_TcpUtils.h"
 #include "ZN_TcpServer.h"
 
-#include "util/_zn_util_.h"
-#include "http/_zn_http_.h"
+#include "util/@zn_util.h"
+#include "http/@zn_http.h"
 
 bool ZN_Init(void);
 void ZN_DeInit(void);
