@@ -22,6 +22,11 @@ void ZN_HttpHandleClient_DoHandle(ZN_HttpHandleClient *_http_handle_client)
 	LOG_DEBUG("received:%s\nreceived_len:%i\n",_http_handle_client->rcv_buffer_data,_http_handle_client->rcv_buffer_data_len);
 #endif
 
+	if(strcmp((const char *)_http_handle_client->rcv_buffer_data,"GET /test_window_webgl.js")==0){
+		int i=0;
+		i++;
+	}
+
 	http_request = ZN_HttpRequest_GetRequest((const char *)_http_handle_client->rcv_buffer_data);
 
 	char filename_with_path[MAX_PATH]={0};

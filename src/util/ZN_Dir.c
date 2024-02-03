@@ -65,9 +65,9 @@ ZN_List * zn_dir_list_files(const char * folder, const char * filter, bool recur
 	ZN_List * list_attribs = ZN_String_Split(filter==NULL?"*":filter, '|');
 
 	for(unsigned i = 0; i < list_attribs->count; i++){
-		ZN_String_EraseChar((char *)list_attribs->items[i],' ');
+		ZN_String_DeleteChar((char *)list_attribs->items[i],' ');
 		if(strcmp((char *)list_attribs->items[i],"*")!=0){
-			ZN_String_EraseChar((char *)list_attribs->items[i],'*');
+			ZN_String_DeleteChar((char *)list_attribs->items[i],'*');
 		}
 	}
 

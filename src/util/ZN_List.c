@@ -24,7 +24,7 @@ bool	ZN_List_AddSlot(ZN_List *v){
 }
 
 ZN_List * ZN_List_New(){
-	ZN_List *v=malloc(sizeof(ZN_List));
+	ZN_List *v=ZN_NEW(ZN_List);
 	return v;
 }
 

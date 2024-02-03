@@ -88,7 +88,7 @@ fi
 
 cd $OPENSSL_TAG
 
-if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib/libopenssl"$EXTENSION_STATIC_LIB ] 
+if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib64/libssl"$EXTENSION_STATIC_LIB ] 
 then
 
 	

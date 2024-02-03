@@ -63,7 +63,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 		return NULL;
 	}
 
-	ZN_String_Replace(request,"\r", ""); // avoid windows \r
+	ZN_String_DeleteChar(request,'\r'); // avoid windows \r
 
 	is_binary= false;
 
@@ -168,7 +168,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 					if(tl->count > 0){
 						strcpy(content_type,tl->items[0]);
 					}
-					ZN_String_Replace(content_type," ","");
+					ZN_String_DeleteChar(content_type,' ');
 					ZN_List_DeleteAndFreeAllItems(tl);
 				}
 			}

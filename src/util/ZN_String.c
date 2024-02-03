@@ -23,7 +23,7 @@ ZN_List * ZN_String_Split(const char * s, char delim) {
 	return elems;
 }
 
-void  ZN_String_ReplaceByChar(char * str, char old_ch, char new_ch){
+void  ZN_String_ReplaceChar(char * str, char old_ch, char new_ch){
 	while(*str!=0){
 		if(*str == old_ch){
 			*str = new_ch;
@@ -80,6 +80,7 @@ char *ZN_String_dup(const char *in){
 
 }
 
+/*
 void  ZN_String_Replace(char * str, const char * match_str, const char * replace_str){
 	char *tmp=NULL;
 	char *nextStr=NULL;
@@ -119,9 +120,9 @@ void  ZN_String_Replace(char * str, const char * match_str, const char * replace
 
 	ZN_FREE(tmp);
 
-}
+}*/
 
-void  ZN_String_EraseChar(char * str, char ch_to_remove){
+void  ZN_String_DeleteChar(char * str, char ch_to_remove){
 
 	while(*str!=0){
 		if(*str == ch_to_remove){ // move 1 position left...

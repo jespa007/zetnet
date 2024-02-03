@@ -6,6 +6,16 @@ TODO
 - [] Implement openssl (https://github.com/ppelleti/https-example)
 - [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
 
+
+
+----------------------------
+Date: 03/02/2024
+Version: 1.4.1
+
+- [x] Fix bug seg fault not initializing ZN_List fields
+- [x] Removed 'ZN_String_Replace'
+- [x] Change 'HISTORY.md' to 'CHANGELOG.md'
+
 ----------------------------
 Date: 06/06/2023
 Version: 1.4.0
