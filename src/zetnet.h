@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <stdarg.h>
 #endif
 
 // include socket platform
@@ -52,12 +53,13 @@
 #include "memmgr.h"
 #endif
 
+
 //----------------------------
 // START ZETNET PROTOTYPES
 
-#define ZETNET_MAJOR_VERSION 1
-#define ZETNET_MINOR_VERSION 2
-#define ZETNET_PATCH_VERSION 0
+#define ZETNET_VERSION_MAJOR	1
+#define ZETNET_VERSION_MINOR	4
+#define ZETNET_VERSION_PATCH	1
 
 
 #ifdef  __cplusplus
@@ -66,27 +68,14 @@ extern "C" {
 
 #define ZN_UNUSUED_PARAM(x) ((void)x)
 
-#include "util/zn_mem.h"
-#include "util/zn_list.h"
-#include "util/zn_str.h"
-#include "util/zn_path.h"
-#include "util/zn_file.h"
-#include "util/zn_dir.h"
-#include "util/zn_url.h"
+#include "ZN_TcpUtils.h"
+#include "ZN_TcpServer.h"
 
+#include "util/@zn_util.h"
+#include "http/@zn_http.h"
 
-#include "TcpUtils.h"
-#include "TcpServer.h"
-#include "http/HttpParamValue.h"
-#include "http/HttpServerMPS.h"
-#include "http/HttpRequest.h"
-#include "http/HttpResponse.h"
-#include "http/HttpHandleClient.h"
-#include "http/HttpServer.h"
-
-
-bool ZetNet_Init(void);
-void ZetNet_DeInit(void);
+bool ZN_Init(void);
+void ZN_DeInit(void);
 
 
 #ifdef  __cplusplus

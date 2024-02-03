@@ -1,6 +1,38 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
+
+IF( NOT CMAKE_BUILD_TYPE )
+   SET( CMAKE_BUILD_TYPE Release )
+ENDIF()
+
+set(POST_NAME "")
+set(IS_DEBUG FALSE)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	set(IS_DEBUG TRUE)
+	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__DEBUG__ ")
+	set( POST_NAME "_d")
+endif()
+
+MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
+
+
+file(READ "zetnet.h" zetnet_h)
+
+string(REGEX MATCH "ZETNET_VERSION_MAJOR([\t-\ ][0-9])*" _ ${zetnet_h})
+string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_MAJOR)
+
+string(REGEX MATCH "ZETNET_VERSION_MINOR([\t-\ ][0-9])*" _ ${zetnet_h})
+string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_MINOR)
+
+string(REGEX MATCH "ZETNET_VERSION_PATCH([\t-\ ][0-9])*" _ ${zetnet_h})
+string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_PATCH)
+
+
+
+MESSAGE("-- Zetnet ${ZETNET_VERSION_MAJOR}.${ZETNET_VERSION_MINOR}.${ZETNET_VERSION_PATCH}" )
+
+set(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZETNET_VERSION_PATCH}")
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -17,26 +49,11 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
 
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
-macro(configure_files srcDir destDir)
-    message(STATUS "Configuring files to ${destDir}")
-    make_directory(${destDir})
 
-    file(GLOB templateFiles RELATIVE ${srcDir} ${srcDir}/*)
-    foreach(templateFile ${templateFiles})
-        set(srcTemplatePath ${srcDir}/${templateFile})
-        if(NOT IS_DIRECTORY ${srcTemplatePath})
-            message(STATUS "Copying file ${srcTemplatePath} to ${destDir}/${templateFile}")
-            configure_file(
-                    ${srcTemplatePath}
-                    ${destDir}/${templateFile}
-                    COPYONLY)
-        endif(NOT IS_DIRECTORY ${srcTemplatePath})
-    endforeach(templateFile)
-endmacro(configure_files)
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
-# COMMON PARAMS
+# COMPILE PARAMS
 #
 
 
@@ -46,7 +63,6 @@ include_directories (
 
 message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
 
-set( POST_NAME "")
 set(ZETNET_LIB_SRCS "")
 
 
@@ -66,45 +82,55 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")	
 
 else()  # g++ / gcc
-	SET( COMMON_C_PARAMS " -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes ")
+	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
 	  
 	if (MINGW)
-		MESSAGE ("-- Plataform: MINGW" )
-    elseif(GNU)
-    	MESSAGE ("-- Plataform: GNU" )
+		MESSAGE("-- Plataform: MINGW" )
+		message("-- Mingw path: $ENV{MINGWDIR} ")
+		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -DEZXML_NOMMAP " )
+		set(CMAKE_LEGACY_MINGW_WIN32 0)
+	elseif(UNIX)
+    	MESSAGE ("-- Plataform: UNIX" )
     else()
     	MESSAGE ("-- Plataform: Unknown" )
 	endif()
 	
-	IF ( "${TARGET}" STREQUAL "debug")
-		set( POST_NAME "_d")
-		SET( COMMON_C_PARAMS " ${COMMON_C_PARAMS} -O0 -g -D__DEBUG__ ")
-		IF( EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr )
-			message("-- Memmanager: ON")
-			SET( COMMON_C_PARAMS " ${COMMON_C_PARAMS} -D__MEMMANAGER__")
+	IF ( IS_DEBUG)
+		set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O0 -g ")
+		
+		IF (EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr)
+		
+			message("-- Memmanager: Yes")
+			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
 			include_directories (
 				${PROJECT_SOURCE_DIR}/../../memmgr
 			)
-		
+			
 	   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
-	   	else()
-	   		message("-- Memmanager: OFF (../../memmgr not exist)")
-	   	endif()
 		
+		ELSE()
+	
+			if(UNIX)
+				if( NOT "${DIST}" STREQUAL "Alpine")
+					set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -fsanitize=address ")
+					message("-- Memmanager: -fsanitize=address")
+				else()
+					message("-- Memmanager: -fsanitize NOT supported")
+				endif()
+			 else()
+			 	message("-- Memmanager: OFF (../../memmgr not exist)")
+			 endif()
+		ENDIF()
 	ELSE()
-		set(TARGET "release")
-		SET( COMMON_C_PARAMS " ${COMMON_C_PARAMS} -O2 ")
-		message("-- Memmanager: OFF")
+		set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -O2 ")
 	ENDIF()
 	
 	#Redefine output dir ...
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET})
-	LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-	
-	SET(CMAKE_C_FLAGS   " ${COMMON_C_PARAMS}  " )
-	
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../bin/gcc/${CMAKE_BUILD_TYPE})
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../bin/gcc/${CMAKE_BUILD_TYPE})
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../bin/gcc/${CMAKE_BUILD_TYPE})
+	LINK_DIRECTORIES(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})	
+
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -115,15 +141,15 @@ elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     MESSAGE ("-- Architecture: 32bit")
 endif()
 
-MESSAGE ("-- Target: " ${TARGET})
+MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 
 
 #
-# COMMON PARAMS
+# COMPILE PARAMS
 #
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
-# COMPILE PARAMS
+# SOURCE PARAMS
 #
 
 # Library
@@ -131,94 +157,97 @@ MESSAGE ("-- Target: " ${TARGET})
 
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	util/zn_mem.c
-	util/zn_url.c
-	util/zn_str.c
-	util/zn_list.c
-	util/zn_file.c
-	util/zn_dir.c
-	util/zn_path.c
-	TcpServer.c
-	http/HttpParamValue.c
-	http/HttpHandleClient.c
-	http/HttpRequest.c
-	http/HttpResponse.c
-	http/HttpServer.c
-	http/HttpServerMPS.c
-	TcpUtils.c
+	# util
+	util/@zn_util.c
+	
+	# http
+	http/@zn_http.c
+
 	zetnet.c
 )
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 #
-# LIBRARY/EXECUTABLE PARAMS
+# LINKING PARAMS
 #
 	
+#set library generation as static by default
 set( LIBRARY_TYPE_CREATION "STATIC" )
 if(BUILD_SHARED_LIBS)
 	set( LIBRARY_TYPE_CREATION "SHARED" )
+else()
+	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
 endif()
 
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
 
 #HTTPSERVER TEST executable
-set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/test_httpserver.c)
+set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/httpserver.c)
 
 
 
-# test_httpserver library
-add_library( zetnet${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
-target_link_libraries(zetnet${POST_NAME} )
+# httpserver library
+add_library( ${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
+target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} )
 
 if(MSVC)
 	#only for msvc...
-	set_target_properties(zetnet${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
+	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
 endif()
 	
 if(MINGW OR MSVC)
-	target_link_libraries(zetnet${POST_NAME} Ws2_32 )	
+	target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} Ws2_32 )	
 endif()
 
 
 SET(
 	HS
-	util/ZNIo.h
-	util/ZNString.h
-	util/ZNPath.h
-	util/url.h
+	
+	util/@zn_util.h
+	util/ZN_Dir.h
+	util/ZN_File.h
+	util/ZN_List.h
+	util/ZN_Log.h
+	util/ZN_Memory.h
+	util/ZN_Path.h
+	util/ZN_String.h
+	util/ZN_Url.h
+	
+	http/@zn_http.h
+	http/ZN_HttpHandleClient.h
+	http/ZN_HttpParamValue.h
+	http/ZN_HttpRequest.h
+	http/ZN_HttpResponse.h
+	http/ZN_HttpRoute.h
+	http/ZN_HttpRouteManager.h
+	http/ZN_HttpServer.h
+	http/ZN_HttpServerMPS.h
+	
+	ZN_TcpServer.h
+	ZN_TcpUtils.h
+	
 	zetnet.h
-	TcpServer.h
-	HttpHandleClient.h
-	HttpRequest.h
-	HttpResponse.h
-	HttpServer.h
 
 )
-
 
 INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(test_httpserver${POST_NAME}
+add_executable(httpserver${POST_NAME}
 	${ZETNET_HTTPSERVER_SRCS}
 )
 
 
-target_link_libraries(test_httpserver${POST_NAME}  zetnet${POST_NAME} -pthread )	
+target_link_libraries(httpserver${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
 
 
 
-INSTALL(TARGETS zetnet${POST_NAME}
+INSTALL(TARGETS ${ZETNET_LIB_NAME}${POST_NAME}
 		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
 		RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
     	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
     	PUBLIC_HEADER DESTINATION	${CMAKE_INSTALL_PREFIX}/includes
 )
 
-#install other resources
-configure_files(${PROJECT_SOURCE_DIR}/test/ 				  			${CMAKE_BINARY_DIR}/${TARGET}/)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/css 	${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/css)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/font 	${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/font)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/bootstrap/js 		${CMAKE_BINARY_DIR}/${TARGET}/assets/bootstrap/js)
-configure_files(${PROJECT_SOURCE_DIR}/test/www/assets/jquery/js 		${CMAKE_BINARY_DIR}/${TARGET}/assets/jquery/js)
+
