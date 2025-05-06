@@ -103,7 +103,10 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 			}
 			else if(strcmp(file_extension,".css")==0){
 				mime = "text/css";
-			}else if(strcmp(file_extension,".js")==0){
+			}else if(
+					strcmp(file_extension,".js")==0
+				|| 	strcmp(file_extension,".cjs")==0
+			){
 				mime = "text/javascript";
 			}else if(strcmp(file_extension,  ".json")==0){
 				mime = "application/json";
