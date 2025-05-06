@@ -7,6 +7,11 @@ TODO
 - [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
 
 
+----------------------------
+Date: 03/02/2024
+Version: 1.4.2
+
+- [x] ZN_HttpRequest : Added *.cjs mimetype
 
 ----------------------------
 Date: 03/02/2024
