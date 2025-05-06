@@ -11,7 +11,7 @@ TODO
 Date: 03/02/2024
 Version: 1.4.2
 
-- [x] ZN_HttpRequest : Added *.cjs mimetype
+- [x] ZN_HttpRequest : Added *.cjs,*.mjs as text/javascript mimetype
 
 ----------------------------
 Date: 03/02/2024
