@@ -59,7 +59,7 @@
 
 #define ZETNET_VERSION_MAJOR	1
 #define ZETNET_VERSION_MINOR	4
-#define ZETNET_VERSION_PATCH	2
+#define ZETNET_VERSION_PATCH	3
 
 
 #ifdef  __cplusplus

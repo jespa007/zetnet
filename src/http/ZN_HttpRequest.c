@@ -100,8 +100,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 			if(strcmp(file_extension,".png")==0){
 				mime = "image/png";
 				is_binary=true;
-			}
-			else if(strcmp(file_extension,".css")==0){
+			}else if(strcmp(file_extension,".css")==0){
 				mime = "text/css";
 			}else if(
 					strcmp(file_extension,".js")==0
@@ -119,6 +118,8 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 			}else if(strcmp(file_extension, ".wasm")==0){
 				mime = "application/wasm";
 				is_binary=true;
+			}else if(strcmp(file_extension, ".svg")==0){
+				mime = "image/svg+xml";
 			}else if(
 					 (strcmp(file_extension,".eot")==0)
 				  || (strcmp(file_extension,".svg")==0)

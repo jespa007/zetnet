@@ -6,6 +6,11 @@ TODO
 - [] Implement openssl (https://github.com/ppelleti/https-example)
 - [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
 
+----------------------------
+Date: 03/02/2024
+Version: 1.4.3
+
+- [x] ZN_HttpRequest : Fixed mimetype *.svg as image/svg+xml 
 
 ----------------------------
 Date: 03/02/2024
