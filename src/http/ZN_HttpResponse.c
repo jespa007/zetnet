@@ -33,10 +33,10 @@ BufferData  ZN_HttpResponse_GenerateError(int error_id,ZN_HttpServer * http_serv
 		"<body>"
 			"<center>"
 				"<div>"
-					"<div style=\"float:left;width:50%%;text-align:right;margin-top:30\">"
+					"<div style=\"float:left;width:50%;text-align:right;margin-top:30\">"
 						"<img  src=\"%s\"/>"
 					"</div>"
-					"<div style=\"float:right;width:48%%;text-align:left;font-family:Arial\">"
+					"<div style=\"float:right;width:48%;text-align:left;font-family:Arial\">"
 						"<h1>%s</h1>"
 						"<h3>%s</h3>"
 					"</div>"
@@ -55,8 +55,13 @@ BufferData  ZN_HttpResponse_GenerateError(int error_id,ZN_HttpServer * http_serv
 		error.description="not implemented";
 	}
 
-	data.size=strlen(template)+(http_server->logo_base64!=NULL?strlen(http_server->logo_base64):0)+strlen(error.description)+strlen(error.title);
-	data.buffer = (uint8_t *)malloc(data.size+1); // +1 for end str
+	data.size=
+			strlen(template)
+			+(http_server->logo_base64!=NULL?strlen(http_server->logo_base64):0)
+			+strlen(error.description)+strlen(error.title);
+
+	data.buffer = (uint8_t *)ZN_MALLOC(data.size+1); // +1 for end str
+
 
 	sprintf((char *)data.buffer,
 			template
@@ -100,7 +105,7 @@ ZN_HttpResponse * ZN_HttpResponse_MakeNullRequest(ZN_HttpServer * _http_server)
 
 ZN_HttpResponse * ZN_HttpResponse_MakePageNotFound(ZN_HttpServer * _http_server)
 {
-	return ZN_HttpResponse_New("404 Bad Request", "html/text", false, ZN_HttpResponse_GenerateError(HTML_ERROR_404, _http_server));
+	return ZN_HttpResponse_New("404 Page not found", "html/text", false, ZN_HttpResponse_GenerateError(HTML_ERROR_404, _http_server));
 }
 
 ZN_HttpResponse *ZN_HttpResponse_FromFile(ZN_HttpRequest * _request,const char *_filename_with_path){
@@ -190,9 +195,10 @@ void ZN_HttpResponse_Send(ZN_HttpResponse *http_response,SOCKET dst_socket, ZN_H
 	strcat(header_str,http_server->name);
 	strcat(header_str,"\n");
 
+	data_len=http_response->data.size;
+
 	if (strcmp(http_response->status,"200 OK")==0) // send response content
 	{
-		data_len=http_response->data.size;
 
 		strcat(header_str,"Content-Type: ");
 		strcat(header_str, http_response->mime);
@@ -221,7 +227,7 @@ void ZN_HttpResponse_Send(ZN_HttpResponse *http_response,SOCKET dst_socket, ZN_H
 		strcat(header_str, http_response->mime);
 		strcat(header_str,"\n");
 		strcat(header_str,"Content-Length: ");
-		strcat(header_str,ZN_String_FromInt(http_response->data.size));
+		strcat(header_str,ZN_String_FromInt(data_len));
 		strcat(header_str,"\n\n");
 	}
 

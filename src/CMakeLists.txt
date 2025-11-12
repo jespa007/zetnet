@@ -172,11 +172,13 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 #
 	
 #set library generation as static by default
-set( LIBRARY_TYPE_CREATION "STATIC" )
 if(BUILD_SHARED_LIBS)
-	set( LIBRARY_TYPE_CREATION "SHARED" )
+	add_library( ${ZETNET_LIB_NAME}${POST_NAME} SHARED ${ZETNET_LIB_SRCS} )
+	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE BUILD_SHARED_LIBS)
 else()
 	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
+	add_library( ${ZETNET_LIB_NAME}${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
+	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PUBLIC BUILD_STATIC_LIBS)
 endif()
 
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
@@ -187,7 +189,6 @@ set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/httpserver.c)
 
 
 # httpserver library
-add_library( ${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_TYPE_CREATION} ${ZETNET_LIB_SRCS} )
 target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} )
 
 if(MSVC)

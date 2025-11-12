@@ -8,6 +8,12 @@ TODO
 
 ----------------------------
 Date: 03/02/2024
+Version: 1.4.4
+
+- [x] Solved bug incorrect body size when sending http errors
+
+----------------------------
+Date: 03/02/2024
 Version: 1.4.3
 
 - [x] ZN_HttpRequest : Fixed mimetype *.svg as image/svg+xml 

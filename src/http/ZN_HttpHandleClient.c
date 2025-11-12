@@ -94,6 +94,10 @@ void ZN_HttpHandleClient_DoHandle(ZN_HttpHandleClient *_http_handle_client)
 	}
 
 	if(http_response == NULL){
+#ifdef __DEBUG__
+		printf("sending page not found\n");
+#endif
+
 		http_response=ZN_HttpResponse_MakePageNotFound(_http_handle_client->http_server);
 	}
 
