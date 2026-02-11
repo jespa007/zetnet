@@ -157,8 +157,8 @@ MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
-	# util
-	util/@zn_util.c
+	# base
+	base/@zn_base.c
 	
 	# http
 	http/@zn_http.c
@@ -183,10 +183,6 @@ endif()
 
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
 
-#HTTPSERVER TEST executable
-set(ZETNET_HTTPSERVER_SRCS ${PROJECT_SOURCE_DIR}/../test/httpserver.c)
-
-
 
 # httpserver library
 target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} )
@@ -204,15 +200,15 @@ endif()
 SET(
 	HS
 	
-	util/@zn_util.h
-	util/ZN_Dir.h
-	util/ZN_File.h
-	util/ZN_List.h
-	util/ZN_Log.h
-	util/ZN_Memory.h
-	util/ZN_Path.h
-	util/ZN_String.h
-	util/ZN_Url.h
+	base/@zn_base.h
+	base/ZN_Dir.h
+	base/ZN_File.h
+	base/ZN_List.h
+	base/ZN_Log.h
+	base/ZN_Memory.h
+	base/ZN_Path.h
+	base/ZN_String.h
+	base/ZN_Url.h
 	
 	http/@zn_http.h
 	http/ZN_HttpHandleClient.h
@@ -235,13 +231,37 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES
-add_executable(httpserver${POST_NAME}
-	${ZETNET_HTTPSERVER_SRCS}
+
+# zn_url 
+add_executable(zn_url${POST_NAME}
+	util/zn_url.c
 )
 
+target_link_libraries(zn_url${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
 
-target_link_libraries(httpserver${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
+# TESTS
 
+# test httpserver
+add_executable(test_httpserver${POST_NAME}
+	${PROJECT_SOURCE_DIR}/../test/test_httpserver.c
+)
+
+target_link_libraries(test_httpserver${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
+
+# test socket client
+add_executable(test_socket_client${POST_NAME}
+	${PROJECT_SOURCE_DIR}/../test/test_socket_client.c
+)
+
+target_link_libraries(test_socket_client${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )
+
+# test socket server
+add_executable(test_socket_server${POST_NAME}
+	${PROJECT_SOURCE_DIR}/../test/test_socket_server.c
+)
+
+target_link_libraries(test_socket_server${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
+	
 
 
 INSTALL(TARGETS ${ZETNET_LIB_NAME}${POST_NAME}

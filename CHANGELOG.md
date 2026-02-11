@@ -7,6 +7,14 @@ TODO
 - [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
 
 ----------------------------
+Date: XX/XX/XXXX
+Version: 1.5.0
+
+- [] Implement test socket client / test socket server
+- [x] Move all file from directory util -> base
+- [] Add ssl support ?
+
+----------------------------
 Date: 03/02/2024
 Version: 1.4.4
 
