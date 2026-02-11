@@ -14,6 +14,7 @@ Version: 1.5.0
 - [] Implement tool zn_url
 - [x] Move all file from directory util -> base
 - [] Add ssl support ?
+- [x] ZN_TcpUtils_ReceiveBytes : Fixed receive number of bytes by parameter instead of fixed ZN_TCP_MESSAGE_LENGTH
 
 ----------------------------
 Date: 03/02/2024
