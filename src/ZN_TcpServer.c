@@ -337,7 +337,7 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 			{
 				int ok=1;
 				if(!tcp_server->is_streaming_server){ // read from client...
-					ok=ZN_TcpUtils_ReceiveBytes(tcp_server->socket_client[cn].socket,  (uint8_t  *)tcp_server->buffer);
+					ok = ZN_TcpUtils_ReceiveBytes(tcp_server->socket_client[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
 				}
 
 				if(ok) // serve to client ...

@@ -1,12 +1,12 @@
 #include "zetnet.h"
 
-
-#define HTTP_SERVER_DEFAULT_PORT 8081
+#define BUFFER_SIZE 1024
+#define DEFAULT_PORT 80
 
 int main(int argc, char *argv[])
 {
-	char path[MAX_PATH]={"."};
-	int port=HTTP_SERVER_DEFAULT_PORT;
+	char url[MAX_PATH]={""};
+	int port=DEFAULT_PORT;
 	bool send_same_site_attribute=false;
 	bool error=false;
 
@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
 		case 2:
 			if(strcmp(l->items[0],"--port")==0){
 				error=!ZN_String_ToInt(&port,l->items[1],10);
-			}else if(strcmp(l->items[0],"--path")==0){
-				strcpy(path,(const char *)l->items[1]);
+			}else if(strcmp(l->items[0],"--url")==0){
+				strcpy(url,(const char *)l->items[1]);
 			}else{
 				fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
 				error=true;
@@ -42,8 +42,17 @@ int main(int argc, char *argv[])
 
 	ZN_Init();
 
+	// perform http request...
+	SOCKET 	socket = ZN_TcpUtils_NewSocketClient(url,port);
+	char buffer[BUFFER_SIZE];
+
+	ZN_TcpUtils_SendBytes(socket, (uint8_t*)"GET /\r\n", strlen("GET /\r\n")); // write(fd, char[]*, len);
 
 
+	while(ZN_TcpUtils_ReceiveBytes(socket, (uint8_t *)buffer, BUFFER_SIZE - 1) != 0){
+			fprintf(stderr, "%s", buffer);
+			memset(buffer,0, BUFFER_SIZE);
+		}
 	ZN_DeInit();
 
 	return 0;

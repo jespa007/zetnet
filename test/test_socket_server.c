@@ -3,8 +3,8 @@
 
 #define TCP_SERVER_DEFAULT_PORT 8100
 
-bool GestMessagebool(ZN_TcpServer * tcp_server,ZN_SocketClient * client_socket, uint8_t *buffer, size_t len, void *user_data){
-
+bool GestMessage(ZN_TcpServer * tcp_server,ZN_SocketClient * client_socket, uint8_t *buffer, size_t len, void *user_data){
+	return false;
 }
 
 int main(int argc, char *argv[])

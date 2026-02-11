@@ -131,7 +131,7 @@ SOCKET ZN_TcpUtils_NewSocketServer(int _portno){
 }
 
 
-SOCKET ZN_TcpUtils_NewSocketClient(int _portno){
+SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 	SOCKET socket_client=INVALID_SOCKET;
 	struct addrinfo	serv_addr;
 	int error=0;
@@ -147,9 +147,9 @@ SOCKET ZN_TcpUtils_NewSocketClient(int _portno){
 
 
 	// Resolve the server address and port
-	int i_result = getaddrinfo("127.0.0.1", (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
+	int i_result = getaddrinfo(_host, (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
-		fprintf(stderr,"\ngetaddrinfo failed with error: %d\n", i_result);
+		fprintf(stderr,"\nZN_TcpUtils_NewSocketClient : getaddrinfo for '%s:%i' failed with error: %d\n",_host,_portno,i_result);
 		return INVALID_SOCKET;
 	}
 
@@ -221,49 +221,50 @@ SOCKET ZN_TcpUtils_NewSocketClient(int _portno){
 //  receive  a  buffer  from  a  TCP  socket  with  error  checking
 //  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *buf)
+int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 {
 //#define MAXLEN 1024
 	int result;
 	//char msg[MAXLEN];
 
-	result = recv(sock,(char *)buf,ZN_TCP_MESSAGE_LENGTH,0);
+	result = recv(sock,(char *)_buf,_buf_len,0);
 
 	if(result <= 0) {
 		// TCP Connection is broken. (because of error or closure)
 		return 0;
 	}
-	else {
-		if(result < (ZN_TCP_MESSAGE_LENGTH-1)){
-			buf[result] = 0;
+	/*else {
+		if(result < (int)_buf_len){
+			_buf[result] = 0;
 
 		}
 		else {
-			fprintf(stderr,"\nZN_TcpUtils_ReceiveBytes: Max message reached %i<%i!\n",result,ZN_TCP_MESSAGE_LENGTH);
+			fprintf(stderr,"\nZN_TcpUtils_ReceiveBytes: Max message reached %i<%i!\n",result,(int)_buf_len);
 			return 0;
 		}
-	}
+	}*/
 
 	return  result;
 }
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  ZN_TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *buf,  uint32_t  len) {
+int  ZN_TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *_buf,  size_t  _buf_len) {
 	uint32_t  result=0;
 
-	if(!len) {
+	if(!_buf_len) {
 		fprintf(stderr,"\nZN_TcpUtils_SendBytes: 0 bytes to send or buffer is NULL!\n");
 		return 0;
 	}
 
 	//  send  the  buffer,  with  the  NULL  as  well
-	result=send(sock,(const char *)buf,len,0);
+	result=send(sock,(const char *)_buf,_buf_len,0);
 
-	if(result<len) {
-		fprintf(stderr,"\nZN_TcpUtils_SendBytes (%i<%i)\n",result,len);
+	if(result < _buf_len) {
+		fprintf(stderr,"\nZN_TcpUtils_SendBytes (%i<%i)\n",result,(int)_buf_len);
 		return(0);
 	}
+
 	return(result);
 }
 
