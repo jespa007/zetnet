@@ -11,6 +11,7 @@ Date: XX/XX/XXXX
 Version: 1.5.0
 
 - [] Implement test socket client / test socket server
+- [] Implement tool zn_url
 - [x] Move all file from directory util -> base
 - [] Add ssl support ?
 
