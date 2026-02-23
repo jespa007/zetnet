@@ -249,8 +249,8 @@ int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  ZN_TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *_buf,  size_t  _buf_len) {
-	uint32_t  result=0;
+size_t  ZN_TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *_buf,  size_t  _buf_len) {
+	int  result=0;
 
 	if(!_buf_len) {
 		fprintf(stderr,"\nZN_TcpUtils_SendBytes: 0 bytes to send or buffer is NULL!\n");
@@ -260,7 +260,7 @@ int  ZN_TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *_buf,  size_t  _buf_len) {
 	//  send  the  buffer,  with  the  NULL  as  well
 	result=send(sock,(const char *)_buf,_buf_len,0);
 
-	if(result < _buf_len) {
+	if(result < (int)_buf_len) {
 		fprintf(stderr,"\nZN_TcpUtils_SendBytes (%i<%i)\n",result,(int)_buf_len);
 		return(0);
 	}
