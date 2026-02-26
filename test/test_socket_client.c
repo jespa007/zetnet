@@ -4,6 +4,9 @@
 // https://learn.microsoft.com/es-es/windows/win32/api/winsock/nf-winsock-recv
 
 #define DEFAULT_PORT 27015
+#define BUFFER_LEN   512
+#define CLEAR_BUFFER(buffer) memset(buffer,0,sizeof(buffer))
+
 
 int main(int argc, char *argv[]){
 	int port = DEFAULT_PORT;
@@ -48,19 +51,25 @@ int main(int argc, char *argv[]){
 
 	SOCKET socket = INVALID_SOCKET;
 
-	const char *buf = "aaa";
-	size_t send_bytes = 0;
-	size_t buf_len = strlen(buf);
+	uint8_t buffer[BUFFER_LEN];
 
 	do{
+
 		switch(getchar()){
 		case 's':
+			// open socket to transmit as many bytes as the client want to send
 			if((socket = ZN_TcpUtils_NewSocketClient(host,port)) != INVALID_SOCKET){
-				if((send_bytes = ZN_TcpUtils_SendBytes(socket,buf,strlen(buf)))< buf_len){
-					fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
+				while(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0)	{
+
+						if((send_bytes = ZN_TcpUtils_SendBytes(socket,buf,strlen(buf)))< buf_len){
+							fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
+						}
+
+						ZN_TcpUtils_CloseSocket(socket);
 				}
 
-				if((receive_bytes = ZN_TcpUtils_ReceiveBytes(socket,buf))< buf_len){
+				// try to receive the bytes send (echo)
+				if((receive_bytes = ZN_TcpUtils_ReceiveBytes(socket,buf)) < buf_len){
 					fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
 				}
 
@@ -68,7 +77,6 @@ int main(int argc, char *argv[]){
 			}else{
 				fprintf(stderr,"Invalid socket\n");
 			}
-			break;
 		case 'q':
 			exit = true;
 			break;

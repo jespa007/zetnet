@@ -77,7 +77,7 @@ SOCKET ZN_TcpUtils_NewSocketServer(int _portno){
 
 	freeaddrinfo(result);
 
-	i_result = listen(socket_server, ZN_MAX_SOCKETS);
+	i_result = listen(socket_server, ZN_TCP_SERVER_MAX_CLIENTS);
 	if (i_result == SOCKET_ERROR) {
 #ifdef _WIN32
 		error=WSAGetLastError();
@@ -223,26 +223,19 @@ SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
 int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 {
-//#define MAXLEN 1024
 	int result;
-	//char msg[MAXLEN];
 
 	result = recv(sock,(char *)_buf,_buf_len,0);
 
-	if(result <= 0) {
-		// TCP Connection is broken. (because of error or closure)
-		return 0;
+#ifdef _WIN32
+	if (result == SOCKET_ERROR){
+		return ZN_ERROR;
 	}
-	/*else {
-		if(result < (int)_buf_len){
-			_buf[result] = 0;
-
-		}
-		else {
-			fprintf(stderr,"\nZN_TcpUtils_ReceiveBytes: Max message reached %i<%i!\n",result,(int)_buf_len);
-			return 0;
-		}
-	}*/
+#else
+	if (result < 0){
+		return ZN_ERROR;
+	}
+#endif
 
 	return  result;
 }
@@ -268,19 +261,28 @@ size_t  ZN_TcpUtils_SendBytes(SOCKET  sock,  uint8_t  *_buf,  size_t  _buf_len) 
 	return(result);
 }
 
+void	ZN_TcpUtils_CloseChannel(SOCKET  _socket, int _channel){
 
-void ZN_TcpUtils_CloseSocket(SOCKET *sock){
+	if(_socket == INVALID_SOCKET){
+		return;
+	}
 
-	if(*sock == INVALID_SOCKET){
+	shutdown(_socket,_channel);
+}
+
+
+void ZN_TcpUtils_CloseSocket(SOCKET *_socket){
+
+	if(*_socket == INVALID_SOCKET){
 		return;
 	}
 
 #ifdef _WIN32
-	closesocket(*sock);
+	closesocket(*_socket);
 #else
 	close(*sock);
 #endif
 
 	// now is invalid...
-	*sock=INVALID_SOCKET;
+	*_socket=INVALID_SOCKET;
 }

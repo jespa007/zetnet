@@ -26,7 +26,7 @@ Version: 1.4.4
 Date: 03/02/2024
 Version: 1.4.3
 
-- [x] ZN_HttpRequest : Fixed mimetype *.svg as image/svg+xml 
+- [x] ZN_HttpRequest : Fixed mimetype *.svg as image/svg+xml
 
 ----------------------------
 Date: 03/02/2024

@@ -35,11 +35,11 @@ SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer * tcp_server){
 	SOCKET max_sd = tcp_server->sockfd;
 
 	//add child sockets to set
-	for (int i = 0 ; i < ZN_MAX_SOCKETS ; i++)
+	for (int i = 0 ; i < ZN_TCP_SERVER_MAX_CLIENTS ; i++)
 	{
-		if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
+		if(tcp_server->clients[i].socket!=INVALID_SOCKET){
 			//socket descriptor
-			SOCKET sd = tcp_server->socket_client[i].socket;
+			SOCKET sd = tcp_server->clients[i].socket;
 
 			//if valid socket descriptor then add to read list
 			if(sd > 0){
@@ -148,14 +148,14 @@ ZN_TcpServer * ZN_TcpServer_New(ZN_TcpServerOnGestMessage on_gest_message)
 	tcp_server->initialized  =  false;
 
 
-	for(int i=0; i < ZN_MAX_SOCKETS; i++){
-		tcp_server->socket_client[i].idx_client=i;
-		tcp_server->socket_client[i].socket=INVALID_SOCKET;
-		tcp_server->socket_client[i].streaming_header_sent=false;
-		tcp_server->free_socket[i]=i;
+	for(int i=0; i < ZN_TCP_SERVER_MAX_CLIENTS; i++){
+		tcp_server->clients[i].idx_client=i;
+		tcp_server->clients[i].socket=INVALID_SOCKET;
+		tcp_server->clients[i].streaming_header_sent=false;
+		tcp_server->free_slots[i]=i;
 	}
 
-	tcp_server->n_free_sockets=ZN_MAX_SOCKETS;
+	tcp_server->n_free_slots=ZN_TCP_SERVER_MAX_CLIENTS;
 
 	tcp_server->message=NULL;
 
@@ -234,16 +234,16 @@ bool  ZN_TcpServer_IsConnected(ZN_TcpServer * tcp_server) {
 }
 
 //--------------------------------------------------------------------
-ZN_SocketClient * ZN_TcpServer_GetFreeSlot(ZN_TcpServer * tcp_server){
+ZN_TcpServerClient * ZN_TcpServer_GetFreeSlot(ZN_TcpServer * tcp_server){
 
-	ZN_SocketClient *cs=NULL;
+	ZN_TcpServerClient *cs=NULL;
 
-	if(tcp_server->n_free_sockets > 0){
+	if(tcp_server->n_free_slots > 0){
 
-		if(tcp_server->free_socket[tcp_server->n_free_sockets-1] != ZN_SOCKET_CLIENT_NOT_AVAILABLE){
-			cs = &tcp_server->socket_client[tcp_server->free_socket[tcp_server->n_free_sockets-1]];
-			tcp_server->free_socket[tcp_server->n_free_sockets-1]=ZN_SOCKET_CLIENT_NOT_AVAILABLE;
-			tcp_server->n_free_sockets--;
+		if(tcp_server->free_slots[tcp_server->n_free_slots-1] != ZN_SOCKET_CLIENT_NOT_AVAILABLE){
+			cs = &tcp_server->clients[tcp_server->free_slots[tcp_server->n_free_slots-1]];
+			tcp_server->free_slots[tcp_server->n_free_slots-1]=ZN_SOCKET_CLIENT_NOT_AVAILABLE;
+			tcp_server->n_free_slots--;
 		}else{
 			fprintf(stderr,"\ninternal error!\n");
 			return NULL;
@@ -255,28 +255,28 @@ ZN_SocketClient * ZN_TcpServer_GetFreeSlot(ZN_TcpServer * tcp_server){
 	return cs;
 }
 
-bool ZN_TcpServer_CloseSocketClient(ZN_TcpServer * tcp_server,ZN_SocketClient *socket_client){
+bool ZN_TcpServer_CloseClient(ZN_TcpServer * tcp_server,ZN_TcpServerClient *clients){
 
-	if(tcp_server->n_free_sockets < ZN_MAX_SOCKETS){
+	if(tcp_server->n_free_slots < ZN_TCP_SERVER_MAX_CLIENTS){
 
-		if(socket_client->socket != INVALID_SOCKET){
+		if(clients->socket != INVALID_SOCKET){
 
 			//socketDel(clientSock->socket);
 #ifdef _WIN32
 			// in wsa we have to shutdown client socket connection by default recv and send operations
-			int iResult = shutdown(socket_client->socket, SD_BOTH);
+			int iResult = shutdown(clients->socket, SD_BOTH);
 			if (iResult == SOCKET_ERROR) {
 				fprintf(stderr,"\nshutdown failed with error: %d\n", WSAGetLastError());
 			}
 #endif
 
 			// close socket client...
-			ZN_TcpUtils_CloseSocket(&socket_client->socket);
+			ZN_TcpUtils_CloseSocket(&clients->socket);
 
-			socket_client->socket=INVALID_SOCKET;
-			socket_client->streaming_header_sent=false;
-			tcp_server->free_socket[tcp_server->n_free_sockets]=socket_client->idx_client;
-			tcp_server->n_free_sockets++;
+			clients->socket=INVALID_SOCKET;
+			clients->streaming_header_sent=false;
+			tcp_server->free_slots[tcp_server->n_free_slots]=clients->idx_client;
+			tcp_server->n_free_slots++;
 
 
 			return true;
@@ -286,7 +286,7 @@ bool ZN_TcpServer_CloseSocketClient(ZN_TcpServer * tcp_server,ZN_SocketClient *s
 		}
 	}
 	else{
-		fprintf(stderr,"\nCannot ZN_FREE because -ZN_MAX_SOCKETS REACHED-\n");
+		fprintf(stderr,"\nCannot ZN_FREE because -ZN_TCP_SERVER_MAX_CLIENTS REACHED-\n");
 	}
 	return false;
 }
@@ -310,9 +310,9 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 
 	if((new_socket =ZN_TcpServer_SocketAccept(tcp_server)) != INVALID_SOCKET){
 
-		ZN_SocketClient *socket_client= ZN_TcpServer_GetFreeSlot(tcp_server);
+		ZN_TcpServerClient *clients= ZN_TcpServer_GetFreeSlot(tcp_server);
 
-		if(socket_client==NULL){ // no space left ... reject client ...
+		if(clients==NULL){ // no space left ... reject client ...
 			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***\n");
 			ZN_TcpUtils_CloseSocket(&new_socket);
 		}else{
@@ -321,39 +321,51 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 			printf("Adding new client\n");
 #endif
 
-			socket_client->socket=new_socket;
+			clients->socket=new_socket;
 		}
 	}
 
-	for (int cn = 0; cn < ZN_MAX_SOCKETS; cn++)  {
+	for (int cn = 0; cn < ZN_TCP_SERVER_MAX_CLIENTS; cn++)  {
 		// If the socket is ready (i.e. it has data we can read)... (SDLNet_SocketReady returns non-zero if there is activity on the socket, and zero if there is no activity)
-		if(tcp_server->socket_client[cn].socket != INVALID_SOCKET){
-			int client_socket_activity = ZN_TcpServer_SocketReady(tcp_server,tcp_server->socket_client[cn].socket);
+		if(tcp_server->clients[cn].socket != INVALID_SOCKET){
+			int client_socket_activity = ZN_TcpServer_SocketReady(tcp_server,tcp_server->clients[cn].socket);
 #if __DEBUG__
 		//	printf("Just checked client number %i  and received activity status is: %i\n", clientNumber,clientSocketActivity);
 #endif
 			// If there is any activity on the client socket...
-			if (client_socket_activity != 0)
-			{
-				int ok=1;
+			if (client_socket_activity != 0){
+
+				int result=0;
 				if(!tcp_server->is_streaming_server){ // read from client...
-					ok = ZN_TcpUtils_ReceiveBytes(tcp_server->socket_client[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
+
+					result = ZN_TcpUtils_ReceiveBytes(tcp_server->clients[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
 				}
 
-				if(ok) // serve to client ...
-				{
-					ZN_TcpServerOnGestMessage cf=tcp_server->on_gest_message;
-					if(!cf.callback_function(tcp_server,&tcp_server->socket_client[cn],tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
+				if(result > 0) {// serve to client ...
+
+					ZN_TcpServerOnGestMessage cf = tcp_server->on_gest_message;
+					if(!cf.callback_function(tcp_server,&tcp_server->clients[cn],tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
 
 						ZN_LOG_DEBUG("gestMessage:Erasing client %i (gestMessage)",cn);
 
-						ZN_TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
+						ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[cn]);
 					}
-				}else{ // remove that socket because client closed the connection ...
+				}else if(result == 0){
+					// peer disconnected
+					ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[cn]);
 
-					ZN_LOG_DEBUG("gestMessage:Erasing client %i (getMessage)",cn);
+				}else{ // check error to keep socket if socket is still valid or close the connection ...
+#ifdef _WIN32
+					bool block_socket = WSAGetLastError() == WSAEWOULDBLOCK;
+#else
+					bool block_socket = errno  == EAGAIN || errno == EWOULDBLOCK
+#endif
 
-					ZN_TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[cn]);
+					if(block_socket == true){
+						// socket finished transfer so close socket.
+						ZN_LOG_DEBUG("gestMessage:Erasing client %i (getMessage)",cn);
+						ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[cn]);
+					}
 				}
 
 			} // End of if client socket is active check
@@ -410,9 +422,9 @@ void ZN_TcpServer_Stop(ZN_TcpServer * tcp_server) {
 
 
 		// remove all clients boot (only for TCP protocol)
-		for(int i = 0; i < ZN_MAX_SOCKETS; i++){
-			if(tcp_server->socket_client[i].socket!=INVALID_SOCKET){
-				ZN_TcpServer_CloseSocketClient(tcp_server,&tcp_server->socket_client[i]);
+		for(int i = 0; i < ZN_TCP_SERVER_MAX_CLIENTS; i++){
+			if(tcp_server->clients[i].socket!=INVALID_SOCKET){
+				ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[i]);
 			}
 		}
 

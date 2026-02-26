@@ -6,7 +6,7 @@ typedef struct{
 	ZN_HttpRouteManager	* post_routes;
 }ZN_HttpServerData;
 
-bool ZN_HttpServer_GestMessageDefault(ZN_TcpServer * tcp_server,ZN_SocketClient * socket_client, uint8_t *data, size_t data_len, void * user_data){
+bool ZN_HttpServer_GestMessageDefault(ZN_TcpServer * tcp_server,ZN_TcpServerClient * socket_client, uint8_t *data, size_t data_len, void * user_data){
 	ZN_UNUSUED_PARAM(tcp_server);
 
 

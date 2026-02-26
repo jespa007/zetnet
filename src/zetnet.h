@@ -26,13 +26,13 @@
 	#include <ws2tcpip.h>
 	#include <windows.h>
 
-
 	#define ioctl ioctlsocket
 	#define bzero ZeroMemory
+
 #else // linux ?
 	typedef  int SOCKET;
-	#define INVALID_SOCKET 	-1
-	#define SOCKET_ERROR	-1
+
+	#define INVALID_SOCKET	-1
 
 	//#define addrinfo sockaddr_in
 

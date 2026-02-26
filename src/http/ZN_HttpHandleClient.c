@@ -1,10 +1,10 @@
 #include "zetnet.h"
 
 
-ZN_HttpHandleClient * ZN_HttpHandleClient_New(ZN_SocketClient * _socket_client, ZN_HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
+ZN_HttpHandleClient * ZN_HttpHandleClient_New(ZN_TcpServerClient * _client, ZN_HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
 {
 	ZN_HttpHandleClient * _http_handle_client = ZN_NEW(ZN_HttpHandleClient);
-	_http_handle_client->socket_client = _socket_client;
+	_http_handle_client->client = _client;
 	_http_handle_client->http_server = _http_server;
 
 	_http_handle_client->rcv_buffer_data=_rcv_data;
@@ -101,7 +101,7 @@ void ZN_HttpHandleClient_DoHandle(ZN_HttpHandleClient *_http_handle_client)
 		http_response=ZN_HttpResponse_MakePageNotFound(_http_handle_client->http_server);
 	}
 
-	ZN_HttpResponse_Send(http_response,_http_handle_client->socket_client->socket, _http_handle_client->http_server);
+	ZN_HttpResponse_Send(http_response,_http_handle_client->client->socket, _http_handle_client->http_server);
 	ZN_HttpResponse_Delete(http_response);
 	ZN_HttpRequest_Delete(http_request);
 	ZN_HttpHandleClient_Delete(_http_handle_client);

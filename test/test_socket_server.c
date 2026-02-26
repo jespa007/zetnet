@@ -7,7 +7,7 @@
 // MAY BE YES! DO MAX BLOCK LENGTH TO AVOID MALLOCS/FREE A LOT OF TIME!
 // IMAGINE 1000000 conections each one of 1000000 bytes to allocate ?!?
 
-bool GestMessage(ZN_TcpServer * _tcp_server,ZN_SocketClient * _client_socket, uint8_t * _buffer, size_t _buffer_len, void * _user_data){
+bool GestMessage(ZN_TcpServer * _tcp_server,ZN_TcpServerClient * _client_socket, uint8_t * _buffer, size_t _buffer_len, void * _user_data){
 	bool ok = true;
 
 	const char * echo_msg = "echo message :";
