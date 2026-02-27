@@ -56,32 +56,47 @@ int main(int argc, char *argv[]){
 	do{
 
 		switch(getchar()){
+		case 'o':
+			// close socket
+			if((socket = ZN_TcpUtils_NewSocketClient(host,port)) == INVALID_SOCKET){
+				fprintf(stderr,"Cannot create socket\n");
+			}
+			break;
+		case 'c':
+			// close socket
+			if(socket != INVALID_SOCKET){
+				ZN_TcpUtils_CloseSocket(&socket);
+			}else{
+				fprintf(stderr,"Cannot close socket. Socket not open!\n");
+			}
+			break;
 		case 's':
 			// open socket to transmit as many bytes as the client want to send
-			if((socket = ZN_TcpUtils_NewSocketClient(host,port)) != INVALID_SOCKET){
-				while(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0)	{
-
-						if((send_bytes = ZN_TcpUtils_SendBytes(socket,buf,strlen(buf)))< buf_len){
-							fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
-						}
-
-						ZN_TcpUtils_CloseSocket(socket);
+			if(socket != INVALID_SOCKET){
+				// read characters until press enter
+				if(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0)
+					if((send_bytes = ZN_TcpUtils_SendBytes(socket,buf,BUFFER_LEN))< buf_len){
+						fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
+					}
 				}
 
-				// try to receive the bytes send (echo)
-				if((receive_bytes = ZN_TcpUtils_ReceiveBytes(socket,buf)) < buf_len){
+					// try to receive the bytes send (echo)
+				if(ZN_TcpUtils_ReceiveBytes(socket,buf)){
 					fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
 				}
 
-				ZN_TcpUtils_CloseSocket(socket);
 			}else{
-				fprintf(stderr,"Invalid socket\n");
+				fprintf(stderr,"You must open socket first before send data\n");
 			}
 		case 'q':
 			exit = true;
 			break;
 		}
 	}while(!exit);
+
+	if(socket != INVALID_SOCKET){
+		ZN_TcpUtils_CloseSocket(&socket);
+	}
 
 
 	if(host != NULL){

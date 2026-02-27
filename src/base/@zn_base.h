@@ -6,3 +6,6 @@
 #include "ZN_Log.h"
 #include "ZN_Memory.h"
 #include "ZN_String.h"
+
+
+#define ZN_UNUSED_2PARAMS(_param1, param2) ((void)(_param1),(void)(param2))
