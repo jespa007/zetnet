@@ -139,8 +139,6 @@ SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 //#ifdef _WIN32
 	struct        addrinfo         *ptr = NULL,*result=NULL;
 
-
-
 	serv_addr.ai_family = AF_INET;
 	serv_addr.ai_socktype = SOCK_STREAM;
 	serv_addr.ai_protocol = IPPROTO_TCP;
@@ -280,7 +278,7 @@ void ZN_TcpUtils_CloseSocket(SOCKET *_socket){
 #ifdef _WIN32
 	closesocket(*_socket);
 #else
-	close(*sock);
+	close(*_socket);
 #endif
 
 	// now is invalid...

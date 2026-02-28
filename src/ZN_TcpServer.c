@@ -358,7 +358,7 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 #ifdef _WIN32
 					bool block_socket = WSAGetLastError() == WSAEWOULDBLOCK;
 #else
-					bool block_socket = errno  == EAGAIN || errno == EWOULDBLOCK
+					bool block_socket = errno  == EAGAIN || errno == EWOULDBLOCK;
 #endif
 
 					if(block_socket == true){
