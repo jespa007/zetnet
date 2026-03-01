@@ -11,16 +11,23 @@ bool GestMessage(ZN_TcpServer * _tcp_server,ZN_TcpServerClient * _client, uint8_
 
 	bool ok = true;
 
+	int bytes_to_send = _buffer_len;
+	int offset = 0;
+	int bytes_sent = 0;
 
-	size_t send_len = _buffer_len+1;
+	printf("sending echo\n");
 
-	// do echo...
-	size_t send_bytes = ZN_TcpUtils_SendBytes(_client->socket,_buffer,_buffer_len);
+	do{
+		bytes_sent = ZN_TcpUtils_SendBytes(_client->socket,_buffer+offset,bytes_to_send);
 
-	if(send_bytes<send_len){
-		fprintf(stderr, "Error sending bytes send_bytes %i < buffer_len %i\n",(int)send_bytes,(int)_buffer_len);
-		ok = false;
-	}
+		if(bytes_sent != ZN_ERROR){
+			bytes_to_send-=bytes_sent;
+			offset+=bytes_sent;
+		}
+
+	}while(bytes_sent != ZN_ERROR && bytes_to_send > 0);
+
+	printf("done\n");
 
 	return ok;
 }

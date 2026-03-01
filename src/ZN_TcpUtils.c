@@ -225,38 +225,23 @@ int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 
 	result = recv(sock,(char *)_buf,_buf_len,0);
 
-#ifdef _WIN32
-	if (result == SOCKET_ERROR){
-		return ZN_ERROR;
-	}
-#else
-	if (result < 0){
-		return ZN_ERROR;
-	}
-#endif
-
 	return  result;
 }
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-size_t  ZN_TcpUtils_SendBytes(SOCKET  _socket,  uint8_t  *_buffer,  size_t  _buffer_len) {
+int  ZN_TcpUtils_SendBytes(SOCKET  _socket,  uint8_t  *_buffer,  size_t  _buffer_len) {
 	int  result=0;
 
-	if(!_buffer_len) {
-		fprintf(stderr,"\nZN_TcpUtils_SendBytes: 0 bytes to send or buffer is NULL!\n");
+	if(!_buffer_len || !_buffer_len) {
 		return 0;
 	}
 
 	//  send  the  buffer,  with  the  NULL  as  well
 	result=send(_socket, (const char *)_buffer,_buffer_len,0);
 
-	if(result < (int)_buffer_len) {
-		fprintf(stderr,"\nZN_TcpUtils_SendBytes (%i<%i)\n",result,(int)_buffer_len);
-		return(0);
-	}
 
-	return(result);
+	return result;
 }
 
 void	ZN_TcpUtils_CloseChannel(SOCKET  _socket, int _channel){

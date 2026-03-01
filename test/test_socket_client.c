@@ -46,8 +46,14 @@ int main(int argc, char *argv[]){
 
 	ZN_Init();
 
-	printf("TCP Socket client test ver x.x.x\n");
-	printf("Host t %s:%i\n",host,port);
+	printf("\nTCP Socket client test ver x.x.x\n");
+	printf("\nHost %s:%i\n",host==NULL?"localhost":host,port);
+	printf(
+		"[o]pen socket\n"
+		"[c]lose socket\n"
+		"[s]end data\n"
+		"[q]uit\n"
+	);
 
 	SOCKET socket = INVALID_SOCKET;
 
@@ -74,20 +80,40 @@ int main(int argc, char *argv[]){
 			// open socket to transmit as many bytes as the client want to send
 			if(socket != INVALID_SOCKET){
 				// read characters until press enter
-				if(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0)
-					if((send_bytes = ZN_TcpUtils_SendBytes(socket,buf,BUFFER_LEN))< buf_len){
-						fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
-					}
+				if(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0){
+					printf("\nsending response ...\n");
+					int bytes_to_send = (int)strlen((const char *)buffer);
+					int offset = 0;
+					int bytes_sent = 0;
+
+					do{
+						bytes_sent = ZN_TcpUtils_SendBytes(socket,buffer+offset,bytes_to_send);
+
+						if(bytes_sent != ZN_ERROR){
+							bytes_to_send-=bytes_sent;
+							offset+=bytes_sent;
+						}
+
+					}while(bytes_sent != ZN_ERROR && bytes_to_send > 0);
 				}
 
-					// try to receive the bytes send (echo)
-				if(ZN_TcpUtils_ReceiveBytes(socket,buf)){
-					fprintf(stderr,"buffer length %i < send bytes %i ",buf_len,send_bytes);
-				}
+				// try to receive the bytes send (echo)
+				printf("\nawaitting response ...\n");
+				int received_bytes = 0;
+				do{
+					// there's timeout ?
+					int received_bytes = ZN_TcpUtils_ReceiveBytes(socket,buffer,BUFFER_LEN);
+
+					for(int r = 0; r < received_bytes; r++){
+						putc(buffer[r],stdout);
+					}
+
+				}while(received_bytes != ZN_ERROR && received_bytes > 0);
 
 			}else{
 				fprintf(stderr,"You must open socket first before send data\n");
 			}
+			break;
 		case 'q':
 			exit = true;
 			break;
