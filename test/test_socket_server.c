@@ -76,6 +76,8 @@ int main(int argc, char *argv[])
 	}
 
 
+	ZN_TcpServer_Delete(tcp_server);
+
 	ZN_DeInit();
 
 	return 0;

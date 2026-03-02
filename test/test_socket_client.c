@@ -64,7 +64,9 @@ int main(int argc, char *argv[]){
 		switch(getchar()){
 		case 'o':
 			// close socket
-			if((socket = ZN_TcpUtils_NewSocketClient(host,port)) == INVALID_SOCKET){
+			if((socket = ZN_TcpUtils_NewSocketClient(host,port)) != INVALID_SOCKET){
+				printf("Socket opened\n");
+			}else{
 				fprintf(stderr,"Cannot create socket\n");
 			}
 			break;
@@ -72,6 +74,7 @@ int main(int argc, char *argv[]){
 			// close socket
 			if(socket != INVALID_SOCKET){
 				ZN_TcpUtils_CloseSocket(&socket);
+				printf("Socket closed\n");
 			}else{
 				fprintf(stderr,"Cannot close socket. Socket not open!\n");
 			}
@@ -79,6 +82,7 @@ int main(int argc, char *argv[]){
 		case 's':
 			// open socket to transmit as many bytes as the client want to send
 			if(socket != INVALID_SOCKET){
+				printf("\nEnter data to send : ");
 				// read characters until press enter
 				if(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0){
 					printf("\nsending response ...\n");
@@ -123,7 +127,6 @@ int main(int argc, char *argv[]){
 	if(socket != INVALID_SOCKET){
 		ZN_TcpUtils_CloseSocket(&socket);
 	}
-
 
 	if(host != NULL){
 		ZN_FREE(host);
