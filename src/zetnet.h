@@ -22,6 +22,8 @@
 // include socket platform
 #ifdef _WIN32
 
+	// FD_SIZE of windows is 64 -> redefine to 4096
+	#define  FD_SETSIZE 4096
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
 	#include <windows.h>

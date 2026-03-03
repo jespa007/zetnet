@@ -53,8 +53,11 @@ SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer * tcp_server){
 		}
 	}
 
+	// wait for 1 second
+	ZN_TcpServer_SetTimeout(tcp_server,1);
+
 	//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
-	int activity = select( max_sd + 1 , &tcp_server->readfds , NULL , NULL , &tcp_server->timeout);
+	int activity = select( max_sd + 1 , &tcp_server->readfds , NULL , NULL , NULL);//&tcp_server->timeout);
 
 	if ((activity < 0) && (errno!=EINTR))
 	{
@@ -127,6 +130,7 @@ SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer * tcp_server){
 bool ZN_TcpServer_SocketReady(ZN_TcpServer * tcp_server,SOCKET sock){
 
 	if (FD_ISSET( sock , &tcp_server->readfds)){
+		printf("Incoming connection detected\n");
 		return true;
 	}
 
@@ -355,13 +359,20 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 					ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[cn]);
 
 				}else{ // check error to keep socket if socket is still valid or close the connection ...
-#ifdef _WIN32
-					bool block_socket = WSAGetLastError() == WSAEWOULDBLOCK;
-#else
-					bool block_socket = errno  == EAGAIN || errno == EWOULDBLOCK;
-#endif
 
-					if(block_socket == true){
+				#ifdef _WIN32
+					int err = WSAGetLastError();
+					bool block_socket = (err == WSAEWOULDBLOCK);
+				#else
+					int err = errno;
+					bool block_socket = (err == EAGAIN || err == EWOULDBLOCK);
+				#endif
+
+					if (block_socket) {
+						// Do NOTHING.
+						// Just no data available right now.
+					} else {
+						// Error -> close client
 						// socket finished transfer so close socket.
 						ZN_LOG_DEBUG("gestMessage:Erasing client %i (getMessage)",cn);
 						ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[cn]);

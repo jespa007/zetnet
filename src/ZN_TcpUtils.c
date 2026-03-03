@@ -165,6 +165,7 @@ SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 		}
 
 		// Connect to server.
+		printf("Connecting to family: %d\n", ptr->ai_family);
 		i_result = connect( socket_client, ptr->ai_addr, (int)ptr->ai_addrlen);
 		if (i_result == SOCKET_ERROR) {
 	#ifdef _WIN32
