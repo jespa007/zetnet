@@ -54,10 +54,10 @@ SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer * tcp_server){
 	}
 
 	// wait for 1 second
-	ZN_TcpServer_SetTimeout(tcp_server,1);
+	//ZN_TcpServer_SetTimeout(tcp_server,1);
 
 	//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
-	int activity = select( max_sd + 1 , &tcp_server->readfds , NULL , NULL , NULL);//&tcp_server->timeout);
+	int activity = select( max_sd + 1 , &tcp_server->readfds , NULL , NULL , &tcp_server->timeout);
 
 	if ((activity < 0) && (errno!=EINTR))
 	{
@@ -201,7 +201,7 @@ const char * ZN_TcpServer_GetErrorSockOpt(void){
 	return "unknow";
 }
 //---------------------------------------------------------------------------------------------------------------------------
-bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server,  int _portno)  //  Reads  configuration  of  machine  &  init  sdl_net...
+bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server, const char *_host,  int _portno)  //  Reads  configuration  of  machine  &  init  sdl_net...
 {
 
 	tcp_server->end_loop_mdb=false;
@@ -210,7 +210,7 @@ bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server,  int _portno)  //  Reads  co
 
 	ZN_TcpServer_SetTimeout(tcp_server,ZN_DEFAULT_TIMEOUT_SECONDS);
 
-	if((tcp_server->sockfd=ZN_TcpUtils_NewSocketServer(_portno))!=INVALID_SOCKET){
+	if((tcp_server->sockfd=ZN_TcpUtils_NewSocketServer(_host, _portno))!=INVALID_SOCKET){
 
 
 		 if(pthread_create(&tcp_server->thread,NULL,ZN_TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
@@ -225,8 +225,8 @@ bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server,  int _portno)  //  Reads  co
 	return false;
 }
 
-bool ZN_TcpServer_Start(ZN_TcpServer * tcp_server,  int _portno){
-	if(ZN_TcpServer_Setup(tcp_server, _portno)){
+bool ZN_TcpServer_Start(ZN_TcpServer * tcp_server, const char *_host,  int _portno){
+	if(ZN_TcpServer_Setup(tcp_server,_host, _portno)){
 		return true;
 	}
 	return false;

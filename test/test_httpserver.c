@@ -32,6 +32,7 @@ ZN_HttpResponse *  MyCustom_HttpServer_OnGetUserRequest(ZN_HttpServer * _http_se
 int main(int argc, char *argv[])
 {
 	char path[MAX_PATH]={"."};
+	char *host=NULL;
 	int port=HTTP_SERVER_DEFAULT_PORT;
 	bool send_same_site_attribute=false;
 	bool error=false;
@@ -48,7 +49,11 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 2:
-			if(strcmp(l->items[0],"--port")==0){
+			if(strcmp(l->items[0],"--host")==0){
+				if(host == NULL){
+					host=strdup(l->items[1]);
+				}
+			}else if(strcmp(l->items[0],"--port")==0){
 				error=!ZN_String_ToInt(&port,l->items[1],10);
 			}else if(strcmp(l->items[0],"--path")==0){
 				strcpy(path,(const char *)l->items[1]);
@@ -76,13 +81,18 @@ int main(int argc, char *argv[])
 		.callback_function=MyCustom_HttpServer_OnGetUserRequest
 		,.user_data=NULL
 	};
-	if(ZN_HttpServer_Start(http_server,port)){
+	if(ZN_HttpServer_Start(http_server,host==NULL?"127.0.0.1":host,port)){
 
 		printf("press any key to stop http_server...\n");
 		getchar();
 	}
 
 	printf("shutdown...\n");
+
+	if(host != NULL){
+		ZN_FREE(host);
+	}
+
 
 	ZN_HttpServer_Delete(http_server);
 

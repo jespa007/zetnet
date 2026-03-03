@@ -42,7 +42,7 @@ ZN_HttpServer * ZN_HttpServer_New(
 
 
 
-bool ZN_HttpServer_Start(ZN_HttpServer *_this,int _port){
+bool ZN_HttpServer_Start(ZN_HttpServer *_this,const char *_host, int _port){
 	ZN_HttpServerData *data = _this->data;
 	if(data->tcp_server==NULL){
 		ZN_TcpServerOnGestMessage on_gest_message=(ZN_TcpServerOnGestMessage){
@@ -52,7 +52,7 @@ bool ZN_HttpServer_Start(ZN_HttpServer *_this,int _port){
 
 		data->tcp_server=ZN_TcpServer_New(on_gest_message);
 
-		return ZN_TcpServer_Start(data->tcp_server,_port);
+		return ZN_TcpServer_Start(data->tcp_server,_host, _port);
 	}
 	return false;
 }

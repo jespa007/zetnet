@@ -9,7 +9,7 @@ struct ZN_HttpServerMPS{
 
 ZN_HttpServerMPS *		ZN_HttpServerMPS_New(void);
 void 					ZN_HttpServerMPS_SetTimeDelay(ZN_HttpServerMPS 	*_this, unsigned long time );
-void 					ZN_HttpServerMPS_Start(ZN_HttpServerMPS	*_this, int port);
+void 					ZN_HttpServerMPS_Start(ZN_HttpServerMPS	*_this,const char * _host, int port);
 void 					ZN_HttpServerMPS_Stop(ZN_HttpServerMPS 	*_this);
 
 bool					ZN_HttpServerMPS_CanWrite(ZN_HttpServerMPS	*_this);

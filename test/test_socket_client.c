@@ -83,9 +83,11 @@ int main(int argc, char *argv[]){
 			// open socket to transmit as many bytes as the client want to send
 			if(socket != INVALID_SOCKET){
 				printf("\nEnter data to send : ");
+				fflush(stdout);
+				memset(buffer,0,BUFFER_LEN);
 				// read characters until press enter
 				if(read(STDIN_FILENO, buffer, BUFFER_LEN-1) > 0){
-					printf("\nsending response ...\n");
+					printf("\nsending response (%s)...\n",buffer);
 					int bytes_to_send = (int)strlen((const char *)buffer);
 					int offset = 0;
 					int bytes_sent = 0;

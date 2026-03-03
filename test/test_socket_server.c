@@ -35,6 +35,7 @@ bool GestMessage(ZN_TcpServer * _tcp_server,ZN_TcpServerClient * _client, uint8_
 int main(int argc, char *argv[])
 {
 	int port=DEFAULT_PORT;
+	char *host = NULL;
 	bool error=false;
 
 	for(int i=1; i < argc && !error; i++){
@@ -45,7 +46,11 @@ int main(int argc, char *argv[])
 			error=true;
 			break;
 		case 2:
-			if(strcmp(l->items[0],"--port")==0){
+			if(strcmp(l->items[0],"--host")==0){
+				if(host == NULL){
+					host=strdup(l->items[1]);
+				}
+			}else if(strcmp(l->items[0],"--port")==0){
 				error=!ZN_String_ToInt(&port,l->items[1],10);
 			}else{
 				fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
@@ -69,12 +74,20 @@ int main(int argc, char *argv[])
 
 	ZN_TcpServer *tcp_server=ZN_TcpServer_New(on_gest_message);
 
-	if(ZN_TcpServer_Start(tcp_server,port)){
+	if(ZN_TcpServer_Start(tcp_server,host==NULL?"127.0.0.1":host,port)){
 
 		printf("press any key to stop ...\n");
+/*#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__)
+		Sleep( 1000 );
+#else
+		usleep( 1000000 );
+#endif*/
 		getchar();
 	}
 
+	if(host != NULL){
+		ZN_FREE(host);
+	}
 
 	ZN_TcpServer_Delete(tcp_server);
 

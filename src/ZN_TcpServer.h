@@ -56,7 +56,7 @@ struct  ZN_TcpServer
 ZN_TcpServer * ZN_TcpServer_New(ZN_TcpServerOnGestMessage on_gest_message);
 
 
-bool  ZN_TcpServer_Start(ZN_TcpServer *tcp_server,int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
+bool  ZN_TcpServer_Start(ZN_TcpServer *tcp_server,const char * _host, int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
 void  ZN_TcpServer_Stop(ZN_TcpServer *tcp_server);
 
 void  ZN_TcpServer_SetTimeout(ZN_TcpServer *tcp_server, int seconds);

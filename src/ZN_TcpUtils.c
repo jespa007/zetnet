@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-SOCKET ZN_TcpUtils_NewSocketServer(int _portno){
+SOCKET ZN_TcpUtils_NewSocketServer(const char * _host, int _portno){
 
 	SOCKET socket_server=INVALID_SOCKET;
 	struct addrinfo  serv_addr;
@@ -27,7 +27,7 @@ SOCKET ZN_TcpUtils_NewSocketServer(int _portno){
 #endif*/
 
 	// Resolve the server address and port
-	i_result = getaddrinfo(NULL, (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
+	i_result = getaddrinfo(_host, (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
 	   fprintf(stderr,"\ngetaddrinfo failed with error: %d\n", i_result);
 	   return INVALID_SOCKET;
@@ -119,13 +119,16 @@ SOCKET ZN_TcpUtils_NewSocketServer(int _portno){
 	listen(socket_server,5); // block until new connection is established...
 #endif*/
 
-
-	printf("Setup server  (%d.%d.%d.%d:%i)\n",
+	struct sockaddr_in *addr = (struct sockaddr_in *)result->ai_addr;
+	/*printf("Setup server  (%d.%d.%d.%d:%i)\n",
 			ipaddr>>24,
 			(ipaddr>>16)&0xff,
 			(ipaddr>>8)&0xff,
 			ipaddr&0xff,
-			_portno);
+			_portno);*/
+	printf("Setup server  (%s:%i)\n",
+			inet_ntoa(addr->sin_addr),
+			ntohs(addr->sin_port));
 
 	return socket_server;
 }

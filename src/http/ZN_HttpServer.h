@@ -24,7 +24,7 @@ void 			ZN_HttpServer_AddPostRoute(ZN_HttpServer * _this,const char *_url,const 
 ZN_HttpRoute *	ZN_HttpServer_SearchGetRoute(ZN_HttpServer * _this,const char *_url_start_request);
 ZN_HttpRoute *	ZN_HttpServer_SearchPostRoute(ZN_HttpServer * _this,const char *_url_start_request);
 
-bool 			ZN_HttpServer_Start(ZN_HttpServer *_this, int _port);
+bool 			ZN_HttpServer_Start(ZN_HttpServer *_this,const char *_host, int _port);
 void 			ZN_HttpServer_Stop(ZN_HttpServer *_this);
 void 			ZN_HttpServer_Delete(ZN_HttpServer *_this);
 
