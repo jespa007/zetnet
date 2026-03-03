@@ -54,7 +54,7 @@ SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer * tcp_server){
 	}
 
 	// wait for 1 second
-	//ZN_TcpServer_SetTimeout(tcp_server,1);
+	ZN_TcpServer_SetTimeout(tcp_server,1);
 
 	//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
 	int activity = select( max_sd + 1 , &tcp_server->readfds , NULL , NULL , &tcp_server->timeout);
