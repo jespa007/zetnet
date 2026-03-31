@@ -1,4 +1,4 @@
-#include "../src_old/zetnet.h"
+#include "../src/zetnet.h"
 
 // sample socket client
 // https://learn.microsoft.com/es-es/windows/win32/api/winsock/nf-winsock-recv

@@ -1,0 +1,94 @@
+#ifndef __ZETNET_H__
+#define __ZETNET_H__
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
+#include <memory.h>
+#include <pthread.h>
+#include <limits.h> /* LONG_MAX */
+
+#ifdef __GNUC__
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <stdarg.h>
+#endif
+
+// include socket platform
+#ifdef _WIN32
+
+	// FD_SIZE of windows is 64 -> redefine to 4096
+	#define  FD_SETSIZE 4096
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
+	#include <windows.h>
+
+	#define ioctl ioctlsocket
+	#define bzero ZeroMemory
+
+#else // linux ?
+	typedef  int SOCKET;
+
+	#define INVALID_SOCKET	-1
+	#define	SOCKET_ERROR	-1
+
+	//#define addrinfo sockaddr_in
+
+	#ifdef __GNUC__
+		#include <arpa/inet.h>
+		#include <sys/select.h>
+		#include <sys/socket.h>
+		#include <netinet/in.h>
+		#include <sys/ioctl.h>
+		#include <sys/types.h>
+ 	  	#include <netdb.h>
+	#endif
+#endif
+
+#define __SSL__
+
+#ifdef __SSL__
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#endif
+
+
+
+#ifdef __MEMMANAGER__
+#include "memmgr.h"
+#endif
+
+
+//----------------------------
+// START ZETNET PROTOTYPES
+
+#define ZETNET_VERSION_MAJOR	1
+#define ZETNET_VERSION_MINOR	5
+#define ZETNET_VERSION_PATCH	0
+
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+#define ZN_UNUSUED_PARAM(x) ((void)x)
+
+
+#include "base/@zn_base.h"
+#include "net/@zn_net.h"
+#include "http/@zn_http.h"
+
+bool ZN_Init(void);
+void ZN_DeInit(void);
+
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif
