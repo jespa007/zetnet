@@ -10,6 +10,7 @@ bool ZN_Connection_Open(ZN_Connection *conn, const ZN_Url *url) {
     conn->use_ssl = (strcmp(url->scheme, "https") == 0);
 
     if (conn->use_ssl) {
+
         conn->ssl = ZN_SSL_New(conn->socket, url->host);
 
         if (!ZN_SSL_Connect(conn->ssl)) return false;

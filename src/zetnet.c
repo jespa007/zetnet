@@ -26,8 +26,38 @@ bool ZN_Init(void){
 			return false;
 		}
 
+		if(SSL_CTX_set_default_verify_paths(g_ssl_ctx) == 0){
+			fprintf(stderr,"SSL_CTX_set_default_verify_paths failed\n");
+			return false;
+		}
+
+		if (!SSL_CTX_load_verify_locations(g_ssl_ctx, "cacert.pem", NULL)) {
+		    fprintf(stderr, "Failed to load CA bundle\n");
+		    return false;
+		}
+
+		/*---
+		BIO *bio = BIO_new_mem_buf(cacert_pem, cacert_pem_len);
+
+X509_STORE *store = SSL_CTX_get_cert_store(ctx);
+
+STACK_OF(X509_INFO) *infos = PEM_X509_INFO_read_bio(bio, NULL, NULL, NULL);
+
+for (int i = 0; i < sk_X509_INFO_num(infos); i++) {
+    X509_INFO *it = sk_X509_INFO_value(infos, i);
+
+    if (it->x509) {
+        X509_STORE_add_cert(store, it->x509);
+    }
+}
+
+sk_X509_INFO_pop_free(infos, X509_INFO_free);
+BIO_free(bio);
+		//---*/
+
 		SSL_CTX_set_verify(g_ssl_ctx, SSL_VERIFY_PEER, NULL);
-		SSL_CTX_set_default_verify_paths(g_ssl_ctx);
+
+
 	}
 #endif
 

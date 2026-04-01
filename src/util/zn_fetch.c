@@ -37,11 +37,11 @@ int main(int argc, char *argv[]) {
 			printf("%s", buffer);
 		}
 
-		ZN_Connection_Close(&conn);
-
     }else{
         fprintf(stderr, "Connection failed\n");
     }
+
+	ZN_Connection_Close(&conn);
 
 
     ZN_DeInit();
