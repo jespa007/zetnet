@@ -41,7 +41,6 @@ int main(int argc, char *argv[]) {
 
     }else{
         fprintf(stderr, "Connection failed\n");
-        return 1;
     }
 
 

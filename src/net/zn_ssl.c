@@ -24,10 +24,19 @@ SSL* ZN_SSL_New(SOCKET sock, const char * hostname) {
 }
 
 bool ZN_SSL_Connect(SSL *ssl) {
-    if (SSL_connect(ssl) <= 0) {
-        ERR_print_errors_fp(stderr);
-        return false;
-    }
+    int ret = SSL_connect(ssl);
+	if (ret <= 0) {
+		int err = SSL_get_error(ssl, ret);
+
+		fprintf(stdout, "SSL_connect failed: %d\n", err);
+		ERR_print_errors_fp(stdout);
+		fflush(stdout);
+
+		return false;
+	}
+
+	printf("SSL connected successfully\n");
+
     return true;
 }
 

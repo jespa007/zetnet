@@ -2,17 +2,20 @@
 
 
 
-void ZN_String_SplitBuiltIn(const char *s, char delim, ZN_List  * elems) {
+void ZN_String_SplitBuiltIn(const char *_str, char delim, ZN_List  * elems) {
 	char delim_str[2]={delim,0};
-	char * token = strtok((char *)s, delim_str);
+	char * str = strdup(_str);
+	char * token = strtok((char *)str, delim_str);
    // loop through the string to extract all other tokens
    while( token != NULL ) {
 	   size_t len=strlen(token)+1;
-	   char *text=malloc(len+1);
+	   char *text=ZN_MALLOC(len);
 	   strcpy(text,token);
 	   ZN_List_Add(elems,text);
 	   token = strtok(NULL, delim_str);
    }
+
+	ZN_FREE(str);
 }
 
 ZN_List * ZN_String_Split(const char * s, char delim) {
