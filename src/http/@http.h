@@ -1,3 +1,8 @@
+// @http.h
+// Module entry point for http.
+// Controls which source files are part of this module build.
+
+
 #include "zn_http_param_value.h"
 #include "zn_http_request.h"
 #include "zn_http_response.h"

@@ -1,3 +1,7 @@
+// @base.h
+// Module entry point for base.
+// Controls which source files are part of this module build.
+
 #include "zn_list.h"
 #include "zn_dir.h"
 #include "zn_file.h"
