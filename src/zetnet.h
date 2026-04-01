@@ -54,6 +54,7 @@
 
 #ifdef __SSL__
 #include <openssl/ssl.h>
+#include <openssl/x509v3.h>
 #include <openssl/err.h>
 #endif
 
@@ -79,9 +80,9 @@ extern "C" {
 #define ZN_UNUSUED_PARAM(x) ((void)x)
 
 
-#include "base/@zn_base.h"
-#include "net/@zn_net.h"
-#include "http/@zn_http.h"
+#include "base/@base.h"
+#include "net/@net.h"
+#include "http/@http.h"
 
 bool ZN_Init(void);
 void ZN_DeInit(void);

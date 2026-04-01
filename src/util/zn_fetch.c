@@ -1,67 +1,51 @@
 #include "zetnet.h"
 
 #define BUFFER_SIZE 1024
+#define REQUEST_SIZE 2048
 
 
-int main(int argc, char *argv[])
-{
-	char url[MAX_PATH]={"api.opentopodata.org"};
-	int port=443;
-	char buffer[BUFFER_SIZE];
+int main(int argc, char *argv[]) {
 
-	ZN_Init();
+    if (argc < 2) {
+        fprintf(stderr, "Usage: zn_fetch <url>\n");
+        return 1;
+    }
 
-	// perform http request...
-	SOCKET 	socket = ZN_TcpUtils_NewSocketClient(url,port);
+    ZN_Url url;
+    if (!ZN_Url_Parse(argv[1], &url)) {
+        fprintf(stderr, "Invalid URL\n");
+        return 1;
+    }
 
+    ZN_Init();
 
+    ZN_Connection conn;
+    if (ZN_Connection_Open(&conn, &url)) {
 
-	if(socket != INVALID_SOCKET){
+		char request[REQUEST_SIZE];
+		ZN_HttpRequest_BuildGet(request, sizeof(request), &url);
 
-		SSL *ssl = ZN_SSL_New(socket,url);
+		ZN_Connection_Write(&conn, (uint8_t*)request, strlen(request));
 
-		// SNI (Server Name Indication).
-		if (ZN_SSL_Connect(ssl)) {
+		char buffer[BUFFER_SIZE];
 
+		while (1) {
+			int n = ZN_Connection_Read(&conn, (uint8_t*)buffer, sizeof(buffer)-1);
+			if (n <= 0) break;
 
-			if (ZN_SSL_VerifyHost(ssl, url)) {
-
-				//SSL_get_error()
-
-				const char *request =
-					"GET /v1/srtm90m?locations=41.4827,0.2864 HTTP/1.1\r\n"
-					"Host: api.opentopodata.org\r\n"
-					"User-Agent: zn-client/1.0\r\n"
-					"Connection: close\r\n\r\n";
-
-
-				ZN_SSL_Write(ssl, (uint8_t*)request, strlen(request)); // write(fd, char[]*, len);
-
-
-				while(1){//ZN_TcpUtils_ReceiveBytes(socket, (uint8_t *)buffer, BUFFER_SIZE - 1) != 0){
-					int n = ZN_SSL_Read(ssl, (uint8_t*)buffer, BUFFER_SIZE - 1);
-					if (n <= 0) break;
-
-					buffer[n] = '\0';
-					printf("%s", buffer);
-				}
-			}else{
-					fprintf(stderr, "Hostname verification failed\n");
-			}
-
-
-		}else{
-			fprintf(stderr, "Cannot connect ssl\n");
+			buffer[n] = '\0';
+			printf("%s", buffer);
 		}
 
+		ZN_Connection_Close(&conn);
+
+    }else{
+        fprintf(stderr, "Connection failed\n");
+        return 1;
+    }
 
 
+    ZN_DeInit();
 
-		ZN_SSL_Close(ssl);
-
-		ZN_TcpUtils_CloseSocket(&socket);
-	}
-	ZN_DeInit();
-
-	return 0;
+    return 0;
 }

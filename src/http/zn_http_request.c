@@ -1,6 +1,16 @@
 #include "zetnet.h"
 
 
+void ZN_HttpRequest_BuildGet(char *out, size_t size, const ZN_Url *url) {
+    snprintf(out, size,
+        "GET %s HTTP/1.1\r\n"
+        "Host: %s\r\n"
+        "User-Agent: zetnet/1.0\r\n"
+        "Connection: close\r\n\r\n",
+        url->path,
+        url->host);
+}
+
 
 ZN_HttpRequest * ZN_HttpRequest_New(char *  _type
 		, char * _url

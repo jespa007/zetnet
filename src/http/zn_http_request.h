@@ -24,8 +24,8 @@ struct ZN_HttpRequest
 
 };
 
-
-ZN_HttpRequest * ZN_HttpRequest_GetRequest(const char * request);
-void		  ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
+void 				ZN_HttpRequest_BuildGet(char *out, size_t size, const ZN_Url *url);
+ZN_HttpRequest * 	ZN_HttpRequest_GetRequest(const char * request);
+void		  		ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
 
 #endif

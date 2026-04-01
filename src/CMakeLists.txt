@@ -32,7 +32,7 @@ string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_PATCH)
 
 MESSAGE("-- Zetnet ${ZETNET_VERSION_MAJOR}.${ZETNET_VERSION_MINOR}.${ZETNET_VERSION_PATCH}" )
 
-set(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZETNET_VERSION_PATCH}")
+SET(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZETNET_VERSION_PATCH}")
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -60,6 +60,10 @@ ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 include_directories (
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/include
+)
+
+link_directories (
+	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/lib64
 )
 
 message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
@@ -159,13 +163,13 @@ MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	# base
-	base/@zn_base.c
+	base/@base.c
 	
 	# net
-	net/@zn_net.c	
+	net/@net.c	
 	
 	# http
-	http/@zn_http.c
+	http/@http.c
 
 	zetnet.c
 )
@@ -188,8 +192,8 @@ endif()
 message("-- Library type: " ${LIBRARY_TYPE_CREATION})
 
 
-# httpserver library
-target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} -lssl -lcrypto)
+# zetnet library
+set(LIBRARY_DEPS ssl crypto)
 
 if(MSVC)
 	#only for msvc...
@@ -197,9 +201,10 @@ if(MSVC)
 endif()
 	
 if(MINGW OR MSVC)
-	target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} Ws2_32 )	
+	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32 crypt32)	
 endif()
 
+target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
 
 SET(
 	HS
