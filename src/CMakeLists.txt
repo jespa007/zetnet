@@ -59,6 +59,7 @@ ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
 include_directories (
 	${PROJECT_SOURCE_DIR}
+	${PROJECT_SOURCE_DIR}/..
 	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/include
 )
 

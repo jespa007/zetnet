@@ -54,8 +54,12 @@
 
 #ifdef __SSL__
 #include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
+
 #endif
 
 

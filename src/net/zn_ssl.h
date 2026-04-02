@@ -3,6 +3,7 @@
 
 
 bool ZN_SSL_VerifyHost(SSL *ssl, const char *hostname);
+bool ZN_SSL_LoadEmbeddedCA(SSL_CTX *ctx);
 
 SSL* ZN_SSL_New(SOCKET sock, const char * hostname);
 

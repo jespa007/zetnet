@@ -1,6 +1,26 @@
 #include "zetnet.h"
+#include "res/cert/cacert.pem.c"
 
 SSL_CTX * ZN_GetSSLContext(void);
+
+bool ZN_SSL_LoadEmbeddedCA(SSL_CTX *ctx) {
+    BIO *bio = BIO_new_mem_buf(cacert_pem, cacert_pem_len);
+    if (!bio) return false;
+
+    X509_STORE *store = SSL_CTX_get_cert_store(ctx);
+    if (!store) return false;
+
+    while (1) {
+        X509 *cert = PEM_read_bio_X509(bio, NULL, 0, NULL);
+        if (!cert) break;
+
+        X509_STORE_add_cert(store, cert);
+        X509_free(cert);
+    }
+
+    BIO_free(bio);
+    return true;
+}
 
 bool ZN_SSL_VerifyHost(SSL *ssl, const char *hostname) {
     X509 *cert = SSL_get_peer_certificate(ssl);
@@ -37,6 +57,8 @@ SSL* ZN_SSL_New(SOCKET sock, const char * hostname) {
         return NULL;
     }
 
+    printf("Verify result: %ld\n", SSL_get_verify_result(ssl));
+
 
     return ssl;
 }
@@ -44,7 +66,7 @@ SSL* ZN_SSL_New(SOCKET sock, const char * hostname) {
 bool ZN_SSL_Connect(SSL *ssl) {
     int ssl_error = SSL_connect(ssl);
 	if (ssl_error <= 0) {
-        ssl_error = SSL_get_error(ZN_GetSSLContext(), ssl_error);
+        ssl_error = SSL_get_error(ssl, ssl_error);
         switch (ssl_error) {
             case SSL_ERROR_WANT_READ:
             case SSL_ERROR_WANT_WRITE:
