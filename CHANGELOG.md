@@ -11,9 +11,9 @@ Date: XX/XX/XXXX
 Version: 1.5.0
 
 - [] Implement test socket client / test socket server
-- [] Implement tool zn_url
+- [] Implement tool zn_fetch
 - [x] Move all file from directory util -> base
-- [] Add ssl support ?
+- [x] Added ssl support ?
 - [x] ZN_TcpUtils_ReceiveBytes : Fixed receive number of bytes by parameter instead of fixed ZN_TCP_MESSAGE_LENGTH
 
 ----------------------------

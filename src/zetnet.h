@@ -50,9 +50,8 @@
 	#endif
 #endif
 
-#define __SSL__
 
-#ifdef __SSL__
+#ifdef __WITH_SSL__
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>

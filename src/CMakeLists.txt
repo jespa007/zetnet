@@ -194,7 +194,7 @@ message("-- Library type: " ${LIBRARY_TYPE_CREATION})
 
 
 # zetnet library
-set(LIBRARY_DEPS ssl crypto)
+
 
 if(MSVC)
 	#only for msvc...
@@ -206,6 +206,25 @@ if(MINGW OR MSVC)
 endif()
 
 target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
+
+set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
+
+set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
+set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT}/lib64/libssl.a")
+set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT}/lib64/libcrypto.a")
+
+if(EXISTS ${OPENSSL_SSL_LIBRARY} AND EXISTS ${OPENSSL_CRYPTO_LIBRARY})
+    message(STATUS "Using bundled OpenSSL")
+
+    target_include_directories(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
+    target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE
+        ${OPENSSL_SSL_LIBRARY}
+        ${OPENSSL_CRYPTO_LIBRARY}
+    )
+    target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE _WITH_SSL_)
+else()
+    message(STATUS "Bundled OpenSSL not found → SSL disabled")
+endif()
 
 SET(
 	HS

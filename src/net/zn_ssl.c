@@ -1,4 +1,6 @@
 #include "zetnet.h"
+
+#ifdef __WITH_SSL__
 #include "res/cert/cacert.pem.c"
 
 SSL_CTX * ZN_GetSSLContext(void);
@@ -104,3 +106,4 @@ void ZN_SSL_Close(SSL *ssl) {
 
     SSL_free(ssl);
 }
+#endif
