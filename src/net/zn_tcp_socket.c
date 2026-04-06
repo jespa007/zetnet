@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-SOCKET ZN_TcpUtils_NewSocketServer(const char * _host, int _portno){
+SOCKET ZN_TcpSocket_NewSocketServer(const char * _host, int _portno){
 
 	SOCKET socket_server=INVALID_SOCKET;
 	struct addrinfo  serv_addr;
@@ -71,7 +71,7 @@ SOCKET ZN_TcpUtils_NewSocketServer(const char * _host, int _portno){
 			break;
 		}
 		freeaddrinfo(result);
-		ZN_TcpUtils_CloseSocket(&socket_server);
+		ZN_TcpSocket_CloseSocket(&socket_server);
 		return INVALID_SOCKET;
 	}
 
@@ -84,7 +84,7 @@ SOCKET ZN_TcpUtils_NewSocketServer(const char * _host, int _portno){
 #endif
 		fprintf(stderr,"\nlisten failed with error: %i\n", error);
 
-		ZN_TcpUtils_CloseSocket(&socket_server);
+		ZN_TcpSocket_CloseSocket(&socket_server);
 		return INVALID_SOCKET;
 	}
 
@@ -134,7 +134,7 @@ SOCKET ZN_TcpUtils_NewSocketServer(const char * _host, int _portno){
 }
 
 
-SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
+SOCKET ZN_TcpSocket_NewSocketClient(const char * _host, int _portno){
 	SOCKET socket_client=INVALID_SOCKET;
 	struct addrinfo	serv_addr;
 	int error=0;
@@ -150,7 +150,7 @@ SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 	// Resolve the server address and port
 	int i_result = getaddrinfo(_host, (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
-		fprintf(stderr,"\nZN_TcpUtils_NewSocketClient : getaddrinfo for '%s:%i' failed with error: %d\n",_host,_portno,i_result);
+		fprintf(stderr,"\nZN_TcpSocket_NewSocketClient : getaddrinfo for '%s:%i' failed with error: %d\n",_host,_portno,i_result);
 		return INVALID_SOCKET;
 	}
 
@@ -175,7 +175,7 @@ SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 			error=WSAGetLastError();
 	#endif
 			fprintf(stderr,"\nconnect failed with error: %i\n", error);
-			ZN_TcpUtils_CloseSocket(&socket_client);
+			ZN_TcpSocket_CloseSocket(&socket_client);
 			socket_client = INVALID_SOCKET;
 			continue;
 		}
@@ -223,7 +223,7 @@ SOCKET ZN_TcpUtils_NewSocketClient(const char * _host, int _portno){
 //  receive  a  buffer  from  a  TCP  socket  with  error  checking
 //  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
+int  ZN_TcpSocket_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 {
 	int result;
 
@@ -234,7 +234,7 @@ int  ZN_TcpUtils_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  ZN_TcpUtils_SendBytes(SOCKET  _socket,  const uint8_t  *_buffer,  size_t  _buffer_len) {
+int  ZN_TcpSocket_SendBytes(SOCKET  _socket,  const uint8_t  *_buffer,  size_t  _buffer_len) {
 	int  result=0;
 
 	if(!_buffer_len || !_buffer_len) {
@@ -248,7 +248,7 @@ int  ZN_TcpUtils_SendBytes(SOCKET  _socket,  const uint8_t  *_buffer,  size_t  _
 	return result;
 }
 
-void	ZN_TcpUtils_CloseChannel(SOCKET  _socket, int _channel){
+void	ZN_TcpSocket_CloseChannel(SOCKET  _socket, int _channel){
 
 	if(_socket == INVALID_SOCKET){
 		return;
@@ -258,7 +258,7 @@ void	ZN_TcpUtils_CloseChannel(SOCKET  _socket, int _channel){
 }
 
 
-void ZN_TcpUtils_CloseSocket(SOCKET *_socket){
+void ZN_TcpSocket_CloseSocket(SOCKET *_socket){
 
 	if(*_socket == INVALID_SOCKET){
 		return;

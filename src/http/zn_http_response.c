@@ -240,7 +240,7 @@ void ZN_HttpResponse_Send(ZN_HttpResponse *http_response,SOCKET dst_socket, ZN_H
 	memcpy(buffer+header_str_len				         ,http_response->data.buffer,data_len);
 	buffer[header_str_len+data_len]=10;
 
-	ZN_TcpUtils_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
+	ZN_TcpSocket_SendBytes(dst_socket,(uint8_t *)buffer,total_size);
 
 	ZN_FREE(buffer);
 }

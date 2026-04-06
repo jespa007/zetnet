@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
 		switch(getchar()){
 		case 'o':
 			// close socket
-			if((socket = ZN_TcpUtils_NewSocketClient(host,port)) != INVALID_SOCKET){
+			if((socket = ZN_TcpSocket_NewSocketClient(host,port)) != INVALID_SOCKET){
 				printf("Socket opened\n");
 			}else{
 				fprintf(stderr,"Cannot create socket\n");
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 		case 'c':
 			// close socket
 			if(socket != INVALID_SOCKET){
-				ZN_TcpUtils_CloseSocket(&socket);
+				ZN_TcpSocket_CloseSocket(&socket);
 				printf("Socket closed\n");
 			}else{
 				fprintf(stderr,"Cannot close socket. Socket not open!\n");
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]){
 					int bytes_sent = 0;
 
 					do{
-						bytes_sent = ZN_TcpUtils_SendBytes(socket,buffer+offset,bytes_to_send);
+						bytes_sent = ZN_TcpSocket_SendBytes(socket,buffer+offset,bytes_to_send);
 
 						if(bytes_sent != ZN_ERROR){
 							bytes_to_send-=bytes_sent;
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
 				int received_bytes = 0;
 				do{
 					// there's timeout ?
-					int received_bytes = ZN_TcpUtils_ReceiveBytes(socket,buffer,BUFFER_LEN);
+					int received_bytes = ZN_TcpSocket_ReceiveBytes(socket,buffer,BUFFER_LEN);
 
 					for(int r = 0; r < received_bytes; r++){
 						putc(buffer[r],stdout);
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]){
 	}while(!exit);
 
 	if(socket != INVALID_SOCKET){
-		ZN_TcpUtils_CloseSocket(&socket);
+		ZN_TcpSocket_CloseSocket(&socket);
 	}
 
 	if(host != NULL){

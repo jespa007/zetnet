@@ -5,7 +5,9 @@ typedef struct ZN_Connection ZN_Connection;
 
 struct ZN_Connection{
     SOCKET socket;
+#ifdef __WITH_SSL__
     SSL   *ssl;
+#endif
     bool   use_ssl;
 };
 

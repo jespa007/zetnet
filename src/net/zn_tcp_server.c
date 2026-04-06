@@ -210,7 +210,7 @@ bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server, const char *_host,  int _por
 
 	ZN_TcpServer_SetTimeout(tcp_server,ZN_DEFAULT_TIMEOUT_SECONDS);
 
-	if((tcp_server->sockfd=ZN_TcpUtils_NewSocketServer(_host, _portno))!=INVALID_SOCKET){
+	if((tcp_server->sockfd=ZN_TcpSocket_NewSocketServer(_host, _portno))!=INVALID_SOCKET){
 
 
 		 if(pthread_create(&tcp_server->thread,NULL,ZN_TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
@@ -275,7 +275,7 @@ bool ZN_TcpServer_CloseClient(ZN_TcpServer * tcp_server,ZN_TcpServerClient *clie
 #endif
 
 			// close socket client...
-			ZN_TcpUtils_CloseSocket(&clients->socket);
+			ZN_TcpSocket_CloseSocket(&clients->socket);
 
 			clients->socket=INVALID_SOCKET;
 			clients->streaming_header_sent=false;
@@ -318,7 +318,7 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 
 		if(clients==NULL){ // no space left ... reject client ...
 			fprintf(stderr,"\n*** Maximum client count reached - rejecting client connection ***\n");
-			ZN_TcpUtils_CloseSocket(&new_socket);
+			ZN_TcpSocket_CloseSocket(&new_socket);
 		}else{
 
 #if __DEBUG__
@@ -342,7 +342,7 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 				int result=0;
 				if(!tcp_server->is_streaming_server){ // read from client...
 
-					result = ZN_TcpUtils_ReceiveBytes(tcp_server->clients[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
+					result = ZN_TcpSocket_ReceiveBytes(tcp_server->clients[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
 				}
 
 				if(result > 0) {// serve to client ...
@@ -439,10 +439,10 @@ void ZN_TcpServer_Stop(ZN_TcpServer * tcp_server) {
 			}
 		}
 
-		ZN_TcpUtils_CloseSocket(&tcp_server->sockfd);
+		ZN_TcpSocket_CloseSocket(&tcp_server->sockfd);
 
 		if(tcp_server->sockfd!=INVALID_SOCKET){
-			ZN_TcpUtils_CloseSocket(&tcp_server->sockfd);
+			ZN_TcpSocket_CloseSocket(&tcp_server->sockfd);
 		}
 
 		printf("Disconnect server\n");

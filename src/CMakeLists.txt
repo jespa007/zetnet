@@ -2,6 +2,23 @@ cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
 
+set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
+
+set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
+set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT}/lib64/libssl.a")
+set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT}/lib64/libcrypto.a")
+
+if(EXISTS ${OPENSSL_SSL_LIBRARY} AND EXISTS ${OPENSSL_CRYPTO_LIBRARY})
+    message(STATUS "OpenSSL : Yes")
+
+ 	option(__WITH_SSL__ "Enable USE_SSL" ON)
+else()
+    message(STATUS "OpenSSL : No (Not found at '${OPENSSL_ROOT}')")
+    option(__WITH_SSL__ "Enable USE_SSL" OFF)
+endif()
+
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/base/config.h)
+
 IF( NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE Release )
 ENDIF()
@@ -14,7 +31,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set( POST_NAME "_d")
 endif()
 
-MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
+MESSAGE (STATUS "Target: " ${CMAKE_BUILD_TYPE})
 
 
 file(READ "zetnet.h" zetnet_h)
@@ -30,7 +47,7 @@ string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_PATCH)
 
 
 
-MESSAGE("-- Zetnet ${ZETNET_VERSION_MAJOR}.${ZETNET_VERSION_MINOR}.${ZETNET_VERSION_PATCH}" )
+MESSAGE(STATUS "Zetnet ${ZETNET_VERSION_MAJOR}.${ZETNET_VERSION_MINOR}.${ZETNET_VERSION_PATCH}" )
 
 SET(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZETNET_VERSION_PATCH}")
 
@@ -67,7 +84,7 @@ link_directories (
 	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/lib64
 )
 
-message("-- Install directory: " ${CMAKE_INSTALL_PREFIX})
+message(STATUS "Install directory: " ${CMAKE_INSTALL_PREFIX})
 
 set(ZETNET_LIB_SRCS "")
 
@@ -91,14 +108,14 @@ else()  # g++ / gcc
 	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
 	  
 	if (MINGW)
-		MESSAGE("-- Plataform: MINGW" )
-		message("-- Mingw path: $ENV{MINGWDIR} ")
+		MESSAGE(STATUS "Plataform: MINGW" )
+		message(STATUS "Mingw path: $ENV{MINGWDIR} ")
 		SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -DEZXML_NOMMAP " )
 		set(CMAKE_LEGACY_MINGW_WIN32 0)
 	elseif(UNIX)
-    	MESSAGE ("-- Plataform: UNIX" )
+    	MESSAGE (STATUS "Plataform: UNIX" )
     else()
-    	MESSAGE ("-- Plataform: Unknown" )
+    	MESSAGE (STATUS "Plataform: Unknown" )
 	endif()
 	
 	IF ( IS_DEBUG)
@@ -106,7 +123,7 @@ else()  # g++ / gcc
 		
 		IF (EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr)
 		
-			message("-- Memmanager: Yes")
+			message(STATUS "Memmanager: Yes")
 			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
 			include_directories (
 				${PROJECT_SOURCE_DIR}/../../memmgr
@@ -119,12 +136,12 @@ else()  # g++ / gcc
 			if(UNIX)
 				if( NOT "${DIST}" STREQUAL "Alpine")
 					set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -fsanitize=address ")
-					message("-- Memmanager: -fsanitize=address")
+					message(STATUS "Memmanager: -fsanitize=address")
 				else()
-					message("-- Memmanager: -fsanitize NOT supported")
+					message(STATUS "Memmanager: -fsanitize NOT supported")
 				endif()
 			 else()
-			 	message("-- Memmanager: OFF (../../memmgr not exist)")
+			 	message(STATUS "Memmanager: OFF (../../memmgr not exist)")
 			 endif()
 		ENDIF()
 	ELSE()
@@ -141,13 +158,13 @@ endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	# 64 bits
-	MESSAGE ("-- Architecture: 64bit")
+	MESSAGE (STATUS "Architecture: 64bit")
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     # 32 bits
-    MESSAGE ("-- Architecture: 32bit")
+    MESSAGE (STATUS "Architecture: 32bit")
 endif()
 
-MESSAGE ("-- Target: " ${CMAKE_BUILD_TYPE})
+MESSAGE (STATUS "Target: " ${CMAKE_BUILD_TYPE})
 
 
 #
@@ -190,7 +207,7 @@ else()
 	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PUBLIC BUILD_STATIC_LIBS)
 endif()
 
-message("-- Library type: " ${LIBRARY_TYPE_CREATION})
+message(STATUS "Library type: " ${LIBRARY_TYPE_CREATION})
 
 
 # zetnet library
@@ -200,31 +217,23 @@ if(MSVC)
 	#only for msvc...
 	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
 endif()
-	
+
 if(MINGW OR MSVC)
-	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32 crypt32)	
+	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32)	
+endif()
+
+
+if(__WITH_SSL__)
+	set(LIBRARY_DEPS ${LIBRARY_DEPS} ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY} )
+	
+	if(MINGW OR MSVC)
+		set(LIBRARY_DEPS ${LIBRARY_DEPS} crypt32)	
+	endif()
+
 endif()
 
 target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
 
-set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
-
-set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
-set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT}/lib64/libssl.a")
-set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT}/lib64/libcrypto.a")
-
-if(EXISTS ${OPENSSL_SSL_LIBRARY} AND EXISTS ${OPENSSL_CRYPTO_LIBRARY})
-    message(STATUS "Using bundled OpenSSL")
-
-    target_include_directories(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
-    target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE
-        ${OPENSSL_SSL_LIBRARY}
-        ${OPENSSL_CRYPTO_LIBRARY}
-    )
-    target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE _WITH_SSL_)
-else()
-    message(STATUS "Bundled OpenSSL not found → SSL disabled")
-endif()
 
 SET(
 	HS

@@ -18,7 +18,7 @@ bool GestMessage(ZN_TcpServer * _tcp_server,ZN_TcpServerClient * _client, uint8_
 	printf("sending echo\n");
 
 	do{
-		bytes_sent = ZN_TcpUtils_SendBytes(_client->socket,_buffer+offset,bytes_to_send);
+		bytes_sent = ZN_TcpSocket_SendBytes(_client->socket,_buffer+offset,bytes_to_send);
 
 		if(bytes_sent != ZN_ERROR){
 			bytes_to_send-=bytes_sent;

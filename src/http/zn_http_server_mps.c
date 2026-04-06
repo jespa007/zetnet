@@ -59,7 +59,7 @@ bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_TcpServerClient
 
 		// send header...
 		if(!client_socket->streaming_header_sent){
-			if(!ZN_TcpUtils_SendBytes(client_socket->socket,(uint8_t *)HTTP_SERVER_MPS_HEADER, strlen(HTTP_SERVER_MPS_HEADER))){
+			if(!ZN_TcpSocket_SendBytes(client_socket->socket,(uint8_t *)HTTP_SERVER_MPS_HEADER, strlen(HTTP_SERVER_MPS_HEADER))){
 #if __DEBUG__
 				fprintf(stderr,"\nZN_HttpServerMPS_ZN_TcpServerOnGestMessage:Erasing client (Stream)\n");
 #endif
@@ -71,7 +71,7 @@ bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_TcpServerClient
 		}
 
 		// send streaming...
-		if(!ZN_TcpUtils_SendBytes(client_socket->socket,(uint8_t *)start_buffer, buffer_len)){
+		if(!ZN_TcpSocket_SendBytes(client_socket->socket,(uint8_t *)start_buffer, buffer_len)){
 
 			ZN_LOG_ERRORF("gestMessage: Cannot send bytes to socket. Erasing client (Stream)");
 
