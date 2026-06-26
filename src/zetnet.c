@@ -1,7 +1,8 @@
 #include "zetnet.h"
 
-
+#ifdef __WITH_SSL__
 static SSL_CTX * g_ssl_ctx = NULL;
+#endif
 
 bool ZN_Init(void){
 #ifdef _WIN32

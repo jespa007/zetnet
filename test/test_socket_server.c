@@ -1,10 +1,8 @@
 #include "../src/zetnet.h"
 
 
-
 #define DEFAULT_PORT 27015
 
-// MAY BE YES! DO MAX BLOCK LENGTH TO AVOID MALLOCS/FREE A LOT OF TIME!
 bool GestMessage(ZN_TcpServer * _tcp_server,ZN_TcpServerClient * _client, uint8_t * _buffer, size_t _buffer_len, void * _user_data){
 
 	ZN_UNUSED_2PARAMS(_tcp_server, _user_data);

@@ -34,13 +34,16 @@ int ZN_Connection_Write(ZN_Connection *c, const uint8_t *data, int len) {
     if (c->use_ssl) {
     	return ZN_SSL_Write(c->ssl, data, len);
     }
+
 #endif
     return ZN_TcpSocket_SendBytes(c->socket, data, len);
 }
 
 int ZN_Connection_Read(ZN_Connection *c, uint8_t *buf, int len) {
 #ifdef __WITH_SSL__
-    if (c->use_ssl) return ZN_SSL_Read(c->ssl, buf, len);
+    if (c->use_ssl) {
+    	return ZN_SSL_Read(c->ssl, buf, len);
+    }
 #endif
     return ZN_TcpSocket_ReceiveBytes(c->socket, buf, len);
 }
