@@ -6,16 +6,49 @@
 
 int main(int argc, char *argv[]) {
 
+	bool error = false;
+	ZN_HttpRequest req;
+	ZN_Url url;
+
+	for(int i=1; i < argc && !error; i++){
+		ZN_List *l=ZN_CStr_Split(argv[i],'=');
+		switch(l->count){
+		default:
+			if(strcmp(l->items[0],"http",4) == 0){
+				if (!ZN_Url_Parse(l->items[0], &url)) {
+				    fprintf(stderr, "Invalid URL\n");
+				    error=true;
+				}
+			}else{
+				fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
+				error=true;
+			}
+			break;
+		case 2:
+			if(strcmp(l->items[0],"-H")==0){
+				ZN_List *h=ZN_CStr_Split(l->items[0],':');
+
+				if(l->count == 2){
+					ZN_HttpRequest_AddHeader(&req, h->items[0],h->items[1]);
+				}
+
+				ZN_List_DeleteAndFreeAllItems(h);
+			}else{
+				fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
+				error=true;
+			}
+			break;
+		}
+
+		ZN_List_DeleteAndFreeAllItems(l);
+	}
+
     if (argc < 2) {
-        fprintf(stderr, "Usage: zn_fetch <url>\n");
+        fprintf(stderr, "Usage: fetch <url>\n");
         return 1;
     }
 
-    ZN_Url url;
-    if (!ZN_Url_Parse(argv[1], &url)) {
-        fprintf(stderr, "Invalid URL\n");
-        return 1;
-    }
+
 
     ZN_Init();
 
@@ -45,6 +78,10 @@ int main(int argc, char *argv[]) {
 
 
     ZN_DeInit();
+
+    if(req.param != NULL){
+
+    }
 
     return 0;
 }

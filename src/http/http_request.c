@@ -1,14 +1,191 @@
 #include "zetnet.h"
 
 
-void ZN_HttpRequest_BuildGet(char *out, size_t size, const ZN_Url *url) {
-    snprintf(out, size,
-        "GET %s HTTP/1.1\r\n"
-        "Host: %s\r\n"
+
+static size_t ZN_Appendf(
+    char *out,
+    size_t size,
+    size_t used,
+    const char *fmt,
+    ...
+) {
+    if (!out || used >= size) {
+        return used;
+    }
+
+    va_list args;
+    va_start(args, fmt);
+
+    int written = vsnprintf(out + used, size - used, fmt, args);
+
+    va_end(args);
+
+    if (written < 0) {
+        return used;
+    }
+
+    if ((size_t)written >= size - used) {
+        return size;
+    }
+
+    return used + (size_t)written;
+}
+
+bool ZN_HttpRequest_AddHeader(
+    ZN_HttpRequest *req,
+    const char *name,
+    const char *value
+) {
+    if (!req || !name || !value) {
+        return false;
+    }
+
+    if (!req->param) {
+        req->param = ZN_List_New();
+
+        if (!req->param) {
+            return false;
+        }
+    }
+
+    ZN_HttpParamValue *header = ZN_NEW(ZN_HttpParamValue);
+
+    if (!header) {
+        return false;
+    }
+
+    snprintf(header->name, sizeof(header->name), "%s", name);
+    snprintf(header->value, sizeof(header->value), "%s", value);
+
+    ZN_List_Add(req->param, header);
+
+    return true;
+}
+
+bool ZN_HttpRequest_Build(
+    char *out,
+    size_t size,
+    const ZN_HttpRequest *req
+) {
+    if (!out || size == 0 || !req) {
+        return false;
+    }
+
+    out[0] = '\0';
+
+    const char *method = req->type[0] ? req->type : "GET";
+    const char *path   = req->URL[0]  ? req->URL  : "/";
+
+    size_t used = 0;
+
+    used = ZN_Appendf(
+        out,
+        size,
+        used,
+        "%s %s HTTP/1.1\r\n",
+        method,
+        path
+    );
+
+    used = ZN_Appendf(
+        out,
+        size,
+        used,
+        "Host: %s\r\n",
+        req->host
+    );
+
+    used = ZN_Appendf(
+        out,
+        size,
+        used,
         "User-Agent: zetnet/1.0\r\n"
-        "Connection: close\r\n\r\n",
-        url->path,
-        url->host);
+    );
+
+    if (req->mime) {
+        used = ZN_Appendf(
+            out,
+            size,
+            used,
+            "Accept: %s\r\n",
+            req->mime
+        );
+    } else {
+        used = ZN_Appendf(
+            out,
+            size,
+            used,
+            "Accept: */*\r\n"
+        );
+    }
+
+    if (req->referer[0]) {
+        used = ZN_Appendf(
+            out,
+            size,
+            used,
+            "Referer: %s\r\n",
+            req->referer
+        );
+    }
+
+    if (req->content_type[0]) {
+        used = ZN_Appendf(
+            out,
+            size,
+            used,
+            "Content-Type: %s\r\n",
+            req->content_type
+        );
+    }
+
+    if (req->param) {
+        for (uint16_t i = 0; i < ZN_List_Count(req->param); i++) {
+            ZN_HttpParamValue *header =
+                (ZN_HttpParamValue *)ZN_List_Get(req->param, i);
+
+            if (header && header->name[0]) {
+                used = ZN_Appendf(
+                    out,
+                    size,
+                    used,
+                    "%s: %s\r\n",
+                    header->name,
+                    header->value
+                );
+            }
+        }
+    }
+
+    used = ZN_Appendf(
+        out,
+        size,
+        used,
+        "Connection: close\r\n"
+        "\r\n"
+    );
+
+    return used < size;
+}
+
+void ZN_HttpRequest_InitGetFromUrl(
+    ZN_HttpRequest *req,
+    const ZN_Url *url
+) {
+    memset(req, 0, sizeof(*req));
+
+    snprintf(req->type, sizeof(req->type), "GET");
+    snprintf(req->host, sizeof(req->host), "%s", url->host);
+
+    if (url->path[0]) {
+        snprintf(req->URL, sizeof(req->URL), "%s", url->path);
+    } else {
+        snprintf(req->URL, sizeof(req->URL), "/");
+    }
+
+    req->mime = "*/*";
+    req->is_binary = false;
+    req->param = NULL;
 }
 
 

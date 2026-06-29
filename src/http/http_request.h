@@ -25,6 +25,23 @@ struct ZN_HttpRequest
 };
 
 void 				ZN_HttpRequest_BuildGet(char *out, size_t size, const ZN_Url *url);
+bool 				ZN_HttpRequest_Build(
+    char *out,
+    size_t size,
+    const ZN_HttpRequest *req
+);
+
+bool ZN_HttpRequest_AddHeader(
+    ZN_HttpRequest *req,
+    const char *name,
+    const char *value
+);
+
+void 				ZN_HttpRequest_InitGetFromUrl(
+    ZN_HttpRequest *req,
+    const ZN_Url *url
+);
+
 ZN_HttpRequest * 	ZN_HttpRequest_GetRequest(const char * request);
 void		  		ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
 
