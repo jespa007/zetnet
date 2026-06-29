@@ -4,15 +4,15 @@
 
 
 
-#include "zn_common.h"
-#include "zn_list.h"
-#include "zn_dir.h"
-#include "zn_file.h"
-#include "zn_log.h"
-#include "zn_memory.h"
-#include "zn_path.h"
-#include "zn_string.h"
-#include "zn_url.h"
+#include "common.h"
+#include "list.h"
+#include "dir.h"
+#include "file.h"
+#include "log.h"
+#include "memory.h"
+#include "path.h"
+#include "string.h"
+#include "url.h"
 
 
 

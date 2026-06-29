@@ -2,7 +2,6 @@
 
 // sample socket client
 // https://learn.microsoft.com/es-es/windows/win32/api/winsock/nf-winsock-recv
-
 #define DEFAULT_PORT 27015
 #define BUFFER_LEN   512
 #define CLEAR_BUFFER(buffer) memset(buffer,0,sizeof(buffer))

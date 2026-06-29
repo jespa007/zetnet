@@ -238,29 +238,29 @@ target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
 SET(
 	HS
 	
-	base/@zn_base.h
-	base/zn_dir.h
-	base/zn_file.h
-	base/zn_list.h
-	base/zn_log.h
-	base/zn_memory.h
-	base/zn_path.h
-	base/zn_string.h
-	base/zn_url.h
+	base/@base.h
+	base/dir.h
+	base/file.h
+	base/list.h
+	base/log.h
+	base/memory.h
+	base/path.h
+	base/string.h
+	base/url.h
 	
-	http/@zn_http.h
-	http/zn_http_handle_connection.h
-	http/zn_http_param_value.h
-	http/zn_http_request.h
-	http/zn_http_response.h
-	http/zn_http_route.h
-	http/zn_http_router.h
-	http/zn_http_server.h
-	http/zn_http_server_mps.h
+	http/@http.h
+	http/http_handle_connection.h
+	http/http_param_value.h
+	http/http_request.h
+	http/http_response.h
+	http/http_route.h
+	http/http_router.h
+	http/http_server.h
+	http/http_server_mps.h
 	
-	net/@zn_net.h
-	net/zn_socket.h
-	net/zn_tcp_server.h
+	net/@net.h
+	net/socket.h
+	net/tcp_server.h
 	
 	zetnet.h
 
@@ -271,12 +271,12 @@ INSTALL_HEADERS_WITH_DIRECTORY(HS)
 #-----------------------------------------
 # EXECUTABLES
 
-# zn_url 
-add_executable(zn_fetch${POST_NAME}
-	util/zn_fetch.c
+# url 
+add_executable(fetch${POST_NAME}
+	util/fetch.c
 )
 
-target_link_libraries(zn_fetch${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
+target_link_libraries(fetch${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
 
 # TESTS
 

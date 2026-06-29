@@ -3,11 +3,11 @@
 // Controls which source files are part of this module build.
 
 
-#include "zn_dir.c"
-#include "zn_file.c"
-#include "zn_list.c"
-#include "zn_log.c"
-#include "zn_memory.c"
-#include "zn_path.c"
-#include "zn_string.c"
-#include "zn_url.c"
+#include "dir.c"
+#include "file.c"
+#include "list.c"
+#include "log.c"
+#include "memory.c"
+#include "path.c"
+#include "string.c"
+#include "url.c"

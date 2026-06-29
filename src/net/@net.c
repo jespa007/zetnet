@@ -3,7 +3,7 @@
 // Controls which source files are part of this module build.
 
 
-#include "zn_tcp_server.c"
-#include "zn_tcp_socket.c"
-#include "zn_ssl.c"
-#include "zn_connection.c"
+#include "tcp_server.c"
+#include "tcp_socket.c"
+#include "ssl.c"
+#include "connection.c"
