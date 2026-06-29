@@ -1,6 +1,7 @@
 /bin/
 /build/
 /.pydevproject
+/src/base/config.h
 /.settings/
 /3rdparty/
 /Release/

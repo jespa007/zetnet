@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
 
-set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
-
+if(NOT OPENSSL_ROOT)
+	set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
+endif()
 set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
 set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT}/lib64/libssl.a")
 set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT}/lib64/libcrypto.a")
@@ -77,7 +78,7 @@ ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 include_directories (
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/..
-	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/include
+	${OPENSSL_INCLUDE_DIR}
 )
 
 link_directories (
@@ -218,11 +219,6 @@ if(MSVC)
 	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
 endif()
 
-if(MINGW OR MSVC)
-	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32)	
-endif()
-
-
 if(__WITH_SSL__)
 	set(LIBRARY_DEPS ${LIBRARY_DEPS} ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY} )
 	
@@ -232,6 +228,10 @@ if(__WITH_SSL__)
 
 endif()
 
+if(MINGW OR MSVC)
+	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32)	
+endif()
+
 target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
 
 
@@ -239,13 +239,15 @@ SET(
 	HS
 	
 	base/@base.h
+	base/common.h
+	base/config.h
+	base/cstr.h
 	base/dir.h
 	base/file.h
 	base/list.h
 	base/log.h
 	base/memory.h
 	base/path.h
-	base/string.h
 	base/url.h
 	
 	http/@http.h
@@ -255,12 +257,14 @@ SET(
 	http/http_response.h
 	http/http_route.h
 	http/http_router.h
-	http/http_server.h
 	http/http_server_mps.h
+	http/http_server.h
 	
 	net/@net.h
-	net/socket.h
+	net/connection.h
+	net/ssl.h
 	net/tcp_server.h
+	net/tcp_socket.h
 	
 	zetnet.h
 
