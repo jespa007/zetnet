@@ -1,12 +1,34 @@
 ## ZetNet
 =========
 
-TODO
+----------------------------
+Date: 29/06/2026
+Version: 1.5.0
 
-- [] Implement openssl (https://github.com/ppelleti/https-example)
-- [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
+- [x] Implement test socket client / test socket server
+- [x] Rename files snake_case
+- [x] Implement tool zn_fetch
+- [x] Move all file from directory util -> base
+- [x] Added ssl support ?
+- [x] ZN_TcpUtils_ReceiveBytes : Fixed receive number of bytes by parameter instead of fixed ZN_TCP_MESSAGE_LENGTH
 
+----------------------------
+Date: 03/02/2024
+Version: 1.4.4
 
+- [x] Solved bug incorrect body size when sending http errors
+
+----------------------------
+Date: 03/02/2024
+Version: 1.4.3
+
+- [x] ZN_HttpRequest : Fixed mimetype *.svg as image/svg+xml
+
+----------------------------
+Date: 03/02/2024
+Version: 1.4.2
+
+- [x] ZN_HttpRequest : Added *.cjs,*.mjs as text/javascript mimetype
 
 ----------------------------
 Date: 03/02/2024
