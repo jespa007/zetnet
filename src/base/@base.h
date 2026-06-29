@@ -11,7 +11,7 @@
 #include "log.h"
 #include "memory.h"
 #include "path.h"
-#include "string.h"
+#include "cstr.h"
 #include "url.h"
 
 

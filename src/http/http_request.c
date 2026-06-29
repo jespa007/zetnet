@@ -73,7 +73,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 		return NULL;
 	}
 
-	ZN_String_DeleteChar(request,'\r'); // avoid windows \r
+	ZN_CStr_DeleteChar(request,'\r'); // avoid windows \r
 
 	is_binary= false;
 
@@ -81,8 +81,8 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 	request=ZN_Url_Unescape(request_aux); // unescape request...
 
 
-	tokens = ZN_String_Split(request,'\n');
-	url_tokens = ZN_String_Split(tokens->items[0],' ');
+	tokens = ZN_CStr_Split(request,'\n');
+	url_tokens = ZN_CStr_Split(tokens->items[0],' ');
 
 	// get type
 	type = url_tokens->items[0]; // GET/POST/etc...
@@ -146,7 +146,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 	}
 
 
-	lst= ZN_String_Split(url, '?');//.Split('?');
+	lst= ZN_CStr_Split(url, '?');//.Split('?');
 	if (lst->count > 1)
 	{
 		strcpy(url,lst->items[0]);
@@ -165,7 +165,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 		if (is_header)
 		{
 
-			ZN_List * sub_tokens = ZN_String_Split(tokens->items[i],':'); // split only the first : occurrence ...
+			ZN_List * sub_tokens = ZN_CStr_Split(tokens->items[i],':'); // split only the first : occurrence ...
 
 			if (sub_tokens->count > 1) // it has header value ...
 			{
@@ -179,11 +179,11 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 				}else if(strcmp(variable ,  "Accept")==0){
 
 				}else if(strcmp(variable ,  "Content-Type")==0){
-					ZN_List *tl=ZN_String_Split(value,';');
+					ZN_List *tl=ZN_CStr_Split(value,';');
 					if(tl->count > 0){
 						strcpy(content_type,tl->items[0]);
 					}
-					ZN_String_DeleteChar(content_type,' ');
+					ZN_CStr_DeleteChar(content_type,' ');
 					ZN_List_DeleteAndFreeAllItems(tl);
 				}
 			}
@@ -194,13 +194,13 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 		}
 		else // check parameters...
 		{
-			ZN_List * pre_check_params = ZN_String_Split(tokens->items[i],'&');
+			ZN_List * pre_check_params = ZN_CStr_Split(tokens->items[i],'&');
 
 			if (pre_check_params->count >= 1)
 			{
 				for (unsigned j = 0; j < pre_check_params->count; j++)
 				{
-					ZN_List *sub_tokens = ZN_String_Split(pre_check_params->items[j], '=' ); // split only the first = occurrence ...
+					ZN_List *sub_tokens = ZN_CStr_Split(pre_check_params->items[j], '=' ); // split only the first = occurrence ...
 
 					if (sub_tokens->count == 2)
 					{

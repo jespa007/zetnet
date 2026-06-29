@@ -39,7 +39,7 @@ void ZN_HttpHandleConnection_DoHandle(ZN_HttpHandleConnection *_http_handle_clie
 	sprintf(path_url,"%s",unescaped_url);
 
 #ifdef WIN32
-	ZN_String_ReplaceChar(path_url, '/','\\');//CUri::unescape(request->URL)
+	ZN_CStr_ReplaceChar(path_url, '/','\\');//CUri::unescape(request->URL)
 #endif
 
 	if(strcmp(http_request->type,"GET")==0){

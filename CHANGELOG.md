@@ -7,10 +7,11 @@ TODO
 - [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
 
 ----------------------------
-Date: XX/XX/XXXX
+Date: 29/06/2026
 Version: 1.5.0
 
 - [x] Implement test socket client / test socket server
+- [x] Rename files snake_case
 - [x] Implement tool zn_fetch
 - [x] Move all file from directory util -> base
 - [x] Added ssl support ?

@@ -9,5 +9,5 @@
 #include "log.c"
 #include "memory.c"
 #include "path.c"
-#include "string.c"
+#include "cstr.c"
 #include "url.c"

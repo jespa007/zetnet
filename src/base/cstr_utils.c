@@ -1,15 +1,15 @@
 #include "zetnet.h"
 
 
-char * ZN_String_StrDup(const char * _str){
+char * ZN_CStr_StrDup(const char * _str){
 	char *str=ZN_MALLOC(strlen(_str)+1);
 	strcpy(str,_str);
 	return str;
 }
 
-void ZN_String_SplitBuiltIn(const char *_str, char delim, ZN_List  * elems) {
+void ZN_CStr_SplitBuiltIn(const char *_str, char delim, ZN_List  * elems) {
 	char delim_str[2]={delim,0};
-	char * str = ZN_String_StrDup(_str);
+	char * str = ZN_CStr_StrDup(_str);
 	char * token = strtok((char *)str, delim_str);
    // loop through the string to extract all other tokens
    while( token != NULL ) {
@@ -23,15 +23,15 @@ void ZN_String_SplitBuiltIn(const char *_str, char delim, ZN_List  * elems) {
 	ZN_FREE(str);
 }
 
-ZN_List * ZN_String_Split(const char * s, char delim) {
+ZN_List * ZN_CStr_Split(const char * s, char delim) {
 	ZN_List *elems=ZN_List_New();
 	if(s!=0 && strcmp(s,"")!=0){
-		ZN_String_SplitBuiltIn(s, delim, elems);
+		ZN_CStr_SplitBuiltIn(s, delim, elems);
 	}
 	return elems;
 }
 
-void  ZN_String_ReplaceChar(char * str, char old_ch, char new_ch){
+void  ZN_CStr_ReplaceChar(char * str, char old_ch, char new_ch){
 	while(*str!=0){
 		if(*str == old_ch){
 			*str = new_ch;
@@ -40,7 +40,7 @@ void  ZN_String_ReplaceChar(char * str, char old_ch, char new_ch){
 	}
 }
 
-int ZN_String_Find(char *txt1,const char *txt2)
+int ZN_CStr_Find(char *txt1,const char *txt2)
 {
     char *posstr=strstr(txt1,txt2);
     if(posstr!=NULL)
@@ -52,7 +52,7 @@ int ZN_String_Find(char *txt1,const char *txt2)
     }
 }
 
-bool ZN_String_ToInt(int * i, const char *s, int base){
+bool ZN_CStr_ToInt(int * i, const char *s, int base){
 	 char *end;
 	long  l;
 	errno = 0;
@@ -74,7 +74,7 @@ bool ZN_String_ToInt(int * i, const char *s, int base){
 	return true;
 }
 
-char *ZN_String_dup(const char *in){
+char *ZN_CStr_dup(const char *in){
 	size_t len=0;
 	char *out;
 
@@ -89,16 +89,16 @@ char *ZN_String_dup(const char *in){
 }
 
 /*
-void  ZN_String_Replace(char * str, const char * match_str, const char * replace_str){
+void  ZN_CStr_Replace(char * str, const char * match_str, const char * replace_str){
 	char *tmp=NULL;
 	char *nextStr=NULL;
 	int pos=0;
 
-	tmp=ZN_String_dup(str);
+	tmp=ZN_CStr_dup(str);
 
 	if(tmp == NULL) return;
 
-	pos=ZN_String_Find(tmp,match_str);
+	pos=ZN_CStr_Find(tmp,match_str);
 	if(pos!=-1)
 	{
 		str[0]=0;
@@ -111,7 +111,7 @@ void  ZN_String_Replace(char * str, const char * match_str, const char * replace
 
 		while(strlen(nextStr)!=0)
 		{
-			pos=ZN_String_Find(nextStr,match_str);
+			pos=ZN_CStr_Find(nextStr,match_str);
 
 			if(pos==-1)
 			{
@@ -130,7 +130,7 @@ void  ZN_String_Replace(char * str, const char * match_str, const char * replace
 
 }*/
 
-void  ZN_String_DeleteChar(char * str, char ch_to_remove){
+void  ZN_CStr_DeleteChar(char * str, char ch_to_remove){
 
 	while(*str!=0){
 		if(*str == ch_to_remove){ // move 1 position left...
@@ -146,13 +146,13 @@ void  ZN_String_DeleteChar(char * str, char ch_to_remove){
 
 }
 
-char * ZN_String_FromInt(int number){
+char * ZN_CStr_FromInt(int number){
 	static char to_number[256];
 	sprintf(to_number,"%i",number);
 	return to_number;
 }
 
-bool ZN_String_EndsWith(const char * str, const char * end_str){
+bool ZN_CStr_EndsWith(const char * str, const char * end_str){
 	size_t len_str=strlen(str);
 	size_t len_end_str=strlen(end_str);
 	if(len_end_str<=len_str){

@@ -209,7 +209,7 @@ void ZN_HttpResponse_Send(ZN_HttpResponse *http_response,SOCKET dst_socket, ZN_H
 			strcat(header_str,"Set-Cookie: cross-site-cookie=name; SameSite=None; Secure\n");
 		}
 		strcat(header_str,"Content-Length: ");
-		strcat(header_str,ZN_String_FromInt(data_len));
+		strcat(header_str,ZN_CStr_FromInt(data_len));
 
 		if(http_response->is_binary){
 			strcat(header_str,"\nContent-Transfer-Encoding: binary");
@@ -227,7 +227,7 @@ void ZN_HttpResponse_Send(ZN_HttpResponse *http_response,SOCKET dst_socket, ZN_H
 		strcat(header_str, http_response->mime);
 		strcat(header_str,"\n");
 		strcat(header_str,"Content-Length: ");
-		strcat(header_str,ZN_String_FromInt(data_len));
+		strcat(header_str,ZN_CStr_FromInt(data_len));
 		strcat(header_str,"\n\n");
 	}
 

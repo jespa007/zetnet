@@ -72,7 +72,7 @@ bool ZN_Url_Parse(const char *url_str, ZN_Url *out) {
     memset(out, 0, sizeof(ZN_Url));
 
     // 1. Split scheme://rest
-    ZN_List *scheme_split = ZN_String_Split(url_str, ':');
+    ZN_List *scheme_split = ZN_CStr_Split(url_str, ':');
     if (!scheme_split || scheme_split->count < 2) return false;
 
     strcpy(out->scheme, scheme_split->items[0]);
@@ -108,7 +108,7 @@ bool ZN_Url_Parse(const char *url_str, ZN_Url *out) {
         *colon = '\0';
         strcpy(out->host, hostport);
 
-        if (!ZN_String_ToInt(&out->port, colon + 1, 10)) {
+        if (!ZN_CStr_ToInt(&out->port, colon + 1, 10)) {
             return false;
         }
     } else {

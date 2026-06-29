@@ -41,7 +41,7 @@ ZN_List * zn_dir_list_files_builtin(const char * folder, ZN_List *list_attribs, 
 
 					  for(unsigned i = 0; i < list_attribs->count && !ok; i++){
 
-						  if((strcmp((char *)list_attribs->items[i],"*")==0) || ZN_String_EndsWith(ent->d_name,(char *)list_attribs->items[i])) {
+						  if((strcmp((char *)list_attribs->items[i],"*")==0) || ZN_CStr_EndsWith(ent->d_name,(char *)list_attribs->items[i])) {
 							  char *filename=malloc(strlen(data)+1); // 1 end string
 
 							  strcpy(filename,data);
@@ -62,12 +62,12 @@ ZN_List * zn_dir_list_files_builtin(const char * folder, ZN_List *list_attribs, 
 
 ZN_List * zn_dir_list_files(const char * folder, const char * filter, bool recursive){
 	ZN_List * list_file=NULL;
-	ZN_List * list_attribs = ZN_String_Split(filter==NULL?"*":filter, '|');
+	ZN_List * list_attribs = ZN_CStr_Split(filter==NULL?"*":filter, '|');
 
 	for(unsigned i = 0; i < list_attribs->count; i++){
-		ZN_String_DeleteChar((char *)list_attribs->items[i],' ');
+		ZN_CStr_DeleteChar((char *)list_attribs->items[i],' ');
 		if(strcmp((char *)list_attribs->items[i],"*")!=0){
-			ZN_String_DeleteChar((char *)list_attribs->items[i],'*');
+			ZN_CStr_DeleteChar((char *)list_attribs->items[i],'*');
 		}
 	}
 

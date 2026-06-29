@@ -27,7 +27,7 @@ SOCKET ZN_TcpSocket_NewSocketServer(const char * _host, int _portno){
 #endif*/
 
 	// Resolve the server address and port
-	i_result = getaddrinfo(_host, (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
+	i_result = getaddrinfo(_host, (const char *)ZN_CStr_FromInt(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
 	   fprintf(stderr,"\ngetaddrinfo failed with error: %d\n", i_result);
 	   return INVALID_SOCKET;
@@ -148,7 +148,7 @@ SOCKET ZN_TcpSocket_NewSocketClient(const char * _host, int _portno){
 
 
 	// Resolve the server address and port
-	int i_result = getaddrinfo(_host, (const char *)ZN_String_FromInt(_portno), &serv_addr, &result);
+	int i_result = getaddrinfo(_host, (const char *)ZN_CStr_FromInt(_portno), &serv_addr, &result);
 	if ( i_result != 0 ) {
 		fprintf(stderr,"\nZN_TcpSocket_NewSocketClient : getaddrinfo for '%s:%i' failed with error: %d\n",_host,_portno,i_result);
 		return INVALID_SOCKET;

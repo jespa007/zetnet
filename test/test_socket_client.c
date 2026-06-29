@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
 	bool exit = false;
 
 	for(int i=1; i < argc && !error; i++){
-		ZN_List *l=ZN_String_Split(argv[i],'=');
+		ZN_List *l=ZN_CStr_Split(argv[i],'=');
 		switch(l->count){
 		default:
 			fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 					strcpy(host,l->items[1]);
 				}
 			}else if(strcmp(l->items[0],"--port")==0){
-				error=!ZN_String_ToInt(&port,l->items[1],10);
+				error=!ZN_CStr_ToInt(&port,l->items[1],10);
 			}else{
 				fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
 				error=true;
