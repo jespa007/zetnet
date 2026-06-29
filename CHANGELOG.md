@@ -1,11 +1,6 @@
 ## ZetNet
 =========
 
-TODO
-
-- [] Implement openssl (https://github.com/ppelleti/https-example)
-- [] Implement Websocket (https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancediomethod5a.html)
-
 ----------------------------
 Date: 29/06/2026
 Version: 1.5.0
