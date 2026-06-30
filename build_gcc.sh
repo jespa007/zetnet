@@ -17,7 +17,7 @@ TARGET="release"
 
  
 # The third parties
-OPENSSL_TAG="openssl-openssl-3.0.4"
+OPENSSL_TAG="openssl-openssl-3.5.7"
 OPENSSL_FILE=$OPENSSL_TAG".tar.gz"
 
 
@@ -91,7 +91,7 @@ if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib64/libssl"$EXTENSION_STATIC_LIB ]
 then
 
 	
-	perl Configure $PLATFORM no-shared --prefix=$THIRD_PARTY_INSTALL_DIR --openssldir=$THIRD_PARTY_INSTALL_DIR
+	perl Configure $PLATFORM no-tests no-shared --prefix=$THIRD_PARTY_INSTALL_DIR --openssldir=$THIRD_PARTY_INSTALL_DIR
 
 	# in mingw it doesn't find podman and it throws an error
 	#if ! [ $? -eq 0 ] 
