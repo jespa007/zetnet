@@ -65,7 +65,7 @@ void ZN_HttpServer_Stop(ZN_HttpServer *http_server){
 	}
 }
 
-void ZN_HttpServer_OnGetUserRequest(ZN_TcpServer * tcp_server,SOCKET  _socket_client, ZN_HttpParamValue  * param, size_t param_len, void *data){
+void ZN_HttpServer_OnGetUserRequest(ZN_TcpServer * tcp_server,SOCKET  _socket_client, ZN_HttpKeyValue  * param, size_t param_len, void *data){
 	ZN_UNUSUED_PARAM(tcp_server);
 	ZN_UNUSUED_PARAM(param);
 	ZN_UNUSUED_PARAM(param_len);

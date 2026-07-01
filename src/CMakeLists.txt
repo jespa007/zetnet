@@ -18,7 +18,7 @@ else()
     option(__WITH_SSL__ "Enable USE_SSL" OFF)
 endif()
 
-configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/base/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/../include/base/config.h)
 
 IF( NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE Release )
@@ -35,7 +35,7 @@ endif()
 MESSAGE (STATUS "Target: " ${CMAKE_BUILD_TYPE})
 
 
-file(READ "zetnet.h" zetnet_h)
+file(READ "../include/zetnet.h" zetnet_h)
 
 string(REGEX MATCH "ZETNET_VERSION_MAJOR([\t-\ ][0-9])*" _ ${zetnet_h})
 string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_MAJOR)
@@ -54,30 +54,13 @@ SET(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZE
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
-# MACRO UTILS
-#
-
-
-MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
-
-    FOREACH(HEADER ${${HEADER_LIST}})
-        get_filename_component(DIR ${HEADER} DIRECTORY)
-        INSTALL(FILES ${HEADER} DESTINATION include/zetnet/${DIR})
-    ENDFOREACH(HEADER)
-
-ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
-
-
-
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#
 # COMPILE PARAMS
 #
-
 
 include_directories (
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/..
+	${PROJECT_SOURCE_DIR}/../include
 	${OPENSSL_INCLUDE_DIR}
 )
 
@@ -234,43 +217,12 @@ endif()
 
 target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
 
-
-SET(
-	HS
-	
-	base/@base.h
-	base/common.h
-	base/config.h
-	base/cstr.h
-	base/dir.h
-	base/file.h
-	base/list.h
-	base/log.h
-	base/memory.h
-	base/path.h
-	base/url.h
-	
-	http/@http.h
-	http/http_handle_connection.h
-	http/http_param_value.h
-	http/http_request.h
-	http/http_response.h
-	http/http_route.h
-	http/http_router.h
-	http/http_server_mps.h
-	http/http_server.h
-	
-	net/@net.h
-	net/connection.h
-	net/ssl.h
-	net/tcp_server.h
-	net/tcp_socket.h
-	
-	zetnet.h
-
+install(
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/zetnet"
+    FILES_MATCHING
+        PATTERN "*.h"
 )
-
-INSTALL_HEADERS_WITH_DIRECTORY(HS)
 
 #-----------------------------------------
 # EXECUTABLES

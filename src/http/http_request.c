@@ -31,36 +31,6 @@ static size_t ZN_Appendf(
     return used + (size_t)written;
 }
 
-bool ZN_HttpRequest_AddHeader(
-    ZN_HttpRequest *req,
-    const char *name,
-    const char *value
-) {
-    if (!req || !name || !value) {
-        return false;
-    }
-
-    if (!req->param) {
-        req->param = ZN_List_New();
-
-        if (!req->param) {
-            return false;
-        }
-    }
-
-    ZN_HttpParamValue *header = ZN_NEW(ZN_HttpParamValue);
-
-    if (!header) {
-        return false;
-    }
-
-    snprintf(header->name, sizeof(header->name), "%s", name);
-    snprintf(header->value, sizeof(header->value), "%s", value);
-
-    ZN_List_Add(req->param, header);
-
-    return true;
-}
 
 bool ZN_HttpRequest_Build(
     char *out,
@@ -74,7 +44,7 @@ bool ZN_HttpRequest_Build(
     out[0] = '\0';
 
     const char *method = req->type[0] ? req->type : "GET";
-    const char *path   = req->URL[0]  ? req->URL  : "/";
+    const char *path   = req->url[0]  ? req->url  : "/";
 
     size_t used = 0;
 
@@ -139,19 +109,21 @@ bool ZN_HttpRequest_Build(
         );
     }
 
-    if (req->param) {
-        for (uint16_t i = 0; i < ZN_List_Count(req->param); i++) {
-            ZN_HttpParamValue *header =
-                (ZN_HttpParamValue *)ZN_List_Get(req->param, i);
+    if(req->params){
 
-            if (header && header->name[0]) {
+    	size_t count = ZN_Array_Count(req->params);
+    	ZN_HttpKeyValue * headers = ZN_ARRAY_HTTP_KEY_VALUE_GET_DATA(req->params);
+        for(size_t i = 0; i < count; i++) {
+            ZN_HttpKeyValue header = *headers++;
+
+            if (header.key[0]) {
                 used = ZN_Appendf(
                     out,
                     size,
                     used,
                     "%s: %s\r\n",
-                    header->name,
-                    header->value
+                    header.key,
+                    header.value
                 );
             }
         }
@@ -178,14 +150,14 @@ void ZN_HttpRequest_InitGetFromUrl(
     snprintf(req->host, sizeof(req->host), "%s", url->host);
 
     if (url->path[0]) {
-        snprintf(req->URL, sizeof(req->URL), "%s", url->path);
+        snprintf(req->url, sizeof(req->url), "%s", url->path);
     } else {
-        snprintf(req->URL, sizeof(req->URL), "/");
+        snprintf(req->url, sizeof(req->url), "/");
     }
 
     req->mime = "*/*";
     req->is_binary = false;
-    req->param = NULL;
+    req->params = NULL;
 }
 
 
@@ -196,18 +168,18 @@ ZN_HttpRequest * ZN_HttpRequest_New(char *  _type
 		, const char * _mime
 		, bool _is_binary
 		, char * _content_type
-		, ZN_List * _param
+		, ZN_Array * _params
 		)
 {
 	ZN_HttpRequest * http_request=ZN_NEW(ZN_HttpRequest);
 	strcpy(http_request->type, _type);
-	strcpy(http_request->URL ,_url);
+	strcpy(http_request->url ,_url);
 	strcpy(http_request->host, _host);
 	strcpy(http_request->referer, _referer);
 	http_request->mime=_mime;
 	http_request->is_binary 	= _is_binary;
 	strcpy(http_request->content_type, _content_type);
-	http_request->param 		= _param;
+	http_request->params 		= _params;
 
 	return http_request;
 
@@ -224,7 +196,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 	char  host[ZN_MAX_HOST_LEN]={0};
 	char referer[ZN_MAX_REFERER_LEN]={0};
 
-	ZN_List * params=NULL;
+	ZN_Array * params=NULL;
 	ZN_List * lst=NULL;
 	ZN_List * tokens = NULL;
 	ZN_List * url_tokens = NULL;
@@ -381,11 +353,9 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 
 					if (sub_tokens->count == 2)
 					{
-						ZN_List_Add(params,
-							 ZN_HttpParamValue_New(
+						ZN_HttpKeyValueArray_Push(params,
 								sub_tokens->items[0],
 								sub_tokens->items[1]
-							)
 						);
 					}
 
@@ -415,7 +385,7 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 
 void		  ZN_HttpRequest_Delete(ZN_HttpRequest *http_request){
 	if(http_request!=NULL){
-		ZN_List_DeleteAndFreeAllItems(http_request->param);
+		ZN_Array_Delete(http_request->params);
 		ZN_FREE(http_request);
 	}
 }

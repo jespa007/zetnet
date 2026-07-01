@@ -9,12 +9,14 @@ int main(int argc, char *argv[]) {
 	bool error = false;
 	ZN_HttpRequest req;
 	ZN_Url url;
+	int return_out = 0;
+	//ZN_ArrayCStr *headers = ZN_ArrayCStr_New();
 
 	for(int i=1; i < argc && !error; i++){
 		ZN_List *l=ZN_CStr_Split(argv[i],'=');
 		switch(l->count){
 		default:
-			if(strcmp(l->items[0],"http",4) == 0){
+			if(strncmp(l->items[0],"http",4) == 0){
 				if (!ZN_Url_Parse(l->items[0], &url)) {
 				    fprintf(stderr, "Invalid URL\n");
 				    error=true;
@@ -25,18 +27,12 @@ int main(int argc, char *argv[]) {
 			}
 			break;
 		case 2:
-			if(strcmp(l->items[0],"-H")==0){
-				ZN_List *h=ZN_CStr_Split(l->items[0],':');
-
-				if(l->count == 2){
-					ZN_HttpRequest_AddHeader(&req, h->items[0],h->items[1]);
-				}
-
-				ZN_List_DeleteAndFreeAllItems(h);
+			/*if(strcmp(l->items[0],"-H")==0){
+				ZN_ArrayCStr_Push(headers, l->items[1]);
 			}else{
 				fprintf(stderr,"unknow option %s\n",(const char *)l->items[0]);
 				error=true;
-			}
+			}*/
 			break;
 		}
 
@@ -45,9 +41,9 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         fprintf(stderr, "Usage: fetch <url>\n");
-        return 1;
+        goto fetch_exit;
+        return_out=1;
     }
-
 
 
     ZN_Init();
@@ -56,7 +52,7 @@ int main(int argc, char *argv[]) {
     if (ZN_Connection_Open(&conn, &url)) {
 
 		char request[REQUEST_SIZE];
-		ZN_HttpRequest_BuildGet(request, sizeof(request), &url);
+		ZN_HttpRequest_Build(request, sizeof(request), &req);
 
 		ZN_Connection_Write(&conn, (uint8_t*)request, strlen(request));
 
@@ -79,9 +75,9 @@ int main(int argc, char *argv[]) {
 
     ZN_DeInit();
 
-    if(req.param != NULL){
+fetch_exit:
 
-    }
+    //ZN_ArrayCStr_Delete(headers);
 
-    return 0;
+    return return_out;
 }

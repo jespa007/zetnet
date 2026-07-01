@@ -2,6 +2,7 @@
 #define __ZN_CSTR_H__
 
 
+char	*	ZN_CStr_New(const char *_str_in);
 ZN_List * 	ZN_CStr_Split(const char * s, char delim);
 bool 		ZN_CStr_EndsWith(const char * str, const char * ending);
 void 		ZN_CStr_DeleteChar(char * str, char ch_to_remove);

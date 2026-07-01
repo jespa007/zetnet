@@ -35,7 +35,7 @@ void ZN_HttpHandleConnection_DoHandle(ZN_HttpHandleConnection *_http_handle_clie
 	ZN_HttpRoute *route_found=NULL;
 	ZN_HttpResponse *http_response =NULL;
 
-	unescaped_url=ZN_Url_Unescape(http_request->URL);
+	unescaped_url = ZN_Url_Unescape(http_request->url);
 	sprintf(path_url,"%s",unescaped_url);
 
 #ifdef WIN32
@@ -61,16 +61,16 @@ void ZN_HttpHandleConnection_DoHandle(ZN_HttpHandleConnection *_http_handle_clie
 	if(route_found != NULL){
 
 		if(route_found->on_request.callback_function!=NULL){
-			void *param=NULL;
+			ZN_HttpKeyValue *param=NULL;
 			size_t param_len=0;
 			ZN_HttpResponseCallback cf=_http_handle_client->http_server->on_request;
 
-			if(http_request->param!=NULL){
-				param=http_request->param->items;
-				param_len=http_request->param->count;
+			if(http_request->params!=NULL){
+				param = ZN_ARRAY_HTTP_KEY_VALUE_GET_DATA(http_request->params);
+				param_len=ZN_Array_Count(http_request->params);
 			}
 
-			http_response=route_found->on_request.callback_function(_http_handle_client->http_server,(ZN_HttpParamValue *)param,param_len,cf.user_data);
+			http_response=route_found->on_request.callback_function(_http_handle_client->http_server,(ZN_HttpKeyValue *)param,param_len,cf.user_data);
 		}else{
 			// try send a file
 			// substract url concat to filename_with_path

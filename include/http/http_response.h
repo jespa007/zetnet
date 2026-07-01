@@ -20,7 +20,7 @@ struct ZN_HttpResponse
 };
 
 typedef struct{
-	ZN_HttpResponse * (*callback_function)(ZN_HttpServer * _http_server, ZN_HttpParamValue  * _param, size_t _param_len,void *_user_data);
+	ZN_HttpResponse * (*callback_function)(ZN_HttpServer * _http_server, ZN_HttpKeyValue  * _param, size_t _param_len,void *_user_data);
 	void *user_data;
 }ZN_HttpResponseCallback;
 

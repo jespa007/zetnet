@@ -14,27 +14,20 @@ struct ZN_HttpRequest
 {
 
 	char  type[ZN_MAX_TYPE_LEN];
-	char  URL[ZN_MAX_URL_LEN];
+	char  url[ZN_MAX_URL_LEN];
 	char  host[ZN_MAX_HOST_LEN];
 	char referer[ZN_MAX_REFERER_LEN];
 	const char *mime;
 	bool is_binary;
 	char  content_type[ZN_MAX_CONTENT_LEN];
-	ZN_List * param;
+	ZN_Array * params;
 
 };
 
-void 				ZN_HttpRequest_BuildGet(char *out, size_t size, const ZN_Url *url);
 bool 				ZN_HttpRequest_Build(
     char *out,
     size_t size,
     const ZN_HttpRequest *req
-);
-
-bool ZN_HttpRequest_AddHeader(
-    ZN_HttpRequest *req,
-    const char *name,
-    const char *value
 );
 
 void 				ZN_HttpRequest_InitGetFromUrl(

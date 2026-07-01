@@ -1,15 +1,23 @@
 #include "zetnet.h"
 
+char	*	ZN_CStr_New(const char *_str_in){
 
-char * ZN_CStr_StrDup(const char * _str){
-	char *str=ZN_MALLOC(strlen(_str)+1);
-	strcpy(str,_str);
-	return str;
+	if(_str_in == NULL){
+		ZN_LOG_ERRORF("ZG_CStr_NewLen : _str_in NULL");
+		return NULL;
+	}
+
+	size_t len = strlen(_str_in);
+	char *str_out = ZN_NEW_LENGTH(char,len+1);
+	strcpy(str_out,_str_in);
+
+	return str_out;
 }
+
 
 void ZN_CStr_SplitBuiltIn(const char *_str, char delim, ZN_List  * elems) {
 	char delim_str[2]={delim,0};
-	char * str = ZN_CStr_StrDup(_str);
+	char * str = ZN_CStr_New(_str);
 	char * token = strtok((char *)str, delim_str);
    // loop through the string to extract all other tokens
    while( token != NULL ) {

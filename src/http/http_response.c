@@ -115,7 +115,7 @@ ZN_HttpResponse *ZN_HttpResponse_FromFile(ZN_HttpRequest * _request,const char *
 	bool ok = false;
 
 #ifdef __DEBUG__
-	printf("try_file:%s request:%s\n",_filename_with_path,_request->URL);
+	printf("try_file:%s request:%s\n",_filename_with_path,_request->url);
 #endif
 
 	ZN_Path_GetDirectoryName(path,_filename_with_path);

@@ -11,3 +11,4 @@
 #include "path.c"
 #include "cstr.c"
 #include "url.c"
+#include "array.c"

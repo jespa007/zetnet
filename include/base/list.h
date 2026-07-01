@@ -12,7 +12,7 @@ struct ZN_List{
 	uint16_t _size; // size vector (user count for iterate through items)
 };
 
-ZN_List  	*	ZN_List_New(void);
+ZN_List  *	ZN_List_New(void);
 
 void 		ZN_List_Set(ZN_List *_this, uint16_t idx, void *e);
 void	*	ZN_List_Get(ZN_List *_this, uint16_t idx);

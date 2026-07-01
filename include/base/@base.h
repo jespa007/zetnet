@@ -13,6 +13,7 @@
 #include "path.h"
 #include "cstr.h"
 #include "url.h"
+#include "array.h"
 
 
 

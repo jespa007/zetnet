@@ -1,4 +1,4 @@
-#include "../src/zetnet.h"
+#include "../include/zetnet.h"
 
 
 #define DEFAULT_PORT 27015
