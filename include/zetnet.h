@@ -9,12 +9,12 @@
 #define ZETNET_VERSION_PATCH	0
 
 
-#include "base/@base.h"
-#include "net/@net.h"
-#include "http/@http.h"
+#include "base/@ZN_Base.h"
+#include "net/@ZN_Net.h"
+#include "http/@ZN_Http.h"
 
-bool ZN_Init(void);
-void ZN_DeInit(void);
+ZN_DLL_EXPORT bool ZN_Init(void);
+ZN_DLL_EXPORT void ZN_DeInit(void);
 
 
 

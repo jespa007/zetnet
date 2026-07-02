@@ -3,7 +3,7 @@
 // Controls which source files are part of this module build.
 
 
-#include "tcp_server.h"
-#include "tcp_socket.h"
-#include "ssl.h"
-#include "connection.h"
+#include "ZN_TcpServer.h"
+#include "ZN_TcpSocket.h"
+#include "ZN_Ssl.h"
+#include "ZN_Connection.h"

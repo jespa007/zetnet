@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
 
+option(BUILD_SHARED_LIBS "Build libraries as SHARED" ON)
+
+
 if(NOT OPENSSL_ROOT)
 	set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
 endif()
@@ -18,7 +21,7 @@ else()
     option(__WITH_SSL__ "Enable USE_SSL" OFF)
 endif()
 
-configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/../include/base/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/../include/config.h)
 
 IF( NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE Release )
@@ -165,13 +168,13 @@ MESSAGE (STATUS "Target: " ${CMAKE_BUILD_TYPE})
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	# base
-	base/@base.c
+	base/@ZN_Base.c
 	
 	# net
-	net/@net.c	
+	net/@ZN_Net.c	
 	
 	# http
-	http/@http.c
+	http/@ZN_Http.c
 
 	zetnet.c
 )
@@ -180,27 +183,7 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 #
 # LINKING PARAMS
 #
-	
-#set library generation as static by default
-if(BUILD_SHARED_LIBS)
-	add_library( ${ZETNET_LIB_NAME}${POST_NAME} SHARED ${ZETNET_LIB_SRCS} )
-	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE BUILD_SHARED_LIBS)
-else()
-	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
-	add_library( ${ZETNET_LIB_NAME}${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
-	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PUBLIC BUILD_STATIC_LIBS)
-endif()
 
-message(STATUS "Library type: " ${LIBRARY_TYPE_CREATION})
-
-
-# zetnet library
-
-
-if(MSVC)
-	#only for msvc...
-	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
-endif()
 
 if(__WITH_SSL__)
 	set(LIBRARY_DEPS ${LIBRARY_DEPS} ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY} )
@@ -214,8 +197,37 @@ endif()
 if(MINGW OR MSVC)
 	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32)	
 endif()
+	
+#set library generation as static by default
+if(BUILD_SHARED_LIBS)
+	add_library( ${ZETNET_LIB_NAME}${POST_NAME} SHARED ${ZETNET_LIB_SRCS} )
+	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE BUILD_SHARED_LIBS)
+	target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
+else()
+	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
+	add_library( ${ZETNET_LIB_NAME}${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
+	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PUBLIC BUILD_STATIC_LIBS)
+endif()
 
-target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
+message(STATUS "Library type: " ${LIBRARY_TYPE_CREATION})
+
+
+# zetnet library
+
+
+if(MSVC)
+	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
+	target_compile_options(
+		${ZETNET_LIB_NAME}${POST_NAME} PRIVATE /wd4244
+	)
+else()
+	# gcc
+	target_compile_options(
+		${ZETNET_LIB_NAME}${POST_NAME} PRIVATE -Werror=conversion -Werror=shadow
+	)
+endif()
+
+
 
 install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"

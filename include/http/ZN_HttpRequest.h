@@ -24,18 +24,18 @@ struct ZN_HttpRequest
 
 };
 
-bool 				ZN_HttpRequest_Build(
+ZN_DLL_EXPORT bool 				ZN_HttpRequest_Build(
     char *out,
     size_t size,
     const ZN_HttpRequest *req
 );
 
-void 				ZN_HttpRequest_InitGetFromUrl(
+ZN_DLL_EXPORT void 				ZN_HttpRequest_InitGetFromUrl(
     ZN_HttpRequest *req,
     const ZN_Url *url
 );
 
-ZN_HttpRequest * 	ZN_HttpRequest_GetRequest(const char * request);
-void		  		ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
+ZN_DLL_EXPORT ZN_HttpRequest * 	ZN_HttpRequest_GetRequest(const char * request);
+ZN_DLL_EXPORT void		  		ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
 
 #endif
