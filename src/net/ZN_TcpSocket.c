@@ -223,19 +223,19 @@ SOCKET ZN_TcpSocket_NewSocketClient(const char * _host, int _portno){
 //  receive  a  buffer  from  a  TCP  socket  with  error  checking
 //  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
 //  returns  0  on  any  errors,  or  a  valid  char*  on  success
-int  ZN_TcpSocket_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
+ssize_t  ZN_TcpSocket_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
 {
-	int result;
+	ssize_t result;
 
-	result = recv(sock,(char *)_buf,_buf_len,0);
+	result = recv(sock,(char *)_buf, _buf_len,0);
 
 	return  result;
 }
 
 //  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
 //  returns  0  on  any  errors,  length  sent  on  success
-int  ZN_TcpSocket_SendBytes(SOCKET  _socket,  const uint8_t  *_buffer,  size_t  _buffer_len) {
-	int  result=0;
+ssize_t  ZN_TcpSocket_SendBytes(SOCKET  _socket,  const uint8_t  *_buffer,  size_t  _buffer_len) {
+	ssize_t  result=0;
 
 	if(!_buffer_len || !_buffer_len) {
 		return 0;

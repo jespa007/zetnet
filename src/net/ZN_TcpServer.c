@@ -339,7 +339,7 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 			// If there is any activity on the client socket...
 			if (client_socket_activity != 0){
 
-				int result=0;
+				unsigned long result=0;
 				if(!tcp_server->is_streaming_server){ // read from client...
 
 					result = ZN_TcpSocket_ReceiveBytes(tcp_server->clients[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
@@ -409,7 +409,7 @@ void  * ZN_TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send.
 		#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(__WINDOWS__) || defined(__TOS_WIN__)
 				Sleep( tcp_server->time_delay_ms );
 		#else
-				usleep( tcp_server->time_delay_ms * 1000 );
+				ZN_System_SleepMicroSeconds( tcp_server->time_delay_ms * 1000UL );
 		#endif
 				}
 			}

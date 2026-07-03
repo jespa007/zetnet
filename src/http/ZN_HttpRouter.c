@@ -31,7 +31,7 @@ ZN_HttpRoute *ZN_HttpRouter_SearchRoute(ZN_HttpRouter * _this, const char *_url)
 			return route;
 		}else if(strcmp(_url,route->url) > 0){
 			// starts with
-			int url_len=strlen(route->url);
+			size_t url_len=strlen(route->url);
 			if(url_len>2){
 				// it takes all folders and subfolders
 				if(route->url[url_len-1]=='*' && route->url[url_len-2]=='/'){

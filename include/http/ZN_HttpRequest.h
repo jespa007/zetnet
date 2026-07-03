@@ -3,7 +3,7 @@
 
 #define ZN_MAX_URL_LEN 	4096
 #define ZN_MAX_CONTENT_LEN 100
-#define ZN_MAX_HOST_LEN 	100
+#define ZN_MAX_HOST_LEN 	256
 #define ZN_MAX_TYPE_LEN 	100
 #define ZN_MAX_REFERER_LEN 100
 

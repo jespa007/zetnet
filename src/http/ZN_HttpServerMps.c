@@ -22,9 +22,9 @@ typedef struct {
 }ZN_HttpServerMPSData;
 
 
-bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_TcpServerClient * client_socket, uint8_t *buffer, size_t buffer_len, void *user_data){
-	ZN_UNUSUED_PARAM(buffer);
-	ZN_UNUSUED_PARAM(buffer_len);
+bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_TcpServerClient * client_socket, uint8_t *_buffer, size_t _buffer_len, void *user_data){
+	ZN_UNUSUED_PARAM(_buffer);
+	ZN_UNUSUED_PARAM(_buffer_len);
 
 	ZN_HttpServerMPS * http_server_mps=user_data;
 	ZN_HttpServerMPSData *data=http_server_mps->data;
@@ -32,7 +32,7 @@ bool ZN_HttpServerMPS_OnGestMessage(ZN_TcpServer * tcp_server,ZN_TcpServerClient
 	if(data->n_read != data->n_write){ // time to send data ...
 
 		char *buffer=NULL;
-		int buffer_len = 0;
+		size_t buffer_len = 0;
 		char *start_buffer=NULL;
 		char http_header[128]={0};
 		size_t   data_len=data->data_len[data->n_read];

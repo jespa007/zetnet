@@ -29,7 +29,7 @@ bool ZN_Connection_Open(ZN_Connection *conn, const ZN_Url *url) {
     return true;
 }
 
-int ZN_Connection_Write(ZN_Connection *c, const uint8_t *data, int len) {
+ssize_t ZN_Connection_Write(ZN_Connection *c, const uint8_t *data, int len) {
 #ifdef __WITH_SSL__
     if (c->use_ssl) {
     	return ZN_SSL_Write(c->ssl, data, len);
@@ -39,7 +39,7 @@ int ZN_Connection_Write(ZN_Connection *c, const uint8_t *data, int len) {
     return ZN_TcpSocket_SendBytes(c->socket, data, len);
 }
 
-int ZN_Connection_Read(ZN_Connection *c, uint8_t *buf, int len) {
+ssize_t ZN_Connection_Read(ZN_Connection *c, uint8_t *buf, int len) {
 #ifdef __WITH_SSL__
     if (c->use_ssl) {
     	return ZN_SSL_Read(c->ssl, buf, len);

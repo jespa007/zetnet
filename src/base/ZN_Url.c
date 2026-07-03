@@ -9,7 +9,7 @@ bool ZN_Url_is_non_symbol(char c)
 
 char * ZN_Url_escape(const char * input)
 {
-	int end = strlen(input);
+	size_t end = strlen(input);
 	size_t final_size = (end * 3) + 1;
 	char *working = malloc(final_size * sizeof(char)), *output = working;
 
@@ -41,29 +41,28 @@ char * ZN_Url_escape(const char * input)
 }
 
 
-char * ZN_Url_Unescape(const char * input)
-{
-	int input_length = strlen(input);
+char * ZN_Url_Unescape(const char * input) {
+	size_t input_length = strlen(input);
 
-		size_t output_length = (input_length + 1) * sizeof(char);
-		char *working = malloc(output_length), *output = working;
+	size_t output_length = (input_length + 1) * sizeof(char);
+	char *working = malloc(output_length), *output = working;
 
-		while(*input)
+	while(*input)
+	{
+		if(*input == '%')
 		{
-			if(*input == '%')
-			{
-				char buffer[3] = { input[1], input[2], 0 };
-				*working++ = strtol(buffer, NULL, 16);
-				input += 3;
-			}
-			else
-			{
-				*working++ = *input++;
-			}
+			char buffer[3] = { input[1], input[2], 0 };
+			*working++ = (char)strtol(buffer, NULL, 16);
+			input += 3;
 		}
+		else
+		{
+			*working++ = *input++;
+		}
+	}
 
-		*working = 0; //null terminate
-		return output;
+	*working = 0; //null terminate
+	return output;
 }
 
 bool ZN_Url_Parse(const char *url_str, ZN_Url *out) {

@@ -92,7 +92,7 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")	
 
 else()  # g++ / gcc
-	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
+	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -fomit-frame-pointer -std=c99 -pipe -Wall -Wextra -pedantic -Wno-sign-conversion -Wstrict-prototypes -Wtype-limits ")
 	  
 	if (MINGW)
 		MESSAGE(STATUS "Plataform: MINGW" )

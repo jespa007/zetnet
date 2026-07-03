@@ -31,7 +31,8 @@
 #define ZN_EXTERN_EXPORT_VAR extern ZN_DLL_EXPORT_VAR
 #endif
 
-
+#define _POSIX_C_SOURCE 200112L
+#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -109,10 +110,11 @@
 #include "ZN_Log.h"
 #include "ZN_Memory.h"
 #include "ZN_Path.h"
-#include "ZN_Cstr.h"
+#include "ZN_CStr.h"
 #include "ZN_Url.h"
 #include "ZN_Array.h"
 #include "ZN_ArrayCStr.h"
+#include "ZN_System.h"
 
 
 #endif

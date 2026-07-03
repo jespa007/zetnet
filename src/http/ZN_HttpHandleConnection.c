@@ -1,7 +1,7 @@
 #include "zetnet.h"
 
 
-ZN_HttpHandleConnection * ZN_HttpHandleConnection_New(ZN_TcpServerClient * _client, ZN_HttpServer * _http_server, uint8_t *_rcv_data, uint32_t _rcv_len)
+ZN_HttpHandleConnection * ZN_HttpHandleConnection_New(ZN_TcpServerClient * _client, ZN_HttpServer * _http_server, uint8_t *_rcv_data, size_t _rcv_len)
 {
 	ZN_HttpHandleConnection * _http_handle_client = ZN_NEW(ZN_HttpHandleConnection);
 	_http_handle_client->client = _client;

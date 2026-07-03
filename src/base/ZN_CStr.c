@@ -48,15 +48,13 @@ void  ZN_CStr_ReplaceChar(char * str, char old_ch, char new_ch){
 	}
 }
 
-int ZN_CStr_Find(char *txt1,const char *txt2)
-{
+long int ZN_CStr_Find(char *txt1,const char *txt2) {
     char *posstr=strstr(txt1,txt2);
-    if(posstr!=NULL)
-    {
+    if(posstr!=NULL){
         return (posstr-txt1);
     }else
     {
-        return -1;
+        return ZN_INVALID_LENGTH;
     }
 }
 
@@ -78,7 +76,7 @@ bool ZN_CStr_ToInt(int * i, const char *s, int base){
 		fprintf(stderr,"\n\n\"%s\" number inconvertible",s);
 		return false;
 	}
-	*i = l;
+	*i = (int)l;
 	return true;
 }
 
@@ -155,7 +153,7 @@ void  ZN_CStr_DeleteChar(char * str, char ch_to_remove){
 }
 
 char * ZN_CStr_FromInt(int number){
-	static char to_number[256];
+	static char to_number[1024];
 	sprintf(to_number,"%i",number);
 	return to_number;
 }

@@ -26,12 +26,12 @@ bool ZN_File_Exists(const char * filename) {
 uint8_t * ZN_File_Read(const char * filename,size_t * buffer_size){
 
 
-	int  file_length, readed_elements;
+	unsigned long  file_length, readed_elements;
 	FILE  *fp;
 
 	if((fp  =  fopen(filename,"rb"))  !=  NULL)
 	{
-		if((file_length = ZN_File_Length(filename)) != -1) {
+		if((file_length = ZN_File_Length(filename)) != ZN_INVALID_LENGTH) {
 
 			*buffer_size = file_length; // +1 is for string end
 
@@ -58,14 +58,12 @@ uint8_t * ZN_File_Read(const char * filename,size_t * buffer_size){
 }
 
 
-int  ZN_File_Length(const char * filename)
-{
+unsigned long  ZN_File_Length(const char * filename) {
 
-	int  ini,  end;
+	unsigned long  ini,  end;
 	FILE  *fp;
 
-	if((fp  =  fopen(filename,"rb"))  !=  NULL)
-	{
+	if((fp  =  fopen(filename,"rb"))  !=  NULL) {
 
 		fseek(fp,  0,SEEK_SET);
 		ini  =  ftell(fp);
@@ -79,10 +77,10 @@ int  ZN_File_Length(const char * filename)
 	return    -1;
 }
 
-int  		ZNFile_LengthFromFile(FILE * file)
+size_t  		ZNFile_LengthFromFile(FILE * file)
 {
 
-	int  ini,  end;
+	size_t  ini,  end;
 	FILE  *fp = file;
 
 	if(fp != NULL)
@@ -98,5 +96,5 @@ int  		ZNFile_LengthFromFile(FILE * file)
 		return  (end  -  ini);
 	}
 
-	return    -1;
+	return    ZN_INVALID_LENGTH;
 }
