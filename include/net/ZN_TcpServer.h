@@ -53,19 +53,14 @@ struct  ZN_TcpServer
 };
 // static
 
-ZN_TcpServer * ZN_TcpServer_New(ZN_TcpServerOnGestMessage on_gest_message);
-
-
-bool  ZN_TcpServer_Start(ZN_TcpServer *tcp_server,const char * _host, int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
-void  ZN_TcpServer_Stop(ZN_TcpServer *tcp_server);
-
-void  ZN_TcpServer_SetTimeout(ZN_TcpServer *tcp_server, int seconds);
-bool  ZN_TcpServer_IsConnected(ZN_TcpServer *tcp_server);
-
-bool  ZN_TcpServer_CloseClient(ZN_TcpServer * tcp_server,ZN_TcpServerClient *socket_client);
-bool  ZN_TcpServer_CloseChannel(ZN_TcpServer * tcp_server,ZN_TcpServerClient *socket_client, int _channel);
-
-void  ZN_TcpServer_Unload(ZN_TcpServer *tcp_server);
-void  ZN_TcpServer_Delete(ZN_TcpServer *tcp_server);
+ZN_DLL_EXPORT ZN_TcpServer * ZN_TcpServer_New(ZN_TcpServerOnGestMessage on_gest_message);
+ZN_DLL_EXPORT bool  ZN_TcpServer_Start(ZN_TcpServer *tcp_server,const char * _host, int  port);  //  Reads  configuration  of  machine  &  init  sdl_net...
+ZN_DLL_EXPORT void  ZN_TcpServer_Stop(ZN_TcpServer *tcp_server);
+ZN_DLL_EXPORT void  ZN_TcpServer_SetTimeout(ZN_TcpServer *tcp_server, int seconds);
+ZN_DLL_EXPORT bool  ZN_TcpServer_IsConnected(ZN_TcpServer *tcp_server);
+ZN_DLL_EXPORT bool  ZN_TcpServer_CloseClient(ZN_TcpServer * tcp_server,ZN_TcpServerClient *socket_client);
+ZN_DLL_EXPORT bool  ZN_TcpServer_CloseChannel(ZN_TcpServer * tcp_server,ZN_TcpServerClient *socket_client, int _channel);
+ZN_DLL_EXPORT void  ZN_TcpServer_Unload(ZN_TcpServer *tcp_server);
+ZN_DLL_EXPORT void  ZN_TcpServer_Delete(ZN_TcpServer *tcp_server);
 
 #endif

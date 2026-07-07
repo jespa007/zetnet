@@ -23,11 +23,11 @@
 //#define  ZN_TCP_MESSAGE_LENGTH 	16384
 
 
-SOCKET 			ZN_TcpSocket_NewSocketClient(const char * _host, int port);
-SOCKET 			ZN_TcpSocket_NewSocketServer(const char * _host,int port);
-ssize_t  		ZN_TcpSocket_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len);
-ssize_t 		ZN_TcpSocket_SendBytes(SOCKET  sock,  const uint8_t  * _buf,  size_t  _buf_len);
-void			ZN_TcpSocket_CloseChannel(SOCKET  sock, int channel);
-void 			ZN_TcpSocket_CloseSocket(SOCKET *sock);
+ZN_DLL_EXPORT SOCKET 			ZN_TcpSocket_NewSocketClient(const char * _host, int port);
+ZN_DLL_EXPORT SOCKET 			ZN_TcpSocket_NewSocketServer(const char * _host,int port);
+ZN_DLL_EXPORT ssize_t  		ZN_TcpSocket_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len);
+ZN_DLL_EXPORT ssize_t 		ZN_TcpSocket_SendBytes(SOCKET  sock,  const uint8_t  * _buf,  size_t  _buf_len);
+ZN_DLL_EXPORT void			ZN_TcpSocket_CloseChannel(SOCKET  sock, int channel);
+ZN_DLL_EXPORT void 			ZN_TcpSocket_CloseSocket(SOCKET *sock);
 
 #endif

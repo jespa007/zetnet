@@ -1,5 +1,11 @@
 #include "zetnet.h"
 
+#ifdef _WIN32
+    #define ZN_STRCASECMP _stricmp
+#else
+    #define ZN_STRCASECMP strcasecmp
+#endif
+
 static size_t ZN_Appendf(
     char *out,
     size_t size,
@@ -7,26 +13,284 @@ static size_t ZN_Appendf(
     const char *fmt,
     ...
 ) {
-    if (!out || used >= size) {
-        return used;
+    va_list args;
+    int written;
+
+    if (!out || size == 0 || used >= size) {
+        return size;
     }
 
-    va_list args;
     va_start(args, fmt);
-
-    int written = vsnprintf(out + used, size - used, fmt, args);
-
+    written = vsnprintf(out + used, size - used, fmt, args);
     va_end(args);
 
     if (written < 0) {
-        return used;
+        return size;
     }
 
     if ((size_t)written >= size - used) {
+        out[size - 1] = '\0';
         return size;
     }
 
     return used + (size_t)written;
+}
+
+static bool ZN_CopyStr(char *dst, size_t dst_size, const char *src)
+{
+    size_t len;
+
+    if (!dst || dst_size == 0 || !src) {
+        return false;
+    }
+
+    len = strlen(src);
+
+    if (len + 1 > dst_size) {
+        dst[0] = '\0';
+        return false;
+    }
+
+    memcpy(dst, src, len + 1);
+    return true;
+}
+
+static bool ZN_CopyStrN(char *dst, size_t dst_size, const char *src, size_t len)
+{
+    if (!dst || dst_size == 0 || !src) {
+        return false;
+    }
+
+    if (len + 1 > dst_size) {
+        dst[0] = '\0';
+        return false;
+    }
+
+    memcpy(dst, src, len);
+    dst[len] = '\0';
+
+    return true;
+}
+
+static char *ZN_TrimLeft(char *s)
+{
+    if (!s) {
+        return NULL;
+    }
+
+    while (*s == ' ' || *s == '\t') {
+        s++;
+    }
+
+    return s;
+}
+
+static void ZN_TrimRightInPlace(char *s)
+{
+    size_t len;
+
+    if (!s) {
+        return;
+    }
+
+    len = strlen(s);
+
+    while (len > 0 && (s[len - 1] == ' ' || s[len - 1] == '\t')) {
+        s[len - 1] = '\0';
+        len--;
+    }
+}
+
+static void ZN_TrimInPlace(char *s)
+{
+    char *left;
+
+    if (!s) {
+        return;
+    }
+
+    left = ZN_TrimLeft(s);
+
+    if (left != s) {
+        memmove(s, left, strlen(left) + 1);
+    }
+
+    ZN_TrimRightInPlace(s);
+}
+
+static const char *ZN_HttpRequest_MimeFromPath(const char *path, bool *is_binary)
+{
+    const char *ext;
+
+    if (is_binary) {
+        *is_binary = false;
+    }
+
+    if (!path) {
+        return "text/html";
+    }
+
+    ext = strrchr(path, '.');
+    if (!ext) {
+        return "text/html";
+    }
+
+    if (strcmp(ext, ".png") == 0) {
+        if (is_binary) *is_binary = true;
+        return "image/png";
+    }
+
+    if (strcmp(ext, ".css") == 0) {
+        return "text/css";
+    }
+
+    if (strcmp(ext, ".js") == 0 ||
+        strcmp(ext, ".cjs") == 0 ||
+        strcmp(ext, ".mjs") == 0) {
+        return "text/javascript";
+    }
+
+    if (strcmp(ext, ".json") == 0) {
+        return "application/json";
+    }
+
+    if (strcmp(ext, ".gltf") == 0) {
+        return "model/gltf+json";
+    }
+
+    if (strcmp(ext, ".pdf") == 0) {
+        if (is_binary) *is_binary = true;
+        return "application/pdf";
+    }
+
+    if (strcmp(ext, ".wasm") == 0) {
+        if (is_binary) *is_binary = true;
+        return "application/wasm";
+    }
+
+    if (strcmp(ext, ".svg") == 0) {
+        return "image/svg+xml";
+    }
+
+    if (strcmp(ext, ".eot") == 0 ||
+        strcmp(ext, ".ttf") == 0 ||
+        strcmp(ext, ".woff") == 0 ||
+        strcmp(ext, ".woff2") == 0) {
+        if (is_binary) *is_binary = true;
+        return "application/octet-stream";
+    }
+
+    return "text/html";
+}
+
+static bool ZN_HttpRequest_HasHeader(
+    const ZN_HttpRequest *req,
+    const char *name
+) {
+    size_t count;
+    ZN_HttpKeyValue *headers;
+
+    if (!req || !req->headers || !name) {
+        return false;
+    }
+
+    count = ZN_Array_Count(req->headers);
+    headers = ZN_ARRAY_HTTP_KEY_VALUE_GET_DATA(req->headers);
+
+    if (!headers) {
+        return false;
+    }
+
+    for (size_t i = 0; i < count; i++) {
+        if (headers[i].key && ZN_STRCASECMP(headers[i].key, name) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool ZN_HttpRequest_AddParamLine(
+    ZN_HttpRequest *request,
+    const char *param_line
+) {
+    const char *eq;
+    size_t key_len;
+
+    if (!request || !param_line || param_line[0] == '\0') {
+        return false;
+    }
+
+    eq = strchr(param_line, '=');
+    if (!eq) {
+        return false;
+    }
+
+    key_len = (size_t)(eq - param_line);
+    if (key_len == 0) {
+        return false;
+    }
+
+    if (!request->params) {
+        request->params = ZN_HttpKeyValueArray_New();
+
+        if (!request->params) {
+            return false;
+        }
+    }
+
+    return ZN_HttpKeyValue_PushN(
+        request->params,
+        param_line,
+        key_len,
+        eq + 1
+    );
+}
+
+static void ZN_HttpRequest_ParseParams(
+    ZN_HttpRequest *request,
+    const char *params_text
+) {
+    const char *start;
+    const char *amp;
+
+    if (!request || !params_text || params_text[0] == '\0') {
+        return;
+    }
+
+    start = params_text;
+
+    while (*start) {
+        char param_buf[4096];
+        size_t len;
+
+        amp = strchr(start, '&');
+
+        if (amp) {
+            len = (size_t)(amp - start);
+        } else {
+            len = strlen(start);
+        }
+
+        if (len > 0 && len < sizeof(param_buf)) {
+            if (ZN_CopyStrN(param_buf, sizeof(param_buf), start, len)) {
+                char *decoded = ZN_Url_Unescape(param_buf);
+
+                if (decoded) {
+                    ZN_HttpRequest_AddParamLine(request, decoded);
+                    ZN_FREE(decoded);
+                } else {
+                    ZN_HttpRequest_AddParamLine(request, param_buf);
+                }
+            }
+        }
+
+        if (!amp) {
+            break;
+        }
+
+        start = amp + 1;
+    }
 }
 
 bool ZN_HttpRequest_AddHeaderN(
@@ -34,20 +298,17 @@ bool ZN_HttpRequest_AddHeaderN(
     const char *_header_line,
     size_t _key_len,
     const char *_value_start
-)
-{
+) {
     if (!_request || !_header_line || !_value_start || _key_len == 0) {
         return false;
     }
 
     if (!_request->headers) {
-        _request->headers = ZN_ARRAY_HTTP_KEY_VALUE_NEW();
+        _request->headers = ZN_HttpKeyValueArray_New();
 
         if (!_request->headers) {
             return false;
         }
-
-        _request->headers->destructor_item = ZN_HttpKeyValue_DestructItem;
     }
 
     return ZN_HttpKeyValue_PushN(
@@ -62,9 +323,8 @@ bool ZN_HttpRequest_AddHeader(
     ZN_HttpRequest *_request,
     const char *_key,
     const char *_value
-)
-{
-    if (!_request || !_key || !_value) {
+) {
+    if (!_request || !_key || !_value || _key[0] == '\0') {
         return false;
     }
 
@@ -76,119 +336,13 @@ bool ZN_HttpRequest_AddHeader(
     );
 }
 
-bool ZN_HttpRequest_Build(
-    char *out,
-    size_t size,
-    const ZN_HttpRequest *req
+bool ZN_HttpRequest_AddHeaderLine(
+    ZN_HttpRequest *request,
+    const char *header_line
 ) {
-    if (!out || size == 0 || !req) {
-        return false;
-    }
-
-    out[0] = '\0';
-
-    const char *method = req->type[0] ? req->type : "GET";
-    const char *path   = req->url[0]  ? req->url  : "/";
-
-    size_t used = 0;
-
-    used = ZN_Appendf(
-        out,
-        size,
-        used,
-        "%s %s HTTP/1.1\r\n",
-        method,
-        path
-    );
-
-    used = ZN_Appendf(
-        out,
-        size,
-        used,
-        "Host: %s\r\n",
-        req->host
-    );
-
-    used = ZN_Appendf(
-        out,
-        size,
-        used,
-        "User-Agent: zetnet/1.0\r\n"
-    );
-
-    if (req->mime) {
-        used = ZN_Appendf(
-            out,
-            size,
-            used,
-            "Accept: %s\r\n",
-            req->mime
-        );
-    } else {
-        used = ZN_Appendf(
-            out,
-            size,
-            used,
-            "Accept: */*\r\n"
-        );
-    }
-
-    if (req->referer[0]) {
-        used = ZN_Appendf(
-            out,
-            size,
-            used,
-            "Referer: %s\r\n",
-            req->referer
-        );
-    }
-
-    if (req->content_type[0]) {
-        used = ZN_Appendf(
-            out,
-            size,
-            used,
-            "Content-Type: %s\r\n",
-            req->content_type
-        );
-    }
-
-    if(req->params){
-
-    	size_t count = ZN_Array_Count(req->params);
-    	ZN_HttpKeyValue * headers = ZN_ARRAY_HTTP_KEY_VALUE_GET_DATA(req->params);
-        for(size_t i = 0; i < count; i++) {
-            ZN_HttpKeyValue header = *headers++;
-
-            if (header.key[0]) {
-                used = ZN_Appendf(
-                    out,
-                    size,
-                    used,
-                    "%s: %s\r\n",
-                    header.key,
-                    header.value
-                );
-            }
-        }
-    }
-
-    used = ZN_Appendf(
-        out,
-        size,
-        used,
-        "Connection: close\r\n"
-        "\r\n"
-    );
-
-    return used < size;
-}
-
-bool ZN_HttpRequest_AddHeaderLine(ZN_HttpRequest *request, const char *header_line)
-{
     const char *colon;
-    size_t key_len;
     const char *value_start;
+    size_t key_len;
 
     if (!request || !header_line || header_line[0] == '\0') {
         return false;
@@ -226,6 +380,10 @@ void ZN_HttpRequest_InitGetFromUrl(
     ZN_HttpRequest *req,
     const ZN_Url *url
 ) {
+    if (!req || !url) {
+        return;
+    }
+
     memset(req, 0, sizeof(*req));
 
     snprintf(req->type, sizeof(req->type), "GET");
@@ -240,6 +398,7 @@ void ZN_HttpRequest_InitGetFromUrl(
     req->mime = "*/*";
     req->is_binary = false;
     req->params = NULL;
+    req->headers = ZN_HttpKeyValueArray_New();
 }
 
 ZN_HttpRequest *ZN_HttpRequest_NewEmpty(void)
@@ -261,242 +420,324 @@ ZN_HttpRequest *ZN_HttpRequest_NewEmpty(void)
     return request;
 }
 
-ZN_HttpRequest * ZN_HttpRequest_New(char *  _type
-		, char * _url
-		, char * _host
-		, char * _referer
-		, const char * _mime
-		, bool _is_binary
-		, char * _content_type
-		, ZN_Array * _params
-		)
-{
-	ZN_HttpRequest * http_request=ZN_NEW(ZN_HttpRequest);
-	strcpy(http_request->type, _type);
-	strcpy(http_request->url ,_url);
-	strcpy(http_request->host, _host);
-	strcpy(http_request->referer, _referer);
-	http_request->mime=_mime;
-	http_request->is_binary 	= _is_binary;
-	strcpy(http_request->content_type, _content_type);
-	http_request->params 		= _params;
+ZN_HttpRequest *ZN_HttpRequest_New(
+    char *_type,
+    char *_url,
+    char *_host,
+    char *_referer,
+    const char *_mime,
+    bool _is_binary,
+    char *_content_type,
+    ZN_Array *_params
+) {
+    ZN_HttpRequest *http_request = ZN_HttpRequest_NewEmpty();
 
-	http_request->headers = ZN_HttpKeyValueArray_New();
-
-    if (!http_request->headers) {
-        ZN_FREE(http_request);
+    if (!http_request) {
         return NULL;
     }
 
-	return http_request;
+    if (_type && !ZN_CopyStr(http_request->type, sizeof(http_request->type), _type)) {
+        ZN_HttpRequest_Delete(http_request);
+        return NULL;
+    }
 
+    if (_url && !ZN_CopyStr(http_request->url, sizeof(http_request->url), _url)) {
+        ZN_HttpRequest_Delete(http_request);
+        return NULL;
+    }
+
+    if (_host && !ZN_CopyStr(http_request->host, sizeof(http_request->host), _host)) {
+        ZN_HttpRequest_Delete(http_request);
+        return NULL;
+    }
+
+    if (_referer && !ZN_CopyStr(http_request->referer, sizeof(http_request->referer), _referer)) {
+        ZN_HttpRequest_Delete(http_request);
+        return NULL;
+    }
+
+    if (_content_type && !ZN_CopyStr(http_request->content_type, sizeof(http_request->content_type), _content_type)) {
+        ZN_HttpRequest_Delete(http_request);
+        return NULL;
+    }
+
+    http_request->mime = _mime;
+    http_request->is_binary = _is_binary;
+    http_request->params = _params;
+
+    return http_request;
 }
 
+bool ZN_HttpRequest_Build(
+    char *out,
+    size_t size,
+    const ZN_HttpRequest *req
+) {
+    const char *method;
+    const char *path;
+    size_t used = 0;
 
-ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
-	 ZN_HttpRequest *http_request=NULL;
-	char content_type[ZN_MAX_CONTENT_LEN]={0};
-	const char *mime = "text/html"; //default plain text
-	char url[ZN_MAX_URL_LEN]={0};
-	char file_extension[10] = {0};
-	char * find_extension=NULL;
-	bool is_header = true;
-	char  host[ZN_MAX_HOST_LEN]={0};
-	char referer[ZN_MAX_REFERER_LEN]={0};
+    if (!out || size == 0 || !req) {
+        return false;
+    }
 
-	ZN_Array * params=NULL;
-	ZN_List * lst=NULL;
-	ZN_List * tokens = NULL;
-	ZN_List * url_tokens = NULL;
+    out[0] = '\0';
 
-	bool is_binary=false;
-	char *type = 0; // GET/POST/etc...
-	char *request=NULL;
-	size_t request_len=strlen(str_request)+1;
-	char *request_aux=NULL;
+    method = req->type[0] ? req->type : "GET";
+    path = req->url[0] ? req->url : "/";
 
-	request=ZN_MALLOC(request_len);
+#define ZN_HTTP_APPEND(...)                                      \
+    do {                                                        \
+        used = ZN_Appendf(out, size, used, __VA_ARGS__);         \
+        if (used >= size) {                                     \
+            return false;                                       \
+        }                                                       \
+    } while (0)
 
+    ZN_HTTP_APPEND("%s %s HTTP/1.1\r\n", method, path);
 
-	if(request==NULL){
-		return NULL;
-	}
+    if (req->host[0] && !ZN_HttpRequest_HasHeader(req, "Host")) {
+        ZN_HTTP_APPEND("Host: %s\r\n", req->host);
+    }
 
-	memset(request,0,request_len);
-	strcpy(request,str_request);
+    if (!ZN_HttpRequest_HasHeader(req, "User-Agent")) {
+        ZN_HTTP_APPEND("User-Agent: zetnet/1.0\r\n");
+    }
 
-	if (strcmp(request,"")==0)//String.IsNullOrEmpty(request))
-	{
-		return NULL;
-	}
+    if (!ZN_HttpRequest_HasHeader(req, "Accept")) {
+        if (req->mime) {
+            ZN_HTTP_APPEND("Accept: %s\r\n", req->mime);
+        } else {
+            ZN_HTTP_APPEND("Accept: */*\r\n");
+        }
+    }
 
-	ZN_CStr_DeleteChar(request,'\r'); // avoid windows \r
+    if (req->referer[0] && !ZN_HttpRequest_HasHeader(req, "Referer")) {
+        ZN_HTTP_APPEND("Referer: %s\r\n", req->referer);
+    }
 
-	is_binary= false;
+    if (req->content_type[0] && !ZN_HttpRequest_HasHeader(req, "Content-Type")) {
+        ZN_HTTP_APPEND("Content-Type: %s\r\n", req->content_type);
+    }
 
-	request_aux=request; // save old pointer...
-	request=ZN_Url_Unescape(request_aux); // unescape request...
+    if (req->headers) {
+        size_t count = ZN_Array_Count(req->headers);
+        ZN_HttpKeyValue *headers = ZN_ARRAY_HTTP_KEY_VALUE_GET_DATA(req->headers);
 
+        if (headers) {
+            for (size_t i = 0; i < count; i++) {
+                ZN_HttpKeyValue *header = &headers[i];
 
-	tokens = ZN_CStr_Split(request,'\n');
-	url_tokens = ZN_CStr_Split(tokens->items[0],' ');
+                if (header->key && header->key[0] && header->value) {
+                    ZN_HTTP_APPEND("%s: %s\r\n", header->key, header->value);
+                }
+            }
+        }
+    }
 
-	// get type
-	type = url_tokens->items[0]; // GET/POST/etc...
+    if (!ZN_HttpRequest_HasHeader(req, "Connection")) {
+        ZN_HTTP_APPEND("Connection: close\r\n");
+    }
 
-	// get url
-	if(url_tokens->count >= 2){
-		strcpy(url,url_tokens->items[1]);
-	}
+    ZN_HTTP_APPEND("\r\n");
 
-	find_extension=strrchr(url,'.');
+#undef ZN_HTTP_APPEND
 
-	if(find_extension != NULL){
+    return true;
+}
 
-		size_t pos = find_extension-url+1;
-		if(strlen(url)-pos > 5){
-			fprintf(stderr,"\nError max extension (url: %s)\n",url);
-		}
-		else{
-			strcpy(file_extension,find_extension);//.substr(find_extension);//CZetNetUtils::getExtension(url);// System.IO.Path.GetExtension(url);
+ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char *str_request)
+{
+    ZN_HttpRequest *http_request = NULL;
+    char *request = NULL;
+    char *headers_end = NULL;
+    char *body = NULL;
+    char *line = NULL;
+    char *next_line = NULL;
 
-	#ifdef __DEBUG__
-			printf("file extension: %s\n",file_extension);
-	#endif
+    if (!str_request || str_request[0] == '\0') {
+        return NULL;
+    }
 
-			if(strcmp(file_extension,".png")==0){
-				mime = "image/png";
-				is_binary=true;
-			}else if(strcmp(file_extension,".css")==0){
-				mime = "text/css";
-			}else if(
-					strcmp(file_extension,".js")==0
-				|| 	strcmp(file_extension,".cjs")==0
-				|| 	strcmp(file_extension,".mjs")==0
-			){
-				mime = "text/javascript";
-			}else if(strcmp(file_extension,  ".json")==0){
-				mime = "application/json";
-			}else if(strcmp(file_extension,  ".gltf")==0){
-				mime = "model/gltf+json";
-			}else if(strcmp(file_extension, ".pdf")==0){
-				mime = "application/pdf";
-				is_binary=true;
-			}else if(strcmp(file_extension, ".wasm")==0){
-				mime = "application/wasm";
-				is_binary=true;
-			}else if(strcmp(file_extension, ".svg")==0){
-				mime = "image/svg+xml";
-			}else if(
-					 (strcmp(file_extension,".eot")==0)
-				  || (strcmp(file_extension,".svg")==0)
-				  || (strcmp(file_extension,".ttf")==0)
-				  || (strcmp(file_extension,".woff")==0)
-				  || (strcmp(file_extension,".woff2")==0)
-				){
-				mime="application/octet-stream";
-				is_binary=true;
-			}
+    request = ZN_CStr_New(str_request);
+    if (!request) {
+        return NULL;
+    }
 
-		}
+    ZN_CStr_DeleteChar(request, '\r');
 
-	}
+    http_request = ZN_HttpRequest_NewEmpty();
+    if (!http_request) {
+        ZN_FREE(request);
+        return NULL;
+    }
 
+    headers_end = strstr(request, "\n\n");
+    if (headers_end) {
+        *headers_end = '\0';
+        body = headers_end + 2;
+    }
 
-	lst= ZN_CStr_Split(url, '?');//.Split('?');
-	if (lst->count > 1)
-	{
-		strcpy(url,lst->items[0]);
-	}
+    line = request;
+    next_line = strchr(line, '\n');
 
-	for (unsigned i = 0; i < tokens->count; i++)
-	{
-		char variable[256]="";
-		char value[4096]="";
+    if (next_line) {
+        *next_line = '\0';
+        next_line++;
+    }
 
-		if (strcmp(tokens->items[i],"")==0)
-		{
-			is_header = false;
-		}
+    /*
+        Request line:
+            GET /path?x=1 HTTP/1.1
+    */
+    {
+        char *method = line;
+        char *path = NULL;
+        char *version = NULL;
+        char *query = NULL;
+        char *decoded_path = NULL;
 
-		if (is_header)
-		{
+        path = strchr(method, ' ');
+        if (!path) {
+            ZN_HttpRequest_Delete(http_request);
+            ZN_FREE(request);
+            return NULL;
+        }
 
-			ZN_List * sub_tokens = ZN_CStr_Split(tokens->items[i],':'); // split only the first : occurrence ...
+        *path = '\0';
+        path++;
 
-			if (sub_tokens->count > 1) // it has header value ...
-			{
-				strcpy(variable,sub_tokens->items[0]);
-				strcpy(value,sub_tokens->items[1]);
+        while (*path == ' ') {
+            path++;
+        }
 
-				if (strcmp(variable,"Referer")==0){
-					strcpy(referer,value);
-				}else if(strcmp(variable , "Host")==0){
-					strcpy(host,value);
-				}else if(strcmp(variable ,  "Accept")==0){
+        version = strchr(path, ' ');
+        if (version) {
+            *version = '\0';
+        }
 
-				}else if(strcmp(variable ,  "Content-Type")==0){
-					ZN_List *tl=ZN_CStr_Split(value,';');
-					if(tl->count > 0){
-						strcpy(content_type,tl->items[0]);
-					}
-					ZN_CStr_DeleteChar(content_type,' ');
-					ZN_List_DeleteAndFreeAllItems(tl);
-				}
-			}
+        if (method[0] == '\0' || path[0] == '\0') {
+            ZN_HttpRequest_Delete(http_request);
+            ZN_FREE(request);
+            return NULL;
+        }
 
-			ZN_List_DeleteAndFreeAllItems(sub_tokens);
+        if (!ZN_CopyStr(http_request->type, sizeof(http_request->type), method)) {
+            ZN_HttpRequest_Delete(http_request);
+            ZN_FREE(request);
+            return NULL;
+        }
 
+        query = strchr(path, '?');
+        if (query) {
+            *query = '\0';
+            query++;
+        }
 
-		}
-		else // check parameters...
-		{
-			ZN_List * pre_check_params = ZN_CStr_Split(tokens->items[i],'&');
+        decoded_path = ZN_Url_Unescape(path);
+        if (decoded_path) {
+            if (!ZN_CopyStr(http_request->url, sizeof(http_request->url), decoded_path)) {
+                ZN_FREE(decoded_path);
+                ZN_HttpRequest_Delete(http_request);
+                ZN_FREE(request);
+                return NULL;
+            }
 
-			if (pre_check_params->count >= 1)
-			{
-				for (unsigned j = 0; j < pre_check_params->count; j++)
-				{
-					ZN_List *sub_tokens = ZN_CStr_Split(pre_check_params->items[j], '=' ); // split only the first = occurrence ...
+            ZN_FREE(decoded_path);
+        } else {
+            if (!ZN_CopyStr(http_request->url, sizeof(http_request->url), path)) {
+                ZN_HttpRequest_Delete(http_request);
+                ZN_FREE(request);
+                return NULL;
+            }
+        }
 
-					if (sub_tokens->count == 2)
-					{
-						ZN_HttpKeyValueArray_Push(params,
-								sub_tokens->items[0],
-								sub_tokens->items[1]
-						);
-					}
+        if (http_request->url[0] == '\0') {
+            ZN_CopyStr(http_request->url, sizeof(http_request->url), "/");
+        }
 
-					ZN_List_DeleteAndFreeAllItems(sub_tokens);
-				}
+        http_request->mime = ZN_HttpRequest_MimeFromPath(
+            http_request->url,
+            &http_request->is_binary
+        );
 
-			}
+        if (query) {
+            ZN_HttpRequest_ParseParams(http_request, query);
+        }
+    }
 
-			ZN_List_DeleteAndFreeAllItems(pre_check_params);
-		}
-	}
+    /*
+        Header lines.
+    */
+    line = next_line;
 
+    while (line && *line) {
+        char *colon;
+        char *value;
+        char *line_end;
 
+        line_end = strchr(line, '\n');
+        if (line_end) {
+            *line_end = '\0';
+        }
 
-	http_request=ZN_HttpRequest_New(
-			type
-			, url
-			, host
-			, referer
-			,mime
-			, is_binary
-			,content_type
-			, params
-	);
+        if (line[0] == '\0') {
+            break;
+        }
 
-	// finally ZN_FREE all depending resources...
-	ZN_List_DeleteAndFreeAllItems(tokens);
-	ZN_List_DeleteAndFreeAllItems(url_tokens);
-	ZN_List_DeleteAndFreeAllItems(lst);
-	ZN_FREE(request);
-	ZN_FREE(request_aux);
+        colon = strchr(line, ':');
+        if (colon) {
+            *colon = '\0';
 
-	return http_request;
+            value = colon + 1;
+            value = ZN_TrimLeft(value);
+            ZN_TrimRightInPlace(line);
+            ZN_TrimRightInPlace(value);
+
+            if (line[0] != '\0') {
+                ZN_HttpRequest_AddHeader(http_request, line, value);
+
+                if (ZN_STRCASECMP(line, "Host") == 0) {
+                    ZN_CopyStr(http_request->host, sizeof(http_request->host), value);
+                } else if (ZN_STRCASECMP(line, "Referer") == 0) {
+                    ZN_CopyStr(http_request->referer, sizeof(http_request->referer), value);
+                } else if (ZN_STRCASECMP(line, "Content-Type") == 0) {
+                    char content_type[ZN_MAX_CONTENT_LEN];
+                    char *semi;
+
+                    if (ZN_CopyStr(content_type, sizeof(content_type), value)) {
+                        semi = strchr(content_type, ';');
+                        if (semi) {
+                            *semi = '\0';
+                        }
+
+                        ZN_TrimInPlace(content_type);
+                        ZN_CopyStr(http_request->content_type,
+                                   sizeof(http_request->content_type),
+                                   content_type);
+                    }
+                }
+            }
+        }
+
+        if (!line_end) {
+            break;
+        }
+
+        line = line_end + 1;
+    }
+
+    /*
+        Body params, mostly useful for application/x-www-form-urlencoded.
+        This preserves your old behavior of parsing key=value&key2=value2 body data.
+    */
+    if (body && body[0]) {
+        ZN_HttpRequest_ParseParams(http_request, body);
+    }
+
+    ZN_FREE(request);
+
+    return http_request;
 }
 
 void ZN_HttpRequest_Delete(ZN_HttpRequest *request)

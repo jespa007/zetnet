@@ -12,7 +12,7 @@
 
 
 
-void * 	zn_malloc(size_t size,const char *file, int line);
+ZN_DLL_EXPORT void * 	zn_malloc(size_t size,const char *file, int line);
 
 
 #endif

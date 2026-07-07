@@ -18,15 +18,15 @@ struct ZN_HttpServer
 
 };
 
-ZN_HttpServer *	ZN_HttpServer_New(const char * _web_dir,const char * _instance_name);
-void 			ZN_HttpServer_AddGetRoute(ZN_HttpServer * _this,const char *_url,const char *_path,ZN_HttpResponseCallback  *_on_request);
-void 			ZN_HttpServer_AddPostRoute(ZN_HttpServer * _this,const char *_url,const char *_path,ZN_HttpResponseCallback  *_on_request);
-ZN_HttpRoute *	ZN_HttpServer_SearchGetRoute(ZN_HttpServer * _this,const char *_url_start_request);
-ZN_HttpRoute *	ZN_HttpServer_SearchPostRoute(ZN_HttpServer * _this,const char *_url_start_request);
+ZN_DLL_EXPORT ZN_HttpServer *	ZN_HttpServer_New(const char * _web_dir,const char * _instance_name);
+ZN_DLL_EXPORT void 			ZN_HttpServer_AddGetRoute(ZN_HttpServer * _this,const char *_url,const char *_path,ZN_HttpResponseCallback  *_on_request);
+ZN_DLL_EXPORT ZN_DLL_EXPORT void 			ZN_HttpServer_AddPostRoute(ZN_HttpServer * _this,const char *_url,const char *_path,ZN_HttpResponseCallback  *_on_request);
+ZN_DLL_EXPORT ZN_HttpRoute *	ZN_HttpServer_SearchGetRoute(ZN_HttpServer * _this,const char *_url_start_request);
+ZN_DLL_EXPORT ZN_HttpRoute *	ZN_HttpServer_SearchPostRoute(ZN_HttpServer * _this,const char *_url_start_request);
 
-bool 			ZN_HttpServer_Start(ZN_HttpServer *_this,const char *_host, int _port);
-void 			ZN_HttpServer_Stop(ZN_HttpServer *_this);
-void 			ZN_HttpServer_Delete(ZN_HttpServer *_this);
+ZN_DLL_EXPORT bool 			ZN_HttpServer_Start(ZN_HttpServer *_this,const char *_host, int _port);
+ZN_DLL_EXPORT void 			ZN_HttpServer_Stop(ZN_HttpServer *_this);
+ZN_DLL_EXPORT void 			ZN_HttpServer_Delete(ZN_HttpServer *_this);
 
 
 #endif

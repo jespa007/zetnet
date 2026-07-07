@@ -32,10 +32,10 @@ ZN_HttpResponse *ZN_HttpResponse_New(
 		);
 
 
-ZN_HttpResponse * 	ZN_HttpResponse_MakePageNotFound(ZN_HttpServer * _http_server);
-ZN_HttpResponse *  ZN_HttpResponse_MakeFromString(const char * si, const char * mime);
-ZN_HttpResponse * 	ZN_HttpResponse_MakeMethodNotAllowed(ZN_HttpServer * _http_server);
-ZN_HttpResponse *	ZN_HttpResponse_FromFile(ZN_HttpRequest * _request,const char *_filename_with_path);
+ZN_DLL_EXPORT ZN_HttpResponse * 	ZN_HttpResponse_MakePageNotFound(ZN_HttpServer * _http_server);
+ZN_DLL_EXPORT ZN_HttpResponse *  ZN_HttpResponse_MakeFromString(const char * si, const char * mime);
+ZN_DLL_EXPORT ZN_HttpResponse * 	ZN_HttpResponse_MakeMethodNotAllowed(ZN_HttpServer * _http_server);
+ZN_DLL_EXPORT ZN_HttpResponse *	ZN_HttpResponse_FromFile(ZN_HttpRequest * _request,const char *_filename_with_path);
 void 			ZN_HttpResponse_Send(ZN_HttpResponse * http_response,SOCKET dst_socket, ZN_HttpServer * http_server);
 void 			ZN_HttpResponse_Delete(ZN_HttpResponse * http_response);
 
