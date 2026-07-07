@@ -5,7 +5,7 @@
 #ifndef __ZN_CONFIG_H__
 #define __ZN_CONFIG_H__
 
-#cmakedefine __WITH_SSL__
+#cmakedefine ZN_WITH_SSL
 
 #endif /* __ZN_CONFIG_H__ */
 

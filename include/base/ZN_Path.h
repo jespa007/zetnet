@@ -5,8 +5,8 @@
 #define MAX_PATH		4096
 #endif
 
-bool  ZN_Path_GetDirectoryName(char *dst,const char * _absolute_filename);
-void  ZN_Path_GetFileName(char *dst,const char * _absolute_filename);
+bool  ZN_Path_GetDirectoryName(char *dst, size_t dst_size,const char * _absolute_filename);
+bool  ZN_Path_GetFileName(char *dst, size_t dst_size, const char *absolute_filename);
 
 
 

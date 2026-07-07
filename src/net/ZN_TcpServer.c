@@ -22,109 +22,89 @@ void ZN_TcpServer_SetTimeout(ZN_TcpServer * tcp_server,int seconds){
 }
 
 
-SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer * tcp_server){
+SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer *tcp_server)
+{
+    SOCKET newsockfd = INVALID_SOCKET;
+    SOCKET max_sd;
+    int activity;
 
-	SOCKET newsockfd = INVALID_SOCKET;
+    if (!tcp_server || tcp_server->sockfd == INVALID_SOCKET) {
+        return INVALID_SOCKET;
+    }
 
-	//clear the socket set
-	FD_ZERO(&tcp_server->readfds);
+    FD_ZERO(&tcp_server->readfds);
 
-	//add master socket to set
-	// Always look for connection attempts
-	FD_SET(tcp_server->sockfd, &tcp_server->readfds);
-	SOCKET max_sd = tcp_server->sockfd;
+    FD_SET(tcp_server->sockfd, &tcp_server->readfds);
+    max_sd = tcp_server->sockfd;
 
-	//add child sockets to set
-	for (int i = 0 ; i < ZN_TCP_SERVER_MAX_CLIENTS ; i++)
-	{
-		if(tcp_server->clients[i].socket!=INVALID_SOCKET){
-			//socket descriptor
-			SOCKET sd = tcp_server->clients[i].socket;
+    for (int i = 0; i < ZN_TCP_SERVER_MAX_CLIENTS; i++) {
+        SOCKET sd = tcp_server->clients[i].socket;
 
-			//if valid socket descriptor then add to read list
-			if(sd > 0){
-				FD_SET( sd , &tcp_server->readfds);
-			}
+        if (sd != INVALID_SOCKET) {
+            FD_SET(sd, &tcp_server->readfds);
 
-			//highest file descriptor number, need it for the select function
-			if(sd > max_sd){
-				max_sd = sd;
-			}
-		}
-	}
+            if (sd > max_sd) {
+                max_sd = sd;
+            }
+        }
+    }
 
-	// wait for 1 second
-	ZN_TcpServer_SetTimeout(tcp_server,1);
-
-	//wait for an activity on one of the sockets , timeout is NULL , so wait indefinitely
-	int activity = select( max_sd + 1 , &tcp_server->readfds , NULL , NULL , &tcp_server->timeout);
-
-	if ((activity < 0) && (errno!=EINTR))
-	{
-#if _WIN32
-		int wsa_error=WSAGetLastError();
-
-
-		switch(wsa_error){
-		default:
-			fprintf(stderr,"\nselect error:unknow error (%i)\n",wsa_error);
-			break;
-		case WSANOTINITIALISED:
-			fprintf(stderr,"\nselect error:A successful WSAStartup call must occur before using this function.\n");
-			break;
-		case WSAEFAULT:
-			fprintf(stderr,"\nselect error:The Windows Sockets implementation was unable to allocate needed resources for its internal operations, or the readfds, writefds, exceptfds, or timeval parameters are not part of the user address space.\n");
-			break;
-		case WSAENETDOWN:
-			fprintf(stderr,"\nselect error:The network subsystem has failed.\n");
-			break;
-		case WSAEINVAL:
-			fprintf(stderr,"\nselect error:The time-out value is not valid, or all three descriptor parameters were null.\n");
-			break;
-		case WSAEINTR:
-			fprintf(stderr,"\nselect error:A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.\n");
-			break;
-		case WSAEINPROGRESS:
-			fprintf(stderr,"\nselect error:A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.\n");
-			break;
-		case WSAENOTSOCK:
-			fprintf(stderr,"\nselect error:One of the descriptor sets contains an entry that is not a socket or fd_set is not valid.\n");
-			break;
-		}
-#else
-		fprintf(stderr,"\nselect error:unknow error (%i)\n",activity);
-#endif
-
-	}
-
-	//If something happened on the socket server, then its an incoming connection
-	if (FD_ISSET(tcp_server->sockfd, &tcp_server->readfds))
-	{
+    ZN_TcpServer_SetTimeout(tcp_server, 1);
 
 #ifdef _WIN32
-	newsockfd = accept(tcp_server->sockfd, NULL, NULL);
-		if (newsockfd == INVALID_SOCKET) {
-			fprintf(stderr,"\n\naccept failed with error: %d", WSAGetLastError());
-			//socketClose(newsockfd);
-			//WSACleanup();
-		   // return INVALID_SOCKET;
-		}
+    activity = select(0, &tcp_server->readfds, NULL, NULL, &tcp_server->timeout);
 #else
-
-	struct addrinfo cli_addr;
-	socklen_t clilen=sizeof(cli_addr);
-	newsockfd = accept(tcp_server->sockfd,
-					 (struct sockaddr *) &cli_addr,
-					 &clilen);
-	 if (newsockfd < 0) {
-		  fprintf(stderr,"\nERROR on accept\n");
-		  return INVALID_SOCKET;
-	 }
+    activity = select((int)(max_sd + 1), &tcp_server->readfds, NULL, NULL, &tcp_server->timeout);
 #endif
-	}
 
-	 return newsockfd;
+    if (activity == 0) {
+        return INVALID_SOCKET;
+    }
 
+    if (activity < 0) {
+#ifdef _WIN32
+        int wsa_error = WSAGetLastError();
+
+        if (wsa_error != WSAEINTR) {
+            fprintf(stderr, "\nselect failed with error: %d\n", wsa_error);
+        }
+#else
+        if (errno != EINTR) {
+            fprintf(stderr, "\nselect failed with error: %d\n", errno);
+        }
+#endif
+        return INVALID_SOCKET;
+    }
+
+    if (!FD_ISSET(tcp_server->sockfd, &tcp_server->readfds)) {
+        return INVALID_SOCKET;
+    }
+
+#ifdef _WIN32
+    newsockfd = accept(tcp_server->sockfd, NULL, NULL);
+    if (newsockfd == INVALID_SOCKET) {
+        fprintf(stderr, "\naccept failed with error: %d\n", WSAGetLastError());
+        return INVALID_SOCKET;
+    }
+#else
+    {
+        struct sockaddr_storage cli_addr;
+        socklen_t clilen = sizeof(cli_addr);
+
+        newsockfd = accept(tcp_server->sockfd,
+                           (struct sockaddr *)&cli_addr,
+                           &clilen);
+
+        if (newsockfd == INVALID_SOCKET) {
+            if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) {
+                fprintf(stderr, "\naccept failed with error: %d\n", errno);
+            }
+            return INVALID_SOCKET;
+        }
+    }
+#endif
+
+    return newsockfd;
 }
 
 bool ZN_TcpServer_SocketReady(ZN_TcpServer * tcp_server,SOCKET sock){
@@ -201,28 +181,32 @@ const char * ZN_TcpServer_GetErrorSockOpt(void){
 	return "unknow";
 }
 //---------------------------------------------------------------------------------------------------------------------------
-bool  ZN_TcpServer_Setup(ZN_TcpServer * tcp_server, const char *_host,  int _portno)  //  Reads  configuration  of  machine  &  init  sdl_net...
+bool ZN_TcpServer_Setup(ZN_TcpServer *tcp_server, const char *_host, int _portno)
 {
+    if (!tcp_server) {
+        return false;
+    }
 
-	tcp_server->end_loop_mdb=false;
+    tcp_server->end_loop_mdb = false;
+    tcp_server->portno = _portno;
 
-	tcp_server->portno = _portno;
+    ZN_TcpServer_SetTimeout(tcp_server, ZN_DEFAULT_TIMEOUT_SECONDS);
 
-	ZN_TcpServer_SetTimeout(tcp_server,ZN_DEFAULT_TIMEOUT_SECONDS);
+    tcp_server->sockfd = ZN_TcpSocket_NewSocketServer(_host, _portno);
+    if (tcp_server->sockfd == INVALID_SOCKET) {
+        return false;
+    }
 
-	if((tcp_server->sockfd=ZN_TcpSocket_NewSocketServer(_host, _portno))!=INVALID_SOCKET){
+    if (pthread_create(&tcp_server->thread, NULL, ZN_TcpServer_Update, (void *)tcp_server) != 0) {
+        fprintf(stderr, "\nerror creating thread\n");
+        ZN_TcpSocket_CloseSocket(&tcp_server->sockfd);
+        tcp_server->thread = 0;
+        tcp_server->initialized = false;
+        return false;
+    }
 
-
-		 if(pthread_create(&tcp_server->thread,NULL,ZN_TcpServer_Update,(void *)tcp_server)!=0){//mainLoop(this));
-			 fprintf(stderr,"\nerror creating thread\n");
-			 tcp_server->thread=0;
-			 return false;
-		 }
-
-		return true;
-	}
-
-	return false;
+    tcp_server->initialized = true;
+    return true;
 }
 
 bool ZN_TcpServer_Start(ZN_TcpServer * tcp_server, const char *_host,  int _portno){
@@ -339,16 +323,32 @@ void ZN_TcpServer_GestServer(ZN_TcpServer * tcp_server)
 			// If there is any activity on the client socket...
 			if (client_socket_activity != 0){
 
-				unsigned long result=0;
-				if(!tcp_server->is_streaming_server){ // read from client...
+				ssize_t result = 0;
 
-					result = ZN_TcpSocket_ReceiveBytes(tcp_server->clients[cn].socket,  (uint8_t  *)tcp_server->buffer,sizeof(tcp_server->buffer));
+				if (!tcp_server->is_streaming_server) {
+				    result = ZN_TcpSocket_ReceiveBytes(
+				        tcp_server->clients[cn].socket,
+				        (uint8_t *)tcp_server->buffer,
+				        sizeof(tcp_server->buffer)
+				    );
 				}
 
-				if(result > 0) {// serve to client ...
+				if (result > 0) {
+				    ZN_TcpServerOnGestMessage cf = tcp_server->on_gest_message;
 
-					ZN_TcpServerOnGestMessage cf = tcp_server->on_gest_message;
-					if(!cf.callback_function(tcp_server,&tcp_server->clients[cn],tcp_server->buffer, sizeof(tcp_server->buffer),cf.user_data)){
+				    if (!cf.callback_function) {
+				        ZN_LOG_DEBUG("gestMessage: Erasing client %i because callback is NULL", cn);
+				        ZN_TcpServer_CloseClient(tcp_server, &tcp_server->clients[cn]);
+				        continue;
+				    }
+
+				    if (!cf.callback_function(
+				            tcp_server,
+				            &tcp_server->clients[cn],
+				            tcp_server->buffer,
+				            (size_t)result,
+				            cf.user_data
+				    )) {
 
 						ZN_LOG_DEBUG("gestMessage:Erasing client %i (gestMessage)",cn);
 
@@ -424,33 +424,32 @@ void  * ZN_TcpServer_Update(void * varg)  //  Receive  messages,  gest  &  send.
 //------------------------------------------------------------------------------------------------------------------------
 //char  *str  =  NULL;
 
-void ZN_TcpServer_Stop(ZN_TcpServer * tcp_server) {
+void ZN_TcpServer_Stop(ZN_TcpServer *tcp_server)
+{
+    if (!tcp_server) {
+        return;
+    }
 
-	if(tcp_server->sockfd != INVALID_SOCKET){
+    if (tcp_server->sockfd == INVALID_SOCKET) {
+        return;
+    }
 
-		tcp_server->end_loop_mdb=true;
-		pthread_join(tcp_server->thread,NULL);
+    tcp_server->end_loop_mdb = true;
 
+    if (tcp_server->initialized) {
+        pthread_join(tcp_server->thread, NULL);
+        tcp_server->initialized = false;
+    }
 
-		// remove all clients boot (only for TCP protocol)
-		for(int i = 0; i < ZN_TCP_SERVER_MAX_CLIENTS; i++){
-			if(tcp_server->clients[i].socket!=INVALID_SOCKET){
-				ZN_TcpServer_CloseClient(tcp_server,&tcp_server->clients[i]);
-			}
-		}
+    for (int i = 0; i < ZN_TCP_SERVER_MAX_CLIENTS; i++) {
+        if (tcp_server->clients[i].socket != INVALID_SOCKET) {
+            ZN_TcpServer_CloseClient(tcp_server, &tcp_server->clients[i]);
+        }
+    }
 
-		ZN_TcpSocket_CloseSocket(&tcp_server->sockfd);
+    ZN_TcpSocket_CloseSocket(&tcp_server->sockfd);
 
-		if(tcp_server->sockfd!=INVALID_SOCKET){
-			ZN_TcpSocket_CloseSocket(&tcp_server->sockfd);
-		}
-
-		printf("Disconnect server\n");
-
-
-	}
-
-
+    printf("Disconnect server\n");
 }
 
 void ZN_TcpServer_Delete(ZN_TcpServer * tcp_server) {

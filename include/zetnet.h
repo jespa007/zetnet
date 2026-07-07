@@ -14,6 +14,7 @@
 #include "http/@ZN_Http.h"
 
 ZN_DLL_EXPORT bool ZN_Init(void);
+ZN_DLL_EXPORT bool ZN_HasSSL(void);
 ZN_DLL_EXPORT void ZN_DeInit(void);
 
 

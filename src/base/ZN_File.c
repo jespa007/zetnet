@@ -26,8 +26,12 @@ bool ZN_File_Exists(const char * filename) {
 uint8_t * ZN_File_Read(const char * filename,size_t * buffer_size){
 
 
-	unsigned long  file_length, readed_elements;
+	long long unsigned file_length, readed_elements;
 	FILE  *fp;
+
+	if (!filename || !buffer_size) {
+		return NULL;
+	}
 
 	if((fp  =  fopen(filename,"rb"))  !=  NULL)
 	{
@@ -42,16 +46,18 @@ uint8_t * ZN_File_Read(const char * filename,size_t * buffer_size){
 			if(readed_elements != file_length) {
 				fprintf(stderr,"\nnumber elements doesn't match with length file (%s)\n",filename);
 				ZN_FREE(buffer);
-				return NULL;
+				buffer = NULL;
 			}
 
 			fclose(fp);
 
 			return buffer;
+		}else  {
+			fprintf(stderr,"\nI can't read file \"%s\"\n",filename);
 		}
-		else  fprintf(stderr,"\nI can't read file \"%s\"\n",filename);
+	}else {
+		fprintf(stderr,"\nI can't open file \"%s\"\n",filename);
 	}
-	else  fprintf(stderr,"\nI can't open file \"%s\"\n",filename);
 
 
 	return NULL;

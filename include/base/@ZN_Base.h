@@ -87,7 +87,7 @@
 #include "config.h"
 
 
-#ifdef __WITH_SSL__
+#ifdef ZN_WITH_SSL
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>

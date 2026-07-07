@@ -118,11 +118,11 @@ ZN_HttpResponse *ZN_HttpResponse_FromFile(ZN_HttpRequest * _request,const char *
 	printf("try_file:%s request:%s\n",_filename_with_path,_request->url);
 #endif
 
-	ZN_Path_GetDirectoryName(path,_filename_with_path);
+	ZN_Path_GetDirectoryName(path,sizeof(path),_filename_with_path);
 
 	if (ZN_File_Exists(_filename_with_path)/* && fi.Extension.Contains(".")*/)
 	{
-		ZN_Path_GetFileName(file,_filename_with_path);
+		ZN_Path_GetFileName(file,sizeof(file),_filename_with_path);
 
 #ifdef __DEBUG__
 		printf("file \"%s\" filename with ok!\n",_filename_with_path);
@@ -139,7 +139,7 @@ ZN_HttpResponse *ZN_HttpResponse_FromFile(ZN_HttpRequest * _request,const char *
 			//String n = ff.Name;
 			char n[MAX_PATH]="";
 
-			ZN_Path_GetFileName(n,list_file->items[f]);
+			ZN_Path_GetFileName(n,sizeof(n),list_file->items[f]);
 
 	#ifdef __DEBUG__
 			printf("try_file2:%s\n",n);

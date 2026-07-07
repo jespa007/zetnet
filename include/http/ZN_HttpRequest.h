@@ -21,6 +21,7 @@ struct ZN_HttpRequest
 	bool is_binary;
 	char  content_type[ZN_MAX_CONTENT_LEN];
 	ZN_Array * params;
+	ZN_Array *headers;
 
 };
 
@@ -35,7 +36,18 @@ ZN_DLL_EXPORT void 				ZN_HttpRequest_InitGetFromUrl(
     const ZN_Url *url
 );
 
+ZN_DLL_EXPORT ZN_HttpRequest *  ZN_HttpRequest_NewEmpty(void);
 ZN_DLL_EXPORT ZN_HttpRequest * 	ZN_HttpRequest_GetRequest(const char * request);
+ZN_DLL_EXPORT			   bool ZN_HttpRequest_AddHeader(
+									ZN_HttpRequest *request,
+									const char *key,
+									const char *value
+								);
+
+ZN_DLL_EXPORT			bool ZN_HttpRequest_AddHeaderLine(
+									ZN_HttpRequest *request,
+									const char *header_line
+								);
 ZN_DLL_EXPORT void		  		ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
 
 #endif

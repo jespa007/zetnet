@@ -1,6 +1,6 @@
 #include "zetnet.h"
 
-#ifdef __WITH_SSL__
+#ifdef ZN_WITH_SSL
 static SSL_CTX * g_ssl_ctx = NULL;
 #endif
 
@@ -15,7 +15,7 @@ bool ZN_Init(void){
 	}
 #endif
 
-#ifdef __WITH_SSL__
+#ifdef ZN_WITH_SSL
     // OpenSSL init
 	if(g_ssl_ctx == NULL){
 		SSL_library_init();
@@ -46,15 +46,46 @@ bool ZN_Init(void){
 	return true;
 }
 
-#ifdef __WITH_SSL__
+const char *ZN_GetBuildInfo(void)
+{
+    static char info[256];
+
+#ifdef ZN_WITH_SSL
+    snprintf(info, sizeof(info),
+             "ZetNet %d.%d.%d | SSL: %s",
+             ZETNET_VERSION_MAJOR,
+             ZETNET_VERSION_MINOR,
+             ZETNET_VERSION_PATCH,
+             OpenSSL_version(OPENSSL_VERSION));
+#else
+    snprintf(info, sizeof(info),
+             "ZetNet %d.%d.%d | SSL: disabled",
+             ZETNET_VERSION_MAJOR,
+             ZETNET_VERSION_MINOR,
+             ZETNET_VERSION_PATCH);
+#endif
+
+    return info;
+}
+
+#ifdef ZN_WITH_SSL
 SSL_CTX * ZN_GetSSLContext(void){
 	return g_ssl_ctx;
 }
 
 #endif
 
-void ZN_DeInit(void){
+bool ZN_HasSSL(void)
+{
 #ifdef __WITH_SSL__
+    return true;
+#else
+    return false;
+#endif
+}
+
+void ZN_DeInit(void){
+#ifdef ZN_WITH_SSL
 	if(g_ssl_ctx != NULL){
 		SSL_CTX_free(g_ssl_ctx);
         g_ssl_ctx = NULL;

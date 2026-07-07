@@ -25,6 +25,12 @@ struct ZN_HttpKeyValue {
 
 //ZN_HttpKeyValue * ZN_HttpParamValue_New(char *name, char *value);
 ZN_Array 	*	ZN_HttpKeyValueArray_New(void);
-bool 			ZN_HttpKeyValueArray_Push(ZN_Array *array, const char *key, const char *value);
+bool 			ZN_HttpKeyValueArray_Push(ZN_Array * _this, const char *key, const char *value);
+bool 			ZN_HttpKeyValue_PushN(
+					ZN_Array *_this,
+					const char *_key,
+					size_t _key_len,
+					const char *_value
+);
 
 #endif

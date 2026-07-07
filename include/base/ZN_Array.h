@@ -23,11 +23,11 @@ struct ZN_Array{
 ZN_Array	*	ZN_Array_New(const char * _name, size_t _size);
 void		*	ZN_Array_GetData(ZN_Array *_this, const char * _name, size_t _data_size);
 void		*	ZN_Array_Get(ZN_Array *_this, const char * _name, size_t _data_size, size_t _pos);
-void			ZN_Array_Set(ZN_Array *_this, const char * _name, size_t _data_size, size_t _pos, void *_data );
+bool			ZN_Array_Set(ZN_Array *_this, const char * _name, size_t _data_size, size_t _pos, void *_data );
 void			ZN_Array_Erase(ZN_Array *_this, const char * _name, size_t _data_size, size_t _pos);
 void			ZN_Array_InsertAt(ZN_Array *_this, const char * _name, size_t _data_size, size_t _pos, void *_data );
 
-void			ZN_Array_Push(ZN_Array *_this, const char * _name, size_t _data_size, void *_data);
+bool			ZN_Array_Push(ZN_Array *_this, const char * _name, size_t _data_size, const void *_data);
 size_t 			ZN_Array_Count(ZN_Array *_this);
 void			ZN_Array_Clear(ZN_Array *_this);
 void			ZN_Array_Delete(ZN_Array *_this);

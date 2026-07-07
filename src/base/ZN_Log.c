@@ -34,7 +34,7 @@ void  ZN_Log_Print(const  char  *_file,  int  _line, ZNLogLevel _level, const  c
 	}
 
 	if(_file != NULL){
-		ZN_Path_GetFileName(filename,_file);
+		ZN_Path_GetFileName(filename,sizeof(filename),_file);
 	}
 
 	/*if(!ansi_escape){

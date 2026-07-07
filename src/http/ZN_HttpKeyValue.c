@@ -1,14 +1,21 @@
 #include "zetnet.h"
 
-void ZN_HttpKeyValue_DestructItem(void *_data) {
-    ZN_HttpKeyValue *data = _data;
+void ZN_HttpKeyValue_DestructItem(void *_data)
+{
+    ZN_HttpKeyValue *data = (ZN_HttpKeyValue *)_data;
+
+    if (!data) {
+        return;
+    }
 
     if (data->key) {
         ZN_FREE(data->key);
+        data->key = NULL;
     }
 
     if (data->value) {
         ZN_FREE(data->value);
+        data->value = NULL;
     }
 }
 
@@ -40,7 +47,7 @@ ZN_Array *ZN_HttpKeyValueArray_New(void) {
     return array;
 }
 
-bool ZN_HttpKeyValueArray_Push(ZN_Array *array, const char *key, const char *value) {
+bool ZN_HttpKeyValueArray_Push(ZN_Array *_this, const char *key, const char *value) {
     ZN_HttpKeyValue kv;
 
     kv.key = ZN_CStr_New(key ? key : "");
@@ -52,7 +59,41 @@ bool ZN_HttpKeyValueArray_Push(ZN_Array *array, const char *key, const char *val
         return false;
     }
 
-    ZN_ARRAY_HTTP_KEY_VALUE_PUSH(array, kv);
+    ZN_ARRAY_HTTP_KEY_VALUE_PUSH(_this, kv);
+
+    return true;
+}
+
+bool ZN_HttpKeyValue_PushN(
+    ZN_Array *_array,
+    const char *_key,
+    size_t _key_len,
+    const char *_value
+)
+{
+    ZN_HttpKeyValue item;
+
+    if (!_array || !_key || !_value || _key_len == 0) {
+        return false;
+    }
+
+    memset(&item, 0, sizeof(item));
+
+    item.key = ZN_CStr_NewLen(_key, _key_len);
+    if (!item.key) {
+        return false;
+    }
+
+    item.value = ZN_CStr_New(_value);
+    if (!item.value) {
+        ZN_FREE(item.key);
+        return false;
+    }
+
+    if (!ZN_ARRAY_PUSH(ZN_ARRAY_HTTP_KEY_VALUE, _array, item)) {
+        ZN_HttpKeyValue_DestructItem(&item);
+        return false;
+    }
 
     return true;
 }

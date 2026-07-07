@@ -1,266 +1,261 @@
 #include "zetnet.h"
 
-SOCKET ZN_TcpSocket_NewSocketServer(const char * _host, int _portno){
-
-	SOCKET socket_server=INVALID_SOCKET;
-	struct addrinfo  serv_addr;
-	uint32_t  ipaddr=0;
-	bzero((char *) &serv_addr, sizeof(serv_addr));
-	int i_result;
-	//int opt = 1;
-	int error=0;
-//#ifdef _WIN32
-	// Initialize Winsock
-
-
+SOCKET ZN_TcpSocket_NewSocketServer(const char *_host, int _portno)
+{
+	SOCKET socket_server = INVALID_SOCKET;
+	struct addrinfo hints;
 	struct addrinfo *result = NULL;
-//#ifdef _WIN32
-	serv_addr.ai_family = AF_INET;
-	serv_addr.ai_socktype = SOCK_STREAM;
-	serv_addr.ai_protocol = IPPROTO_TCP;
-	serv_addr.ai_flags = AI_PASSIVE;
-/*#else // linux
-	serv_addr.sin_family = AF_INET;
-	serv_addr.ai_socktype = SOCK_STREAM;
-	serv_addr.ai_protocol = IPPROTO_TCP;
-	serv_addr.ai_flags = AI_PASSIVE;
-#endif*/
+	struct addrinfo *ptr = NULL;
+	char port_str[16];
 
-	// Resolve the server address and port
-	i_result = getaddrinfo(_host, (const char *)ZN_CStr_FromInt(_portno), &serv_addr, &result);
-	if ( i_result != 0 ) {
-	   fprintf(stderr,"\ngetaddrinfo failed with error: %d\n", i_result);
-	   return INVALID_SOCKET;
-	}
+	struct sockaddr_storage bound_addr;
+	socklen_t bound_addr_len = 0;
+	bool have_bound_addr = false;
 
-	// Create a SOCKET for connecting to server
-	socket_server = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if (socket_server == INVALID_SOCKET) {
-#ifdef _WIN32
-		error=WSAGetLastError();
-#endif
-		fprintf(stderr,"\nsocket failed with error: %i\n", error);
-		freeaddrinfo(result);
+	int i_result;
+	int error = 0;
+
+	memset(&hints, 0, sizeof(hints));
+	memset(&bound_addr, 0, sizeof(bound_addr));
+
+	snprintf(port_str, sizeof(port_str), "%d", _portno);
+
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+
+	i_result = getaddrinfo(_host, port_str, &hints, &result);
+	if (i_result != 0) {
+		fprintf(stderr, "\ngetaddrinfo failed with error: %d\n", i_result);
 		return INVALID_SOCKET;
 	}
 
-	 //set server socket to allow multiple connections , this is just a good habit, it will work without this
-	/* if(( setsockopt(socket_server, SOL_SOCKET, 0, (char *)&opt, sizeof(opt))) < 0 )
-	 {
+	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
+		socket_server = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+		if (socket_server == INVALID_SOCKET) {
 #ifdef _WIN32
-		error=WSAGetLastError();
+			error = WSAGetLastError();
+#else
+			error = errno;
 #endif
-		 fprintf(stderr,"\nsetsockopt failed error: %i\n", error);
-		 return INVALID_SOCKET;
-	 }*/
-
-	// Setup the TCP listening socket
-	if(bind( socket_server, result->ai_addr, (int)result->ai_addrlen)<0){
-
-#ifdef _WIN32
-		error=WSAGetLastError();
-#endif
-		switch(error){
-#ifdef _WIN32
-		case WSAEADDRINUSE:
-			fprintf(stderr,"\nport %i alraedy in use\n",_portno);
-#endif
-			break;
-		default:
-			fprintf(stderr,"\nbind failed with error: %i\n", error);
-			break;
+			fprintf(stderr, "\nsocket failed with error: %i\n", error);
+			continue;
 		}
-		freeaddrinfo(result);
-		ZN_TcpSocket_CloseSocket(&socket_server);
-		return INVALID_SOCKET;
+
+		{
+			int opt = 1;
+			if (setsockopt(socket_server, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)) < 0) {
+#ifdef _WIN32
+				error = WSAGetLastError();
+#else
+				error = errno;
+#endif
+				fprintf(stderr, "\nsetsockopt(SO_REUSEADDR) failed with error: %i\n", error);
+				/* Not fatal. Continue trying to bind. */
+			}
+		}
+
+		if (bind(socket_server, ptr->ai_addr, (int)ptr->ai_addrlen) < 0) {
+#ifdef _WIN32
+			error = WSAGetLastError();
+#else
+			error = errno;
+#endif
+
+#ifdef _WIN32
+			if (error == WSAEADDRINUSE) {
+				fprintf(stderr, "\nport %i already in use\n", _portno);
+			} else
+#endif
+			{
+				fprintf(stderr, "\nbind failed with error: %i\n", error);
+			}
+
+			ZN_TcpSocket_CloseSocket(&socket_server);
+			continue;
+		}
+
+		if (ptr->ai_addrlen <= sizeof(bound_addr)) {
+			memcpy(&bound_addr, ptr->ai_addr, ptr->ai_addrlen);
+			bound_addr_len = (socklen_t)ptr->ai_addrlen;
+			have_bound_addr = true;
+		}
+
+		break;
 	}
 
 	freeaddrinfo(result);
 
+	if (socket_server == INVALID_SOCKET) {
+		return INVALID_SOCKET;
+	}
+
 	i_result = listen(socket_server, ZN_TCP_SERVER_MAX_CLIENTS);
 	if (i_result == SOCKET_ERROR) {
 #ifdef _WIN32
-		error=WSAGetLastError();
+		error = WSAGetLastError();
+#else
+		error = errno;
 #endif
-		fprintf(stderr,"\nlisten failed with error: %i\n", error);
-
+		fprintf(stderr, "\nlisten failed with error: %i\n", error);
 		ZN_TcpSocket_CloseSocket(&socket_server);
 		return INVALID_SOCKET;
 	}
 
+	if (have_bound_addr && bound_addr.ss_family == AF_INET) {
+		struct sockaddr_in *addr = (struct sockaddr_in *)&bound_addr;
 
-/*#else // GNU
-	int opt = 1;
-	 // create socket for server...
-	socket_server = socket(AF_INET, SOCK_STREAM, 0);
-	 if (socket_server < 0){
-		fprintf(stderr,"\n\nERROR opening socket");
-		return INVALID_SOCKET;
-	 }
-
-	 //set server socket to allow multiple connections , this is just a good habit, it will work without this
-	 if(( setsockopt(socket_server, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt))) < 0 )
-	 {
-		 fprintf(stderr,"\n\nsetsockopt failed");
-		 return INVALID_SOCKET;
-	 }
-
-	 // setup parameters for server binding ...
-	 serv_addr.sin_family = AF_INET;
-	 serv_addr.sin_addr.s_addr = INADDR_ANY;
-	 serv_addr.sin_port = htons(_portno);
-
-	if (bind(socket_server, (struct sockaddr *) &serv_addr,
-				  sizeof(serv_addr)) < 0){
-				  fprintf(stderr,"\n\nERROR on binding");
-				  return INVALID_SOCKET;
+		printf("Setup server  (%s:%i)\n",
+			   inet_ntoa(addr->sin_addr),
+			   ntohs(addr->sin_port));
+	} else {
+		printf("Setup server  (%s:%i)\n",
+			   _host ? _host : "0.0.0.0",
+			   _portno);
 	}
-
-	listen(socket_server,5); // block until new connection is established...
-#endif*/
-
-	struct sockaddr_in *addr = (struct sockaddr_in *)result->ai_addr;
-	/*printf("Setup server  (%d.%d.%d.%d:%i)\n",
-			ipaddr>>24,
-			(ipaddr>>16)&0xff,
-			(ipaddr>>8)&0xff,
-			ipaddr&0xff,
-			_portno);*/
-	printf("Setup server  (%s:%i)\n",
-			inet_ntoa(addr->sin_addr),
-			ntohs(addr->sin_port));
 
 	return socket_server;
 }
 
+SOCKET ZN_TcpSocket_NewSocketClient(const char *_host, int _portno)
+{
+	SOCKET socket_client = INVALID_SOCKET;
+	struct addrinfo hints;
+	struct addrinfo *ptr = NULL;
+	struct addrinfo *result = NULL;
+	char port_str[16];
 
-SOCKET ZN_TcpSocket_NewSocketClient(const char * _host, int _portno){
-	SOCKET socket_client=INVALID_SOCKET;
-	struct addrinfo	serv_addr;
-	int error=0;
-	bzero((char *) &serv_addr, sizeof(serv_addr));
-//#ifdef _WIN32
-	struct        addrinfo         *ptr = NULL,*result=NULL;
+	int i_result;
+	int error = 0;
 
-	serv_addr.ai_family = AF_INET;
-	serv_addr.ai_socktype = SOCK_STREAM;
-	serv_addr.ai_protocol = IPPROTO_TCP;
-
-
-	// Resolve the server address and port
-	int i_result = getaddrinfo(_host, (const char *)ZN_CStr_FromInt(_portno), &serv_addr, &result);
-	if ( i_result != 0 ) {
-		fprintf(stderr,"\nZN_TcpSocket_NewSocketClient : getaddrinfo for '%s:%i' failed with error: %d\n",_host,_portno,i_result);
+	if (!_host) {
+		fprintf(stderr, "\nZN_TcpSocket_NewSocketClient : host is NULL\n");
 		return INVALID_SOCKET;
 	}
 
-	 // Attempt to connect to an address until one succeeds
-	for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {
+	memset(&hints, 0, sizeof(hints));
+	snprintf(port_str, sizeof(port_str), "%d", _portno);
 
-		// Create a SOCKET for connecting to server
-		socket_client = socket(ptr->ai_family, ptr->ai_socktype,ptr->ai_protocol);
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	i_result = getaddrinfo(_host, port_str, &hints, &result);
+	if (i_result != 0) {
+		fprintf(stderr,
+				"\nZN_TcpSocket_NewSocketClient : getaddrinfo for '%s:%i' failed with error: %d\n",
+				_host,
+				_portno,
+				i_result);
+		return INVALID_SOCKET;
+	}
+
+	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
+		socket_client = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
 		if (socket_client == INVALID_SOCKET) {
-	#ifdef _WIN32
-			error=WSAGetLastError();
-	#endif
-			fprintf(stderr,"\nsocket failed with error: %i\n", error);
-			return INVALID_SOCKET;
+#ifdef _WIN32
+			error = WSAGetLastError();
+#else
+			error = errno;
+#endif
+			fprintf(stderr, "\nsocket failed with error: %i\n", error);
+			continue;
 		}
 
-		// Connect to server.
+#if defined(__DEBUG__)
 		printf("Connecting to family: %d\n", ptr->ai_family);
-		i_result = connect( socket_client, ptr->ai_addr, (int)ptr->ai_addrlen);
+#endif
+
+		i_result = connect(socket_client, ptr->ai_addr, (int)ptr->ai_addrlen);
 		if (i_result == SOCKET_ERROR) {
-	#ifdef _WIN32
-			error=WSAGetLastError();
-	#endif
-			fprintf(stderr,"\nconnect failed with error: %i\n", error);
+#ifdef _WIN32
+			error = WSAGetLastError();
+#else
+			error = errno;
+#endif
+			fprintf(stderr, "\nconnect failed with error: %i\n", error);
+
 			ZN_TcpSocket_CloseSocket(&socket_client);
 			socket_client = INVALID_SOCKET;
 			continue;
 		}
+
 		break;
 	}
 
 	freeaddrinfo(result);
 
 	if (socket_client == INVALID_SOCKET) {
-		fprintf(stderr,"\nUnable to connect to server!\n");
-	}
-/*#else
-
-	 // create socket for server...
-	socket_client = socket(AF_INET, SOCK_STREAM, 0);
-	 if (socket_client < 0){
-		fprintf(stderr,"\n\nERROR opening socket");
-		return INVALID_SOCKET;
-	 }
-
-
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(_portno);
-
-
-
-	// Convert IPv4 and IPv6 addresses from text to binary form
-	if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)
-	{
-		fprintf(stderr,"\n\nInvalid address/ Address not supported \n");
-		return INVALID_SOCKET;
+		fprintf(stderr, "\nUnable to connect to server!\n");
 	}
 
-	if (connect(socket_client, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-	{
-		fprintf(stderr,"\n\nConnection Failed \n");
-		return INVALID_SOCKET;
-	}
-#endif*/
 	return socket_client;
-
 }
 
-
-//  receive  a  buffer  from  a  TCP  socket  with  error  checking
-//  this  function  handles  the  memory,  so  it  can't  use  any  []  arrays
-//  returns  0  on  any  errors,  or  a  valid  char*  on  success
-ssize_t  ZN_TcpSocket_ReceiveBytes(SOCKET  sock,  uint8_t  *_buf, size_t _buf_len)
+ssize_t ZN_TcpSocket_ReceiveBytes(SOCKET sock, uint8_t *_buf, size_t _buf_len)
 {
 	ssize_t result;
 
-	result = recv(sock,(char *)_buf, _buf_len,0);
-
-	return  result;
-}
-
-//  send  a  CString  buffer  over  a  TCP  socket  with  error  checking
-//  returns  0  on  any  errors,  length  sent  on  success
-ssize_t  ZN_TcpSocket_SendBytes(SOCKET  _socket,  const uint8_t  *_buffer,  size_t  _buffer_len) {
-	ssize_t  result=0;
-
-	if(!_buffer_len || !_buffer_len) {
-		return 0;
+	if (sock == INVALID_SOCKET || !_buf || _buf_len == 0) {
+		return ZN_ERROR;
 	}
 
-	//  send  the  buffer,  with  the  NULL  as  well
-	result=send(_socket, (const char *)_buffer,_buffer_len,0);
-
+	result = recv(sock, (char *)_buf, (int)_buf_len, 0);
 
 	return result;
 }
 
-void	ZN_TcpSocket_CloseChannel(SOCKET  _socket, int _channel){
+ssize_t ZN_TcpSocket_SendBytes(SOCKET _socket, const uint8_t *_buffer, size_t _buffer_len)
+{
+	size_t total_sent = 0;
 
-	if(_socket == INVALID_SOCKET){
+	if (_socket == INVALID_SOCKET || !_buffer || _buffer_len == 0) {
+		return ZN_ERROR;
+	}
+
+	while (total_sent < _buffer_len) {
+		size_t remaining = _buffer_len - total_sent;
+		int chunk_len = remaining > 0x7fffffffU ? 0x7fffffff : (int)remaining;
+
+		ssize_t sent = send(_socket, (const char *)_buffer + total_sent, chunk_len, 0);
+
+		if (sent < 0) {
+#ifdef _WIN32
+			int err = WSAGetLastError();
+			if (err == WSAEINTR) {
+				continue;
+			}
+#else
+			if (errno == EINTR) {
+				continue;
+			}
+#endif
+			return ZN_ERROR;
+		}
+
+		if (sent == 0) {
+			return ZN_ERROR;
+		}
+
+		total_sent += (size_t)sent;
+	}
+
+	return (ssize_t)total_sent;
+}
+
+void ZN_TcpSocket_CloseChannel(SOCKET _socket, int _channel)
+{
+	if (_socket == INVALID_SOCKET) {
 		return;
 	}
 
-	shutdown(_socket,_channel);
+	shutdown(_socket, _channel);
 }
 
-
-void ZN_TcpSocket_CloseSocket(SOCKET *_socket){
-
-	if(*_socket == INVALID_SOCKET){
+void ZN_TcpSocket_CloseSocket(SOCKET *_socket)
+{
+	if (!_socket || *_socket == INVALID_SOCKET) {
 		return;
 	}
 
@@ -270,6 +265,5 @@ void ZN_TcpSocket_CloseSocket(SOCKET *_socket){
 	close(*_socket);
 #endif
 
-	// now is invalid...
-	*_socket=INVALID_SOCKET;
+	*_socket = INVALID_SOCKET;
 }

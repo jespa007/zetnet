@@ -1,7 +1,5 @@
 #include "zetnet.h"
 
-
-
 static size_t ZN_Appendf(
     char *out,
     size_t size,
@@ -31,6 +29,52 @@ static size_t ZN_Appendf(
     return used + (size_t)written;
 }
 
+bool ZN_HttpRequest_AddHeaderN(
+    ZN_HttpRequest *_request,
+    const char *_header_line,
+    size_t _key_len,
+    const char *_value_start
+)
+{
+    if (!_request || !_header_line || !_value_start || _key_len == 0) {
+        return false;
+    }
+
+    if (!_request->headers) {
+        _request->headers = ZN_ARRAY_HTTP_KEY_VALUE_NEW();
+
+        if (!_request->headers) {
+            return false;
+        }
+
+        _request->headers->destructor_item = ZN_HttpKeyValue_DestructItem;
+    }
+
+    return ZN_HttpKeyValue_PushN(
+        _request->headers,
+        _header_line,
+        _key_len,
+        _value_start
+    );
+}
+
+bool ZN_HttpRequest_AddHeader(
+    ZN_HttpRequest *_request,
+    const char *_key,
+    const char *_value
+)
+{
+    if (!_request || !_key || !_value) {
+        return false;
+    }
+
+    return ZN_HttpRequest_AddHeaderN(
+        _request,
+        _key,
+        strlen(_key),
+        _value
+    );
+}
 
 bool ZN_HttpRequest_Build(
     char *out,
@@ -140,6 +184,44 @@ bool ZN_HttpRequest_Build(
     return used < size;
 }
 
+bool ZN_HttpRequest_AddHeaderLine(ZN_HttpRequest *request, const char *header_line)
+{
+    const char *colon;
+    size_t key_len;
+    const char *value_start;
+
+    if (!request || !header_line || header_line[0] == '\0') {
+        return false;
+    }
+
+    if (strchr(header_line, '\r') || strchr(header_line, '\n')) {
+        return false;
+    }
+
+    colon = strchr(header_line, ':');
+    if (!colon) {
+        return false;
+    }
+
+    key_len = (size_t)(colon - header_line);
+    if (key_len == 0) {
+        return false;
+    }
+
+    value_start = colon + 1;
+
+    while (*value_start == ' ' || *value_start == '\t') {
+        value_start++;
+    }
+
+    return ZN_HttpRequest_AddHeaderN(
+        request,
+        header_line,
+        key_len,
+        value_start
+    );
+}
+
 void ZN_HttpRequest_InitGetFromUrl(
     ZN_HttpRequest *req,
     const ZN_Url *url
@@ -160,6 +242,24 @@ void ZN_HttpRequest_InitGetFromUrl(
     req->params = NULL;
 }
 
+ZN_HttpRequest *ZN_HttpRequest_NewEmpty(void)
+{
+    ZN_HttpRequest *request = ZN_NEW(ZN_HttpRequest);
+
+    if (!request) {
+        return NULL;
+    }
+
+    request->params = NULL;
+    request->headers = ZN_HttpKeyValueArray_New();
+
+    if (!request->headers) {
+        ZN_FREE(request);
+        return NULL;
+    }
+
+    return request;
+}
 
 ZN_HttpRequest * ZN_HttpRequest_New(char *  _type
 		, char * _url
@@ -181,9 +281,17 @@ ZN_HttpRequest * ZN_HttpRequest_New(char *  _type
 	strcpy(http_request->content_type, _content_type);
 	http_request->params 		= _params;
 
+	http_request->headers = ZN_HttpKeyValueArray_New();
+
+    if (!http_request->headers) {
+        ZN_FREE(http_request);
+        return NULL;
+    }
+
 	return http_request;
 
 }
+
 
 ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 	 ZN_HttpRequest *http_request=NULL;
@@ -370,7 +478,16 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 
 
 
-	http_request=ZN_HttpRequest_New(type, url, host, referer,mime, is_binary,content_type, params);
+	http_request=ZN_HttpRequest_New(
+			type
+			, url
+			, host
+			, referer
+			,mime
+			, is_binary
+			,content_type
+			, params
+	);
 
 	// finally ZN_FREE all depending resources...
 	ZN_List_DeleteAndFreeAllItems(tokens);
@@ -382,10 +499,21 @@ ZN_HttpRequest *ZN_HttpRequest_GetRequest(const char * str_request) {
 	return http_request;
 }
 
+void ZN_HttpRequest_Delete(ZN_HttpRequest *request)
+{
+    if (!request) {
+        return;
+    }
 
-void		  ZN_HttpRequest_Delete(ZN_HttpRequest *http_request){
-	if(http_request!=NULL){
-		ZN_Array_Delete(http_request->params);
-		ZN_FREE(http_request);
-	}
+    if (request->params) {
+        ZN_Array_Delete(request->params);
+        request->params = NULL;
+    }
+
+    if (request->headers) {
+        ZN_Array_Delete(request->headers);
+        request->headers = NULL;
+    }
+
+    ZN_FREE(request);
 }

@@ -16,7 +16,13 @@ bool	ZN_List_AddSlot(ZN_List *v){
 			return false;
 		}
 		v->_size += 10;
-		v->items = realloc(v->items, sizeof(void*) * v->_size);
+
+		void **tmp = realloc(v->items, sizeof(void*) * v->_size);
+		if (!tmp) {
+		    return false;
+		}
+		v->items = tmp;
+		v->_size = v->_size;
 	}
 
 	v->count++;
@@ -83,7 +89,7 @@ void ZN_List_Concat(ZN_List *_this, ZN_List *list){
 }
 
 void 		ZN_List_Insert(ZN_List *v, uint16_t idx, void *e){
-	if(idx > (v->count+1)){
+	if (idx > v->count) {
 		fprintf(stderr,"\nidx should be 0 to %i",v->count+1);
 		return;
 	}
@@ -105,11 +111,15 @@ void 		ZN_List_Clear(ZN_List *_this){
 	memset(_this,0,sizeof(ZN_List));
 }
 
-void ZN_List_Delete(ZN_List *_this){
-	if(_this->items!=NULL){
-		ZN_FREE(_this->items);
-	}
-	ZN_FREE(_this);
+void ZN_List_Delete(ZN_List *_this)
+{
+    if (!_this) return;
+
+    if (_this->items) {
+        ZN_FREE(_this->items);
+    }
+
+    ZN_FREE(_this);
 }
 
 void ZN_List_DeleteAndFreeAllItems(ZN_List *_this){

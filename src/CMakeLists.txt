@@ -15,10 +15,10 @@ set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT}/lib64/libcrypto.a")
 if(EXISTS ${OPENSSL_SSL_LIBRARY} AND EXISTS ${OPENSSL_CRYPTO_LIBRARY})
     message(STATUS "OpenSSL : Yes")
 
- 	option(__WITH_SSL__ "Enable USE_SSL" ON)
+ 	option(ZN_WITH_SSL "Enable USE_SSL" ON)
 else()
     message(STATUS "OpenSSL : No (Not found at '${OPENSSL_ROOT}')")
-    option(__WITH_SSL__ "Enable USE_SSL" OFF)
+    option(ZN_WITH_SSL "Enable USE_SSL" OFF)
 endif()
 
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/../include/config.h)
@@ -185,7 +185,7 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 #
 
 
-if(__WITH_SSL__)
+if(ZN_WITH_SSL)
 	set(LIBRARY_DEPS ${LIBRARY_DEPS} ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY} )
 	
 	if(MINGW OR MSVC)

@@ -3,7 +3,7 @@
 char	*	ZN_CStr_New(const char *_str_in){
 
 	if(_str_in == NULL){
-		ZN_LOG_ERRORF("ZG_CStr_NewLen : _str_in NULL");
+		ZN_LOG_ERRORF("ZN_CStr_New : _str_in NULL");
 		return NULL;
 	}
 
@@ -12,6 +12,36 @@ char	*	ZN_CStr_New(const char *_str_in){
 	strcpy(str_out,_str_in);
 
 	return str_out;
+}
+
+char *ZN_CStr_NewLen(const char *_str_in, size_t _len)
+{
+    size_t str_in_len;
+    char *str_out;
+
+    if (!_str_in) {
+        ZN_LOG_ERRORF("ZN_CStr_NewLen : input string is NULL");
+        return NULL;
+    }
+
+    str_in_len = strlen(_str_in);
+
+    if (_len > str_in_len) {
+        ZN_LOG_ERROR("ZN_CStr_NewLen : _len (%zu) greater than input length (%zu)",
+                     _len,
+                     str_in_len);
+        return NULL;
+    }
+
+    str_out = ZN_NEW_LENGTH(char, _len + 1);
+    if (!str_out) {
+        return NULL;
+    }
+
+    memcpy(str_out, _str_in, _len);
+    str_out[_len] = '\0';
+
+    return str_out;
 }
 
 
@@ -48,7 +78,7 @@ void  ZN_CStr_ReplaceChar(char * str, char old_ch, char new_ch){
 	}
 }
 
-long int ZN_CStr_Find(char *txt1,const char *txt2) {
+long long int ZN_CStr_Find(char *txt1,const char *txt2) {
     char *posstr=strstr(txt1,txt2);
     if(posstr!=NULL){
         return (posstr-txt1);
@@ -162,7 +192,7 @@ bool ZN_CStr_EndsWith(const char * str, const char * end_str){
 	size_t len_str=strlen(str);
 	size_t len_end_str=strlen(end_str);
 	if(len_end_str<=len_str){
-		return strcmp(str-len_end_str,end_str)==0;
+		return strcmp(str+len_str-len_end_str,end_str)==0;
 	}
 
 	return false;

@@ -31,8 +31,9 @@ ZN_Array *	ZN_Array_New(const char *_type_name, size_t _type_size){
 
 void ZN_Array_CheckType(ZN_Array *_this, const char * _name, size_t _type_size){
 
-	if(!_this){
-		ZN_LOG_ERRORF("ZN_Array_CheckType : container is NULL");
+	if (!_this || !_this->data) {
+	    ZN_LOG_ERRORF("ZN_Array_CheckType : container/data is NULL");
+	    assert(false);
 	}
 
 
@@ -42,6 +43,7 @@ void ZN_Array_CheckType(ZN_Array *_this, const char * _name, size_t _type_size){
 
 	if(!same_size){
 		ZN_LOG_ERROR("ZN_Array_CheckType : Element has not the same SIZE TYPE as its container (container type : %s . element type : %s)",data->type_name,_name);
+		assert(false);
 	}
 
 	bool same_name = true;
@@ -104,14 +106,14 @@ uint8_t 	*ZN_Array_PtrAt(ZN_Array *_this, size_t _pos){
 	return data->ptr_data + data->type_size * _pos;
 }*/
 
-void  ZN_Array_Set(ZN_Array *_this, const char * _type_name, size_t _type_size, size_t _pos, void * _data){
+bool  ZN_Array_Set(ZN_Array *_this, const char * _type_name, size_t _type_size, size_t _pos, void * _data){
 	ZN_Array_CheckType(_this,_type_name,_type_size);
 
 	ZN_ArrayData * data = _this->data;
 
 	if (_pos >= data->count) {
 		ZN_LOG_ERRORF("idx out of bounds");
-		return;
+		return false;
 	}
 
 	uint8_t * item_ptr = ZN_Array_PtrAt(_this, _pos);
@@ -122,6 +124,8 @@ void  ZN_Array_Set(ZN_Array *_this, const char * _type_name, size_t _type_size, 
 
 	// copy data
 	memcpy(item_ptr,_data,data->type_size);
+
+	return true;
 }
 
 void 	*ZN_Array_GetData(ZN_Array *_this, const char * _type_name, size_t _type_size){
@@ -131,9 +135,18 @@ void 	*ZN_Array_GetData(ZN_Array *_this, const char * _type_name, size_t _type_s
 }
 
 
-void * ZN_Array_Get(ZN_Array *_this, const char * _type_name, size_t _type_size, size_t _pos){
-	ZN_Array_CheckType(_this,_type_name,_type_size);
-	return ZN_Array_PtrAt(_this,_pos);
+void *ZN_Array_Get(ZN_Array *_this, const char *_type_name, size_t _type_size, size_t _pos)
+{
+    ZN_Array_CheckType(_this, _type_name, _type_size);
+
+    ZN_ArrayData *data = _this->data;
+
+    if (_pos >= data->count) {
+        ZN_LOG_ERRORF("ZN_Array_Get : _pos out of bounds");
+        return NULL;
+    }
+
+    return ZN_Array_PtrAt(_this, _pos);
 }
 
 void 		ZN_Array_InsertAt(ZN_Array *_this, const char * _type_name, size_t _type_size, size_t _pos, void * _element){
@@ -202,16 +215,36 @@ size_t 		ZN_Array_Count(ZN_Array *_this){
 	return data->count;
 }
 
-void		ZN_Array_Push(ZN_Array *_this, const char * _type_name, size_t _type_size, void *_data){
+bool ZN_Array_Push(
+    ZN_Array *_this,
+    const char *_type_name,
+    size_t _type_size,
+    const void *_data
+)
+{
+    ZN_ArrayData *data;
+    void *slot;
 
-	ZN_Array_CheckType(_this,_type_name,_type_size);
+    if (!_this || !_this->data || !_data) {
+        return false;
+    }
 
-	ZN_ArrayData * data = _this->data;
+    ZN_Array_CheckType(_this, _type_name, _type_size);
 
-	if(ZN_Array_AddSlot(_this)){
-		uint8_t *ptr = ZN_Array_PtrAt(_this,data->count-1);
-		memcpy(ptr,_data,data->type_size);
-	}
+    data = _this->data;
+
+    if (!ZN_Array_AddSlot(_this)) {
+        return false;
+    }
+
+    slot = ZN_Array_PtrAt(_this, data->count - 1);
+    if (!slot) {
+        return false;
+    }
+
+    memcpy(slot, _data, data->type_size);
+
+    return true;
 }
 
 void		ZN_Array_Clear(ZN_Array *_this){
