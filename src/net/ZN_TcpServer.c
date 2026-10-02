@@ -110,7 +110,9 @@ SOCKET ZN_TcpServer_SocketAccept(ZN_TcpServer *tcp_server)
 bool ZN_TcpServer_SocketReady(ZN_TcpServer * tcp_server,SOCKET sock){
 
 	if (FD_ISSET( sock , &tcp_server->readfds)){
+#ifdef __DEBUG__
 		printf("Incoming connection detected\n");
+#endif
 		return true;
 	}
 

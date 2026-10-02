@@ -55,16 +55,18 @@ BufferData  ZN_HttpResponse_GenerateError(int error_id,ZN_HttpServer * http_serv
 		error.description="not implemented";
 	}
 
-	data.size=
-			strlen(template)
-			+(http_server->logo_base64!=NULL?strlen(http_server->logo_base64):0)
-			+strlen(error.description)+strlen(error.title);
+	data.size= strlen(template)	+ (
+					http_server->logo_base64!=NULL
+					? strlen(http_server->logo_base64)
+					: 0
+			   ) + strlen(error.description)+strlen(error.title);
 
 	data.buffer = (uint8_t *)ZN_MALLOC(data.size+1); // +1 for end str
 
 
-	sprintf((char *)data.buffer,
-			template
+	sprintf(
+		(char *)data.buffer
+		,template
 		,http_server->logo_base64!=NULL?http_server->logo_base64:""
 		,error.title
 		,error.description

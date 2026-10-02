@@ -126,6 +126,7 @@ static const char *ZN_HttpRequest_MimeFromPath(const char *path, bool *is_binary
         *is_binary = false;
     }
 
+    // TODO : Define mime types from external file!
     if (!path) {
         return "text/html";
     }
