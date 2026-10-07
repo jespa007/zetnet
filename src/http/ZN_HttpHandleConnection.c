@@ -29,6 +29,10 @@ void ZN_HttpHandleConnection_DoHandle(ZN_HttpHandleConnection *_http_handle_clie
 
 	http_request = ZN_HttpRequest_GetRequest((const char *)_http_handle_client->rcv_buffer_data);
 
+	if(http_request == NULL){
+		return;
+	}
+
 	char filename_with_path[MAX_PATH]={0};
 	char *unescaped_url=NULL;
 	char path_url[MAX_PATH]={0};

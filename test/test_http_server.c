@@ -29,8 +29,7 @@ ZN_HttpResponse *  MyCustom_HttpServer_OnGetUserRequest(ZN_HttpServer * _http_se
 	return ZN_HttpResponse_MakeFromString(returning_value, "application/json");
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	char path[MAX_PATH]={"."};
 	char *host=NULL;
 	int port=HTTP_SERVER_DEFAULT_PORT;
