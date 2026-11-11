@@ -6,7 +6,7 @@ option(BUILD_SHARED_LIBS "Build libraries as SHARED" ON)
 
 
 if(NOT OPENSSL_ROOT)
-	set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
+	set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc/openssl-openssl-3.5.7")
 endif()
 set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
 set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT}/lib64/libssl.a")
@@ -68,7 +68,7 @@ include_directories (
 )
 
 link_directories (
-	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/lib64
+	${OPENSSL_ROOT}/lib64
 )
 
 message(STATUS "Install directory: " ${CMAKE_INSTALL_PREFIX})
@@ -110,13 +110,35 @@ else()  # g++ / gcc
 		
 		IF (EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr)
 		
-			message(STATUS "Memmanager: Yes")
-			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
+			message("-- Memmanager: ON")
+			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -DUSE_MEMMGR")
 			include_directories (
-				${PROJECT_SOURCE_DIR}/../../memmgr
+					${PROJECT_SOURCE_DIR}/../../memmgr/src
 			)
+		
+			file(READ "${PROJECT_SOURCE_DIR}/../../memmgr/src/memmgr.h" memmgr_h)
+
+			string(REGEX MATCH "MEMMGR_VERSION_MAJOR([\t-\ ][0-9])*" _ ${memmgr_h})
+			string(STRIP "${CMAKE_MATCH_1}" MEMMGR_VERSION_MAJOR)
 			
-	   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
+			string(REGEX MATCH "MEMMGR_VERSION_MINOR([\t-\ ][0-9])*" _ ${memmgr_h})
+			string(STRIP "${CMAKE_MATCH_1}" MEMMGR_VERSION_MINOR)
+			
+			string(REGEX MATCH "MEMMGR_VERSION_PATCH([\t-\ ][0-9])*" _ ${memmgr_h})
+			string(STRIP "${CMAKE_MATCH_1}" MEMMGR_VERSION_PATCH)
+			
+			set(MEMMGR_LIB_VERSION "${MEMMGR_VERSION_MAJOR}-${MEMMGR_VERSION_MINOR}-${MEMMGR_VERSION_PATCH}")
+			
+			MESSAGE("-- Memmgr version : ${MEMMGR_LIB_VERSION}" )
+						
+			find_library(
+				MEMMGR_CPP_LIBRARY
+				NAMES
+					"memmgr-${MEMMGR_LIB_VERSION}${POST_NAME}"
+				PATHS
+					"${PROJECT_SOURCE_DIR}/../../memmgr/bin/gcc/${CMAKE_BUILD_TYPE}"
+				REQUIRED
+			)
 		
 		ELSE()
 	
@@ -213,8 +235,6 @@ message(STATUS "Library type: " ${LIBRARY_TYPE_CREATION})
 
 
 # zetnet library
-
-
 if(MSVC)
 	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
 	target_compile_options(
@@ -227,14 +247,6 @@ else()
 	)
 endif()
 
-
-
-install(
-    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/zetnet"
-    FILES_MATCHING
-        PATTERN "*.h"
-)
 
 #-----------------------------------------
 # EXECUTABLES
@@ -270,12 +282,15 @@ add_executable(test_socket_server${POST_NAME}
 target_link_libraries(test_socket_server${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
 	
 
+#-----------------------------------------
+# INSTALL
 
+# install binaries
 INSTALL(TARGETS ${ZETNET_LIB_NAME}${POST_NAME}
-		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
-		RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
-    	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
-    	PUBLIC_HEADER DESTINATION	${CMAKE_INSTALL_PREFIX}/includes
+	ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
+	RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
+	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
 )
 
-
+# install headers
+INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/../include/" DESTINATION "${CMAKE_INSTALL_PREFIX}/include/zetnet" )
