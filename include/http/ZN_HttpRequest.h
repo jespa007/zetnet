@@ -1,0 +1,53 @@
+﻿#ifndef __ZN_HTTP_REQUEST__
+#define __ZN_HTTP_REQUEST__
+
+#define ZN_MAX_URL_LEN 	4096
+#define ZN_MAX_CONTENT_LEN 100
+#define ZN_MAX_HOST_LEN 	256
+#define ZN_MAX_TYPE_LEN 	100
+#define ZN_MAX_REFERER_LEN 100
+
+
+typedef struct ZN_HttpRequest ZN_HttpRequest;
+
+struct ZN_HttpRequest
+{
+
+	char  type[ZN_MAX_TYPE_LEN];
+	char  url[ZN_MAX_URL_LEN];
+	char  host[ZN_MAX_HOST_LEN];
+	char referer[ZN_MAX_REFERER_LEN];
+	const char *mime;
+	bool is_binary;
+	char  content_type[ZN_MAX_CONTENT_LEN];
+	ZN_Array * params;
+	ZN_Array *headers;
+
+};
+
+ZN_DLL_EXPORT bool 				ZN_HttpRequest_Build(
+    char *out,
+    size_t size,
+    const ZN_HttpRequest *req
+);
+
+ZN_DLL_EXPORT void 				ZN_HttpRequest_InitGetFromUrl(
+    ZN_HttpRequest *req,
+    const ZN_Url *url
+);
+
+ZN_DLL_EXPORT ZN_HttpRequest *  ZN_HttpRequest_NewEmpty(void);
+ZN_DLL_EXPORT ZN_HttpRequest * 	ZN_HttpRequest_GetRequest(const char * request);
+ZN_DLL_EXPORT			   bool ZN_HttpRequest_AddHeader(
+									ZN_HttpRequest *request,
+									const char *key,
+									const char *value
+								);
+
+ZN_DLL_EXPORT			bool ZN_HttpRequest_AddHeaderLine(
+									ZN_HttpRequest *request,
+									const char *header_line
+								);
+ZN_DLL_EXPORT void		  		ZN_HttpRequest_Delete(ZN_HttpRequest *http_request);
+
+#endif

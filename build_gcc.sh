@@ -17,7 +17,7 @@ TARGET="release"
 
  
 # The third parties
-OPENSSL_TAG="openssl-openssl-3.0.4"
+OPENSSL_TAG="openssl-openssl-3.5.7"
 OPENSSL_FILE=$OPENSSL_TAG".tar.gz"
 
 
@@ -82,22 +82,29 @@ echo building openssl...
 
 if ! [ -d $THIRD_PARTY_BUILD_DIR"/$OPENSSL_TAG" ] 
 then
-	tar xf $THIRD_PARTY_SOURCES_DIR"/"$OPENSSL_FILE
+	tar xf $THIRD_PARTY_SOURCES_DIR"/"$OPENSSL_TAG".tar.gz"
 fi
 
-cd $OPENSSL_TAG
+echo $THIRD_PARTY_INSTALL_DIR"/"$OPENSSL_TAG"/lib64/libssl"$EXTENSION_STATIC_LIB
 
-if ! [ -f $THIRD_PARTY_INSTALL_DIR"/lib64/libssl"$EXTENSION_STATIC_LIB ] 
+if ! [ -f $THIRD_PARTY_INSTALL_DIR"/"$OPENSSL_TAG"/lib64/libssl"$EXTENSION_STATIC_LIB ] 
 then
 
 	
-	perl Configure $PLATFORM no-shared --prefix=$THIRD_PARTY_INSTALL_DIR --openssldir=$THIRD_PARTY_INSTALL_DIR
+	perl Configure $PLATFORM \
+    no-shared \
+    no-apps \
+    no-docs \
+    no-legacy \
+    no-module \
+    --prefix=$THIRD_PARTY_INSTALL_DIR/$OPENSSL_TAG \
+    --openssldir=$THIRD_PARTY_INSTALL_DIR/$OPENSSL_TAG
 
 	# in mingw it doesn't find podman and it throws an error
-	#if ! [ $? -eq 0 ] 
-	#then
-	#	exit 1
-	#fi
+	if ! [ $? -eq 0 ] 
+	then
+		exit 1
+	fi
 	
 	make clean
 	
@@ -105,10 +112,10 @@ then
 	make install
 
 	# in mingw it doesn't find podman and it throws an error
-	#if ! [ $? -eq 0 ] 
-	#then
-	#	exit 1
-	#fi
+	if ! [ $? -eq 0 ] 
+	then
+		exit 1
+	fi
 fi
 
 cd ..
@@ -123,16 +130,15 @@ cd $ROOT_DIR
 if ! [ -f $BINARY_DIR"/libzetnet"$EXTENSION_STATIC_LIB ] 
 then
 
-	rm -rf build/gcc/zetnet
-	cmake -H. -Bbuild/gcc/zetnet "${CMAKE_CONFIG[@]}"
+	rm -rf build/gcc/Release
+	cmake -Bbuild/gcc/Release "${CMAKE_CONFIG[@]}"
 	
 	if ! [ $? -eq 0 ] 
 	then
 		exit 1
 	fi
 	
-	make clean -C build/gcc/zetnet/release
-	make -C build/gcc/zetnet
+	make -C build/gcc/Release
 		
 	if ! [ $? -eq 0 ] 
 	then

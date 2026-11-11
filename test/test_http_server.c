@@ -1,9 +1,9 @@
-#include "../src/zetnet.h"
+#include "../include/zetnet.h"
 
 
 #define HTTP_SERVER_DEFAULT_PORT 8081
 
-ZN_HttpResponse *  MyCustom_HttpServer_OnGetUserRequest(ZN_HttpServer * _http_server, ZN_HttpParamValue  * _param, size_t _param_len,void *_user_data){
+ZN_HttpResponse *  MyCustom_HttpServer_OnGetUserRequest(ZN_HttpServer * _http_server, ZN_HttpKeyValue  * _param, size_t _param_len,void *_user_data){
 	ZN_UNUSUED_PARAM(_http_server);
 	ZN_UNUSUED_PARAM(_user_data);
 
@@ -12,25 +12,24 @@ ZN_HttpResponse *  MyCustom_HttpServer_OnGetUserRequest(ZN_HttpServer * _http_se
 
 	if (_param!=NULL && _param_len>0)
 	{
-		if (strcmp(_param[0].name,"cmd")==0)
+		if (strcmp(_param[0].key,"cmd")==0)
 		{
 			if(strcmp(_param[0].value,"text")==0){
 				sprintf(returning_value,"{\"status\":ok, \"msg\":\"message ok\"}");
 			}
 			else{
-				sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow value  %s for cmd value\"}",_param[0].name);
+				sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow value  %s for cmd value\"}",_param[0].key);
 			}
 
 		}else{
-			sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow cmd %s\"}",_param[0].name);
+			sprintf(returning_value, "{\"status\":false, \"msg\":\"unknow cmd %s\"}",_param[0].key);
 		}
 	}
 
 	return ZN_HttpResponse_MakeFromString(returning_value, "application/json");
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	char path[MAX_PATH]={"."};
 	char *host=NULL;
 	int port=HTTP_SERVER_DEFAULT_PORT;

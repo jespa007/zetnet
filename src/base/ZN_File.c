@@ -1,0 +1,106 @@
+#include "zetnet.h"
+
+bool ZN_File_Exists(const char * filename) {
+
+	if(filename == NULL) return false;
+
+#ifdef _WIN32
+	FILE *fp = fopen(filename,"r");
+
+	if(fp == NULL) return false;
+
+	fclose(fp);
+
+	return true;
+#else
+
+	if(zn_dir_exists(filename)) return false;
+
+
+	struct stat buffer;
+	  return (stat (filename, &buffer) == 0);
+#endif
+
+}
+
+uint8_t * ZN_File_Read(const char * filename,size_t * buffer_size){
+
+
+	long long unsigned file_length, readed_elements;
+	FILE  *fp;
+
+	if (!filename || !buffer_size) {
+		return NULL;
+	}
+
+	if((fp  =  fopen(filename,"rb"))  !=  NULL)
+	{
+		if((file_length = ZN_File_Length(filename)) != ZN_INVALID_LENGTH) {
+
+			*buffer_size = file_length; // +1 is for string end
+
+			uint8_t *buffer = (uint8_t *)malloc(*buffer_size);
+
+			readed_elements = fread(buffer, 1, file_length, fp);
+
+			if(readed_elements != file_length) {
+				fprintf(stderr,"\nnumber elements doesn't match with length file (%s)\n",filename);
+				ZN_FREE(buffer);
+				buffer = NULL;
+			}
+
+			fclose(fp);
+
+			return buffer;
+		}else  {
+			fprintf(stderr,"\nI can't read file \"%s\"\n",filename);
+		}
+	}else {
+		fprintf(stderr,"\nI can't open file \"%s\"\n",filename);
+	}
+
+
+	return NULL;
+}
+
+
+unsigned long  ZN_File_Length(const char * filename) {
+
+	unsigned long  ini,  end;
+	FILE  *fp;
+
+	if((fp  =  fopen(filename,"rb"))  !=  NULL) {
+
+		fseek(fp,  0,SEEK_SET);
+		ini  =  ftell(fp);
+		fseek(fp,  0,SEEK_END);
+		end  =  ftell(fp);
+		fclose(fp);
+
+		return  (end  -  ini);
+	}
+
+	return    -1;
+}
+
+size_t  		ZNFile_LengthFromFile(FILE * file)
+{
+
+	size_t  ini,  end;
+	FILE  *fp = file;
+
+	if(fp != NULL)
+	{
+		long current = ftell(fp);
+
+		fseek(fp,  0,SEEK_SET);
+		ini  =  ftell(fp);
+		fseek(fp,  0,SEEK_END);
+		end  =  ftell(fp);
+
+		fseek(fp,  current,SEEK_SET);
+		return  (end  -  ini);
+	}
+
+	return    ZN_INVALID_LENGTH;
+}

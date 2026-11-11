@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.15)
  
 project(zetnet)
 
+option(BUILD_SHARED_LIBS "Build libraries as SHARED" ON)
+
+
 if(NOT OPENSSL_ROOT)
-	set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc")
+	set(OPENSSL_ROOT "${PROJECT_SOURCE_DIR}/../3rdparty/gcc/openssl-openssl-3.5.7")
 endif()
 set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
 set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT}/lib64/libssl.a")
@@ -12,13 +15,13 @@ set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT}/lib64/libcrypto.a")
 if(EXISTS ${OPENSSL_SSL_LIBRARY} AND EXISTS ${OPENSSL_CRYPTO_LIBRARY})
     message(STATUS "OpenSSL : Yes")
 
- 	option(__WITH_SSL__ "Enable USE_SSL" ON)
+ 	option(ZN_WITH_SSL "Enable USE_SSL" ON)
 else()
     message(STATUS "OpenSSL : No (Not found at '${OPENSSL_ROOT}')")
-    option(__WITH_SSL__ "Enable USE_SSL" OFF)
+    option(ZN_WITH_SSL "Enable USE_SSL" OFF)
 endif()
 
-configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/base/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/../include/config.h)
 
 IF( NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE Release )
@@ -35,7 +38,7 @@ endif()
 MESSAGE (STATUS "Target: " ${CMAKE_BUILD_TYPE})
 
 
-file(READ "zetnet.h" zetnet_h)
+file(READ "../include/zetnet.h" zetnet_h)
 
 string(REGEX MATCH "ZETNET_VERSION_MAJOR([\t-\ ][0-9])*" _ ${zetnet_h})
 string(STRIP "${CMAKE_MATCH_1}" ZETNET_VERSION_MAJOR)
@@ -54,35 +57,18 @@ SET(ZETNET_LIB_NAME "zetnet-${ZETNET_VERSION_MAJOR}-${ZETNET_VERSION_MINOR}-${ZE
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
-# MACRO UTILS
-#
-
-
-MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
-
-    FOREACH(HEADER ${${HEADER_LIST}})
-        get_filename_component(DIR ${HEADER} DIRECTORY)
-        INSTALL(FILES ${HEADER} DESTINATION include/zetnet/${DIR})
-    ENDFOREACH(HEADER)
-
-ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
-
-
-
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#
 # COMPILE PARAMS
 #
-
 
 include_directories (
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/..
+	${PROJECT_SOURCE_DIR}/../include
 	${OPENSSL_INCLUDE_DIR}
 )
 
 link_directories (
-	${PROJECT_SOURCE_DIR}/../3rdparty/gcc/lib64
+	${OPENSSL_ROOT}/lib64
 )
 
 message(STATUS "Install directory: " ${CMAKE_INSTALL_PREFIX})
@@ -106,7 +92,7 @@ if(MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")	
 
 else()  # g++ / gcc
-	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -pthread -fomit-frame-pointer -pipe -Wall -Wextra -Wstrict-prototypes -pedantic ")
+	SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__STDC_CONSTANT_MACROS -fomit-frame-pointer -std=c99 -pipe -Wall -Wextra -pedantic -Wno-sign-conversion -Wstrict-prototypes -Wtype-limits ")
 	  
 	if (MINGW)
 		MESSAGE(STATUS "Plataform: MINGW" )
@@ -124,13 +110,35 @@ else()  # g++ / gcc
 		
 		IF (EXISTS ${PROJECT_SOURCE_DIR}/../../memmgr)
 		
-			message(STATUS "Memmanager: Yes")
-			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -D__MEMMANAGER__")
+			message("-- Memmanager: ON")
+			SET( CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -DUSE_MEMMGR")
 			include_directories (
-				${PROJECT_SOURCE_DIR}/../../memmgr
+					${PROJECT_SOURCE_DIR}/../../memmgr/src
 			)
+		
+			file(READ "${PROJECT_SOURCE_DIR}/../../memmgr/src/memmgr.h" memmgr_h)
+
+			string(REGEX MATCH "MEMMGR_VERSION_MAJOR([\t-\ ][0-9])*" _ ${memmgr_h})
+			string(STRIP "${CMAKE_MATCH_1}" MEMMGR_VERSION_MAJOR)
 			
-	   		set(ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS} ${PROJECT_SOURCE_DIR}/../../memmgr/memmgr.c)
+			string(REGEX MATCH "MEMMGR_VERSION_MINOR([\t-\ ][0-9])*" _ ${memmgr_h})
+			string(STRIP "${CMAKE_MATCH_1}" MEMMGR_VERSION_MINOR)
+			
+			string(REGEX MATCH "MEMMGR_VERSION_PATCH([\t-\ ][0-9])*" _ ${memmgr_h})
+			string(STRIP "${CMAKE_MATCH_1}" MEMMGR_VERSION_PATCH)
+			
+			set(MEMMGR_LIB_VERSION "${MEMMGR_VERSION_MAJOR}-${MEMMGR_VERSION_MINOR}-${MEMMGR_VERSION_PATCH}")
+			
+			MESSAGE("-- Memmgr version : ${MEMMGR_LIB_VERSION}" )
+						
+			find_library(
+				MEMMGR_CPP_LIBRARY
+				NAMES
+					"memmgr-${MEMMGR_LIB_VERSION}${POST_NAME}"
+				PATHS
+					"${PROJECT_SOURCE_DIR}/../../memmgr/bin/gcc/${CMAKE_BUILD_TYPE}"
+				REQUIRED
+			)
 		
 		ELSE()
 	
@@ -182,13 +190,13 @@ MESSAGE (STATUS "Target: " ${CMAKE_BUILD_TYPE})
 set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 
 	# base
-	base/@base.c
+	base/@ZN_Base.c
 	
 	# net
-	net/@net.c	
+	net/@ZN_Net.c	
 	
 	# http
-	http/@http.c
+	http/@ZN_Http.c
 
 	zetnet.c
 )
@@ -197,29 +205,9 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 #
 # LINKING PARAMS
 #
-	
-#set library generation as static by default
-if(BUILD_SHARED_LIBS)
-	add_library( ${ZETNET_LIB_NAME}${POST_NAME} SHARED ${ZETNET_LIB_SRCS} )
-	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE BUILD_SHARED_LIBS)
-else()
-	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
-	add_library( ${ZETNET_LIB_NAME}${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
-	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PUBLIC BUILD_STATIC_LIBS)
-endif()
-
-message(STATUS "Library type: " ${LIBRARY_TYPE_CREATION})
 
 
-# zetnet library
-
-
-if(MSVC)
-	#only for msvc...
-	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
-endif()
-
-if(__WITH_SSL__)
+if(ZN_WITH_SSL)
 	set(LIBRARY_DEPS ${LIBRARY_DEPS} ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY} )
 	
 	if(MINGW OR MSVC)
@@ -231,46 +219,34 @@ endif()
 if(MINGW OR MSVC)
 	set(LIBRARY_DEPS ${LIBRARY_DEPS} Ws2_32)	
 endif()
-
-target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
-
-
-SET(
-	HS
 	
-	base/@base.h
-	base/common.h
-	base/config.h
-	base/cstr.h
-	base/dir.h
-	base/file.h
-	base/list.h
-	base/log.h
-	base/memory.h
-	base/path.h
-	base/url.h
-	
-	http/@http.h
-	http/http_handle_connection.h
-	http/http_param_value.h
-	http/http_request.h
-	http/http_response.h
-	http/http_route.h
-	http/http_router.h
-	http/http_server_mps.h
-	http/http_server.h
-	
-	net/@net.h
-	net/connection.h
-	net/ssl.h
-	net/tcp_server.h
-	net/tcp_socket.h
-	
-	zetnet.h
+#set library generation as static by default
+if(BUILD_SHARED_LIBS)
+	add_library( ${ZETNET_LIB_NAME}${POST_NAME} SHARED ${ZETNET_LIB_SRCS} )
+	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PRIVATE BUILD_SHARED_LIBS)
+	target_link_libraries(${ZETNET_LIB_NAME}${POST_NAME} ${LIBRARY_DEPS})
+else()
+	set( ZETNET_LIB_NAME ${ZETNET_LIB_NAME}-static)
+	add_library( ${ZETNET_LIB_NAME}${POST_NAME} STATIC ${ZETNET_LIB_SRCS} )
+	target_compile_definitions(${ZETNET_LIB_NAME}${POST_NAME} PUBLIC BUILD_STATIC_LIBS)
+endif()
 
-)
+message(STATUS "Library type: " ${LIBRARY_TYPE_CREATION})
 
-INSTALL_HEADERS_WITH_DIRECTORY(HS)
+
+# zetnet library
+if(MSVC)
+	set_target_properties(${ZETNET_LIB_NAME}${POST_NAME} PROPERTIES COMPILE_DEFINITIONS ZETNET_EXPORTS)
+	target_compile_options(
+		${ZETNET_LIB_NAME}${POST_NAME} PRIVATE /wd4244
+	)
+else()
+	# gcc
+	target_compile_options(
+		${ZETNET_LIB_NAME}${POST_NAME} PRIVATE -Werror=conversion -Werror=shadow
+	)
+endif()
+
 
 #-----------------------------------------
 # EXECUTABLES
@@ -306,12 +282,15 @@ add_executable(test_socket_server${POST_NAME}
 target_link_libraries(test_socket_server${POST_NAME}  ${ZETNET_LIB_NAME}${POST_NAME} -pthread )	
 	
 
+#-----------------------------------------
+# INSTALL
 
+# install binaries
 INSTALL(TARGETS ${ZETNET_LIB_NAME}${POST_NAME}
-		ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
-		RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
-    	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
-    	PUBLIC_HEADER DESTINATION	${CMAKE_INSTALL_PREFIX}/includes
+	ARCHIVE DESTINATION  		${CMAKE_INSTALL_PREFIX}/lib
+	RUNTIME DESTINATION  		${CMAKE_INSTALL_PREFIX}/bin
+	LIBRARY DESTINATION 		${CMAKE_INSTALL_PREFIX}/lib
 )
 
-
+# install headers
+INSTALL(DIRECTORY "${PROJECT_SOURCE_DIR}/../include/" DESTINATION "${CMAKE_INSTALL_PREFIX}/include/zetnet" )
