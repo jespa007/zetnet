@@ -56,7 +56,9 @@
 #ifdef _WIN32
 
 	// FD_SIZE of windows is 64 -> redefine to 4096
-	#define  FD_SETSIZE 4096
+	#ifndef FD_SETSIZE
+		#define  FD_SETSIZE 4096
+	#endif
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
 	#include <windows.h>
@@ -88,12 +90,15 @@
 
 
 #ifdef ZN_WITH_SSL
-#include <openssl/ssl.h>
-#include <openssl/x509.h>
-#include <openssl/pem.h>
-#include <openssl/bio.h>
-#include <openssl/x509v3.h>
-#include <openssl/err.h>
+#include "openssl/ssl.h"
+#include "openssl/x509.h"
+#include "openssl/pem.h"
+#include "openssl/bio.h"
+#include "openssl/x509v3.h"
+#include "openssl/err.h"
+#include "openssl/rand.h"
+#include "openssl/evp.h"
+
 
 #endif
 
