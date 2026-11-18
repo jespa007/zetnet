@@ -195,6 +195,9 @@ set( ZETNET_LIB_SRCS ${ZETNET_LIB_SRCS}
 	# net
 	net/@ZN_Net.c	
 	
+	# crypto
+	crypto/@ZN_Crypto.c
+	
 	# http
 	http/@ZN_Http.c
 
