@@ -9,7 +9,7 @@
 #define ZETNET_VERSION_PATCH	1
 
 
-
+#include "config.h"
 #include "base/@ZN_Base.h"
 #include "crypto/@ZN_Crypto.h"
 #include "net/@ZN_Net.h"
