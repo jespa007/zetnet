@@ -92,9 +92,6 @@
 #endif
 
 
-#include "config.h"
-
-
 #ifdef ZN_WITH_SSL
 #include "openssl/ssl.h"
 #include "openssl/x509.h"
